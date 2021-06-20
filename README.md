@@ -7,7 +7,7 @@
 Insert into your Cargo.toml file [dependencies] section:
 
 ```rust
-indxvec = "^0" 
+indxvec = "^0.1" 
 ```
 
 and import into your source file(s) any structs, functions and/or traits that you want:
