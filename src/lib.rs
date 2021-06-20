@@ -1,4 +1,5 @@
 mod indices;
+mod merge;
 
 /// simple error handling
 use anyhow::{Result,bail}; 
@@ -6,7 +7,7 @@ use rstats::{here,GI,GV};
 
 /// GreenVec (GV) struct facilitates printing (in green) vector
 /// of any end type that has Display implemented.
-pub struct GV<'a, T: std::fmt::Display>(pub &'a[T]);
+/*pub struct GV<'a, T: std::fmt::Display>(pub &'a[T]);
 impl<'a, T: std::fmt::Display> std::fmt::Display for GV<'a,T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut s = String::from("\x1B[01;92m[");
@@ -21,7 +22,7 @@ impl<'a, T: std::fmt::Display> std::fmt::Display for GV<'a,T> {
         write!(f, "{}]\x1B[0m", s)
     }
 }
-
+*/
 /// Median and quartiles
 #[derive(Default)]
 pub struct Med {
@@ -64,8 +65,6 @@ pub trait Merge {
     fn merge_immutable(self, idx1: &[usize], v2: &[f64], idx2: &[usize]) -> ( Vec<f64>,Vec<usize> );
     /// merge indices of two already concatenated sorted vectors
     fn merge_indices(self, idx1:&[usize], idx2:&[usize]) -> Vec<usize>;
-    /// Sort vector in a standard way
-    fn sortf(self) -> Vec<f64>;
     /// Sorted vector, is wrapper for mergesort below
     fn sortm(self, ascending:bool) -> Vec<f64>;
 

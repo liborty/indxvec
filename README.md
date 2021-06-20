@@ -26,7 +26,7 @@ Indxvec is a lean minimalistic library that only depends on *anyhow* (for its si
 
 ### Documentation
 
-Follow the documentation link. Then select a trait of interest to see the skeletal comments on the prototype function declarations in lib.rs. To see more detailed comments, plus some examples from the implementation files, scroll to the bottom of the trait and unclick [+] to the left of the `implementations` of the trait. 
+Follow the documentation link. Then select a trait of interest to see the skeletal comments on the prototype function declarations in lib.rs. To see more detailed comments, plus some examples from the implementation files, scroll to the bottom of the trait and unclick [+] to the left of the `implementations` of the trait.
 
 To see tests, consult `tests.rs`. To run the tests, use single thread. It will be slower but will produce the results in the right order:
 
