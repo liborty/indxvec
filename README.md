@@ -1,4 +1,4 @@
-# InxVec
+# IndxVec
 
 ![Crates.io](https://img.shields.io/crates/v/indxvec?logo=rust) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github)  
 
