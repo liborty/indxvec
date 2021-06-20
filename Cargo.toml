@@ -1,0 +1,25 @@
+[package]
+name = "indxvec"
+version = "0.1.0"
+authors = ["Libor Spacek"]
+edition = "2018"
+description = "Merging, sorting, ranking, etc. generic Vecs and their indices"
+readme = "README.md"
+homepage = "https://github.com/liborty/indxvec"
+repository = "https://github.com/liborty/indxvec"
+license = "Apache-2.0"
+keywords = ["merge sort","ranking Vecs","indices handling"]
+categories = ["science","mathematics","algorithms"]
+include = [
+    "src/*.rs",
+    "tests/*.rs",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE"
+]
+[badges]
+maintenance = { status = "actively-developed" }
+[lib]
+[dependencies]
+anyhow = "^1"
+rstats = "^1"
