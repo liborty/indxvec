@@ -13,39 +13,41 @@ indxvec = "^0.1"
 and import into your source file(s) any structs, functions and/or traits that you want:
 
 ```rust
-use indxvec::{....};
+use indxvec::{Indices,GV};
+use indxvec::merge::{revs,sortm,mergesort,merge_indexed,rank,binsearch,ucorrelation};
 ```
 
 ## Introduction
 
-Indxvec was spun off `rstats`, as it holds sufficient interest in its own right. The general tools included here are efficient ranking, sorting, merging, searching and indices manipulations.
+Indxvec is a spin-off from `rstats`, as a self-contained unit, both in subject matter and in not having any dependencies. Only `tests.rs` needs  `anyhow`. 
 
-### Implementation
+The tools included are: efficient ranking, sorting, merging, searching and indices manipulations. They are  applicable to generic vectors: Vec\<T\>. They will work on any
+arbitrarily complex end type T, as long as you implement their required traits, mostly just PartialOrd and/or Copy for T.
 
-Indxvec is a lean minimalistic library that only depends on *anyhow* (for its simple error handling).
+## Testing and Examples
 
-### Documentation
-
-Follow the documentation link. Then select a trait of interest to see the skeletal comments on the prototype function declarations in lib.rs. To see more detailed comments, plus some examples from the implementation files, scroll to the bottom of the trait and unclick [+] to the left of the `implementations` of the trait.
-
-To see tests, consult `tests.rs`. To run the tests, use single thread. It will be slower but will produce the results in the right order:
+Consult `tests/tests.rs`. To run the tests, use single thread. It will be slower but will produce the results in the right order:
 
 ```rust
 cargo test --release -- --test-threads=1 --nocapture --color always
 ```
 
-## Macro, structs and functions
+## Macro, struct and functions
 
-## Traits
+The main content is in the module `src/merge.rs`. See the documentation.
 
-### Index
+## Trait Index
 
 The functions of this trait are implemented for vectors of subscripts, i.e. `&[usize]`.
 
-* `ucorrelation`(self, v: &[usize]) -> f64; Pearson's correlation coefficient of two slices, typically containing the ranks.  
-* `invindex`(self) -> Vec\<usize\>; method for inverting an index, e.g. given a sort index, returns ranks and vice versa.
-* `unindex`(self, v:&[f64]) -> Vec\<f64\>; collects values from v in the order given by self index.
+* `invindex` - method for inverting an index, e.g. given a sort index, returns ranks and vice versa.
+
+* `unindex` - collects values from a vector in the order given by an index. This will, for example, sort a vector into sort order when supplied with a sort index.
+
+* `ucorrelation` - Pearson's correlation coefficient of two indices, typically ranks. This is the same as Spearman's correlation of the original data.
 
 ## Recent Releases
 
-* **Version 0.1.0** Initial release.
+* **Version 0.1.1** Tidied up README.md and added some more tests
+
+* **Version 0.1.0** Initial release

@@ -4,7 +4,7 @@ impl Indices for &[usize] {
 
     /// Constructs inverted index, eg. from sort index to data ranks
     /// This is a symmetric operation, i.e. any even number of applications 
-    /// leads back to the original form.
+    /// leads back to the original index form.
     fn invindex(self) -> Vec<usize> {
         let n = self.len();
         let mut index:Vec<usize> = vec![0;n];
@@ -12,16 +12,15 @@ impl Indices for &[usize] {
         index
     }
 
-    /// Collects values from v in the order given by self index 
-    /// when ascending is true, otherwise in reverse (descending) order.
+    /// Collects values from v in the order given by self index. 
+    /// When ascending is false, creates descending order.
     /// Used by msort for ascending or descending sort.
-    /// Good for efficient sorting of any vectors by their separate keys.    
+    /// Good for efficient sorting of any vectors.    
     fn unindex<T: Copy>(self, ascending: bool, v:&[T]) -> Vec<T> {
         if ascending { self.iter().map(|&i| v[i]).collect() }
         else { self.iter().rev().map(|&i| v[i]).collect()   } 
     }
-
-
+    
     /// Pearson's correlation coefficient of two $[usize] slices.
     /// When the inputs are ranks, then this gives Spearman's correlation 
     /// of the original data. However, in general, any other ordinal measures

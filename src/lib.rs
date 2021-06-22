@@ -44,12 +44,14 @@ impl<'a,T> GenVec<T> {
     pub fn new() -> GenVec<T> { GenVec(Vec::new()) }
     pub fn from_vec(x: Vec<T>) -> GenVec<T> { GenVec(x) }
 }
+
 impl<T> Deref for GenVec<T> {
     type Target = Vec<T>; // Vec<T>;
     fn deref(& self) -> &Self::Target {
         &self.0
     }
 }
+
 impl<'a,T> DerefMut for GenVec<T> { 
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
@@ -71,7 +73,6 @@ impl<'a, T: std::fmt::Display> std::fmt::Display for GenVec<T> {
     }
 }
 */
-
 
 /// Methods to manipulate indices of Vec<usize> type
 pub trait Indices {

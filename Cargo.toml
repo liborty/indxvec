@@ -1,6 +1,6 @@
 [package]
 name = "indxvec"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Libor Spacek"]
 edition = "2018"
 description = "Merging, sorting, ranking, etc. generic Vecs and their indices"
@@ -12,7 +12,7 @@ keywords = ["merge-sort","ranking","merge","binary-search","generic-vectors"]
 categories = ["science","mathematics","algorithms","data-structures","rust-patterns"]
 include = [
     "src/*.rs",
-#   "tests/*.rs",
+    "tests/*.rs",
     "Cargo.toml",
     "README.md",
     "LICENSE"
@@ -22,4 +22,3 @@ maintenance = { status = "actively-developed" }
 [lib]
 [dependencies]
 anyhow = "^1"
-# rstats = "^0.7"
