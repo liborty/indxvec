@@ -26,7 +26,10 @@ fn vecf64() -> Result<()> {
    println!("Sorted rev:   {}",GV(&revs(&sortm(&v,true))));
    println!("Sorted rev:   {}",GV(&mergesort(&v,0,v.len()).unindex(false,&v)));   
    println!("Sorted rev:   {}",GV(&rank(&v,false).invindex().unindex(true,&v))); 
-   let (vm,vi) = merge_indexed(&v,&mergesort(&v,0,v.len()), &v, &mergesort(&v,0,v.len()));
+   let (vm,vi) = merge_indexed(&v,
+    &mergesort(&v,0,v.len()), 
+    &v, 
+    &mergesort(&v,0,v.len()));
    println!("Sorted, Concatenated and Merged:\n{}",GV(&vi.unindex(true,&vm))); 
    println!("Searched for {}, found at: {}\n",14.0,binsearch(&vi.unindex(true,&vm),14.0));   
    Ok(())
