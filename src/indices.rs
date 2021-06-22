@@ -16,14 +16,11 @@ impl Indices for &[usize] {
     /// when ascending is true, otherwise in reverse (descending) order.
     /// Used by msort for ascending or descending sort.
     /// Good for efficient sorting of any vectors by their separate keys.    
-    fn unindex(self, ascending: bool, v:&[f64]) -> Vec<f64> {
+    fn unindex<T: Copy>(self, ascending: bool, v:&[T]) -> Vec<T> {
         if ascending { self.iter().map(|&i| v[i]).collect() }
         else { self.iter().rev().map(|&i| v[i]).collect()   } 
     }
-    fn unindexu8(self, ascending: bool, v:&[u8]) -> Vec<u8> {
-        if ascending { self.iter().map(|&i| v[i]).collect() }
-        else { self.iter().rev().map(|&i| v[i]).collect()   } 
-    }
+
 
     /// Pearson's correlation coefficient of two $[usize] slices.
     /// When the inputs are ranks, then this gives Spearman's correlation 
