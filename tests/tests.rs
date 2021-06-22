@@ -3,8 +3,7 @@
 #[cfg(test)]
 
 use anyhow::{Result};
-use indxvec::{Indices,GV};
-use indxvec::merge::{revs,sortm,sortidx,merge_indexed,rank,binsearch};
+use indxvec::{GV,merge::*,Indices};
 
 #[test]
 fn vecf64() -> Result<()> { 

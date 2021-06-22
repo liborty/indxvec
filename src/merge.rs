@@ -119,8 +119,8 @@ fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize>
     merge_indices(s,&sv1,&sv2)
 }
 
-/// A simple wrapper for mergesort when we want just the sort index
-/// of the entire input vector
+/// A simple wrapper for mergesort, when we want just the sort index
+/// of the entire input vector.
 pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy {
     mergesort(&s,0,s.len())
 }
@@ -131,11 +131,11 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy {
     mergesort(s,0,s.len()).unindex(ascending,s)
 }   
 
-/// Ranking of self by inverting the (merge) sort index.  
+/// Ranking by inverting the sort index.  
 /// Sort index is in sorted order, giving indices to the original data positions.
-/// Ranking is in  original data order, giving their positions in the sorted order (sort index).
+/// Ranking is in  original data order, giving positions in the sorted order (sort index).
 /// Thus they are in an inverse relationship, easily converted by `.invindex()`
-/// Fast ranking of many f64 items, ranking `self` with only n*(log(n)+1) complexity.
+/// Fast ranking of many T items, with only n*(log(n)+1) complexity.
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy {
     let n = s.len();
     let sortindex = mergesort(s,0,n);
@@ -150,12 +150,12 @@ pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy {
         }
     }
     rankvec 
-} 
+}
+
 /// Returns the index of the first item that is greater than val, 
 /// using binary search of an already ascending sorted list.
 /// When all are smaller, returns self.len().
 /// When the last item is equal, returns self.len()-1.
-
 /// Example use: looking up cummulative probability density functions. 
 pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {     
     let n = s.len();
@@ -163,8 +163,7 @@ pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {
     if val < s[0] { return 0_usize }; // v is smaller than the first item
     let mut hi = n-1; // valid index of the last item
     if val > s[hi] { return n }; // indicates that v is greater than the last item
-    let mut lo = 0_usize; // initial index of the low limit 
-    
+    let mut lo = 0_usize; // initial index of the low limit     
     loop {
         let gap = hi - lo;
         if gap <= 1 { return hi }

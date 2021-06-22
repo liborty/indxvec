@@ -13,8 +13,7 @@ indxvec = "^0.1"
 and import into your source file(s) any structs, functions and/or traits that you want:
 
 ```rust
-use indxvec::{Indices,GV};
-use indxvec::merge::{revs,sortm,mergesort,merge_indexed,rank,binsearch,ucorrelation};
+use indxvec::{here,GV,merge::*,Indices};
 ```
 
 ## Introduction
@@ -45,9 +44,3 @@ The functions of this trait are implemented for vectors of subscripts, i.e. `&[u
 * `unindex` - collects values from a vector in the order given by an index. This will, for example, sort a vector into sort order when supplied with a sort index.
 
 * `ucorrelation` - Pearson's correlation coefficient of two indices, typically ranks. This is the same as Spearman's correlation of the original data.
-
-## Recent Releases
-
-* **Version 0.1.1** Tidied up README.md and added some more tests
-
-* **Version 0.1.0** Initial release
