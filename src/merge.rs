@@ -1,7 +1,14 @@
-//use crate::Merge;
 use crate::{Indices};
-use rstats::{here};
+use crate::{here};
+//use std::iter::FromIterator;
 
+/// Immutably reverse a generic vector
+pub fn revs<'a,T>(s: &'a [T]) -> Vec<T> where T: Copy, 
+   {
+    let mut res:Vec<T> = Vec::new();
+    s.iter().rev().for_each(|&x| res.push(x));
+    res
+}
 /// Merges two ascending sorted generic vectors,
 /// selecting and copying head items into the result
 /// Consider using merge_indexed instead, especially for non-primitive end types T. 
@@ -12,11 +19,11 @@ pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy, {
     let mut i1 = 0;
     let mut i2 = 0;
     loop {
-        if i1 == l1 { // self is now processed
+        if i1 == l1 { // v1 is now processed
             for i in i2..l2 { resvec.push(v2[i]) } // copy out the rest of v2
             break // and terminate
         }
-        if i2 == l2 { // v is now processed
+        if i2 == l2 { // v2 is now processed
             for i in i1..l1 { resvec.push(v1[i])} // copy out the rest of v1
             break // and terminate
         }
@@ -97,7 +104,7 @@ fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
 /// Doubly recursive non-destructive merge sort. The data is read-only, it is not moved or mutated. 
 /// Returns vector of indices to self from i to i+n, such that the indexed values are in sort order.  
 /// Thus we are moving only the index (key) values instead of the actual values. 
-fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize> 
+pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize> 
     where T: PartialOrd+Copy {
     if n == 1 { let res = vec![i]; return res };  // recursion termination
     if n == 2 {  // also terminate with two sorted items (for efficiency)          
@@ -137,12 +144,12 @@ pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy {
     }
     rankvec 
 } 
-/// Returns index to the first item that is strictly greater than val, 
+/// Returns the index of the first item that is greater than val, 
 /// using binary search of an already ascending sorted list.
-/// When none are greater, returns self.len(). 
-/// User must check for this index overflow: if the returned index == 0, then val is below the list,
-/// else use index-1 as a valid index to the last item that is less than or equal to v.
-/// This then is the right index to use for looking up cummulative probability density functions. 
+/// When all are smaller, returns self.len().
+/// When the last item is equal, returns self.len()-1.
+
+/// Example use: looking up cummulative probability density functions. 
 pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {     
     let n = s.len();
     if n < 2 { panic!("{} vec of data is too short!",here!()) }     
@@ -161,5 +168,4 @@ pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {
         // jumps also repeating equal values. 
         lo = tryi
     }  
-}   
-
+} 

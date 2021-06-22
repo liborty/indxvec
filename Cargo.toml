@@ -22,4 +22,4 @@ maintenance = { status = "actively-developed" }
 [lib]
 [dependencies]
 anyhow = "^1"
-rstats = "^0.7"
+# rstats = "^0.7"

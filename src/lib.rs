@@ -1,5 +1,41 @@
 mod indices;
-mod merge;
+pub mod merge;
+
+/// macro here!() gives &str with the current file:line path::function for error messages
+#[macro_export]
+macro_rules! here {
+    () => {{
+        fn f() {}
+        fn type_name_of<T>(_: T) -> &'static str {
+            std::any::type_name::<T>()
+        }
+        let name = type_name_of(f);
+        // For function name only:
+        // let fnct = match &name[..name.len()-3].rfind(':') {
+        //    Some(pos) => &name[pos + 1..name.len() - 3],
+        //    None => &name[..name.len()-3],
+        // };
+        format!("\n{}:{} {}", file!(), line!(), &name[..name.len()-3])
+    }}
+}
+
+/// GreenVec (GV) wrapper struct facilitates printing (in green) vector
+/// of any end type that has Display implemented.
+pub struct GV<'a, T: std::fmt::Display>(pub &'a[T]);
+impl<'a, T: std::fmt::Display> std::fmt::Display for GV<'a,T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut s = String::from("\x1B[01;92m[");
+        let n = self.0.len();
+        if n > 0 {
+            s.push_str(&self.0[0].to_string()); // first item
+            for i in 1..n {
+                s.push_str(", ");
+                s.push_str(&self.0[i].to_string());
+            }
+        }
+        write!(f, "{}]\x1B[0m", s)
+    }
+}
 
 /*
 #[derive(Eq, Debug, Clone, PartialEq)]
