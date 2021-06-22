@@ -8,8 +8,8 @@ readme = "README.md"
 homepage = "https://github.com/liborty/indxvec"
 repository = "https://github.com/liborty/indxvec"
 license = "Apache-2.0"
-keywords = ["merge sort","ranking Vecs","indices handling"]
-categories = ["science","mathematics","algorithms"]
+keywords = ["merge-sort","ranking","merge","binary-search","generic-vectors"]
+categories = ["science","mathematics","algorithms","data-structures","rust-patterns"]
 include = [
     "src/*.rs",
 #   "tests/*.rs",
