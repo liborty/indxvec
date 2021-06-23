@@ -1,6 +1,6 @@
 [package]
 name = "indxvec"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Libor Spacek"]
 edition = "2018"
 description = "Merging, sorting, ranking, etc. generic Vecs and their indices"

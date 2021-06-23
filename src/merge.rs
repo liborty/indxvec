@@ -155,7 +155,7 @@ pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy {
 /// Immutable sort. Returns new sorted vector (ascending or descending)
 /// Simple wrapper for mergesort. Passes the boolean flag 'ascending' onto 'unindex'.
 pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy {
-    mergesort(s,0,s.len()).unindex(ascending,s)
+    mergesort(s,0,s.len()).unindex(s,ascending)
 }   
 
 /// Ranking by inverting the sort index.  

@@ -69,7 +69,7 @@ pub trait Indices {
     /// Reverse index
     fn invindex(self) -> Vec<usize>;
     /// Collects f64 values from `v` as per indices in self.
-    fn unindex<T: Copy>(self, ascending:bool, v:&[T]) -> Vec<T>;
+    fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
     /// Pearson's correlation coefficient of two slices, typically the ranks.  
     fn ucorrelation(self, v: &[usize]) -> f64;  
 }

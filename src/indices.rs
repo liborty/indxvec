@@ -16,7 +16,7 @@ impl Indices for &[usize] {
     /// When ascending is false, creates descending order.
     /// Used by msort for ascending or descending sort.
     /// Good for efficient sorting of any vectors.    
-    fn unindex<T: Copy>(self, ascending: bool, v:&[T]) -> Vec<T> {
+    fn unindex<T: Copy>(self, v:&[T], ascending: bool) -> Vec<T> {
         if ascending { self.iter().map(|&i| v[i]).collect() }
         else { self.iter().rev().map(|&i| v[i]).collect()   } 
     }
