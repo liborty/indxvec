@@ -1,7 +1,8 @@
-mod indices;
+pub mod indices;
 pub mod merge;
+use std::ops::{Deref,DerefMut};
 
-/// macro here!() gives &str with the current file:line path::function for error messages
+/// macro here!() gives `&str` with the current `file:line path::function` for error messages
 #[macro_export]
 macro_rules! here {
     () => {{
@@ -19,46 +20,36 @@ macro_rules! here {
     }}
 }
 
-/// GreenVec (GV) wrapper struct facilitates printing (in green) vector
-/// of any end type that has Display implemented.
-pub struct GV<'a, T: std::fmt::Display>(pub &'a[T]);
-impl<'a, T: std::fmt::Display> std::fmt::Display for GV<'a,T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut s = String::from("\x1B[01;92m[");
-        let n = self.0.len();
-        if n > 0 {
-            s.push_str(&self.0[0].to_string()); // first item
-            for i in 1..n {
-                s.push_str(", ");
-                s.push_str(&self.0[i].to_string());
-            }
-        }
-        write!(f, "{}]\x1B[0m", s)
-    }
-}
+/// wrapper struct for Generic Slices (not really needed)
+#[derive(Eq, Debug, Clone, Copy, PartialEq)]
+pub struct GS<'a,T>(pub &'a[T]);
 
-/*
-#[derive(Eq, Debug, Clone, PartialEq)]
-struct GenVec<T>(Vec<T>);
-impl<'a,T> GenVec<T> {
-    pub fn new() -> GenVec<T> { GenVec(Vec::new()) }
-    pub fn from_vec(x: Vec<T>) -> GenVec<T> { GenVec(x) }
-}
 
-impl<T> Deref for GenVec<T> {
-    type Target = Vec<T>; // Vec<T>;
+// impl<'a,T> GS<'a,T> {
+
+    // constructor not needed, plain brackets GS(&slice) work just as well
+    // pub fn from_slice(x: &'a[T]) -> GS<'a,T> { GS(x) }
+
+    // Can associate functions with GS but it is simpler to call them directly
+    // pub fn revs(s: &[T]) -> Vec<T> where T: Copy, 
+    // { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
+//}
+
+impl<'a,T> Deref for GS<'a,T> {
+    type Target = &'a[T]; // Vec<T>;
     fn deref(& self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a,T> DerefMut for GenVec<T> { 
+impl<'a,T> DerefMut for GS<'a,T> { 
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<'a, T: std::fmt::Display> std::fmt::Display for GenVec<T> {
+/// Display implemented for struct GS
+impl<'a, T: std::fmt::Display> std::fmt::Display for GS<'a,T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut s = String::from("\x1B[01;92m[");
         let n = self.0.len();
@@ -72,10 +63,9 @@ impl<'a, T: std::fmt::Display> std::fmt::Display for GenVec<T> {
         write!(f, "{}]\x1B[0m", s)
     }
 }
-*/
 
 /// Methods to manipulate indices of Vec<usize> type
-pub trait Indices {
+pub trait Indices { 
     /// Reverse index
     fn invindex(self) -> Vec<usize>;
     /// Collects f64 values from `v` as per indices in self.

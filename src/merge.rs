@@ -1,9 +1,36 @@
-use crate::Indices;
+use crate::{Indices};
 use crate::here;
 
-/// New reversed generic vector
+/// Reverse a generic slice by reverse iteration.
+/// Is immutable, creates a new Vec.
+/// Its naive use for descending sort etc. is avoided for
+/// efficiency reasons. Included here just for convenience.
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy, 
-   { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
+    { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
+
+/// Returns the index of the first item that is greater than val, 
+/// using binary search of an already ascending sorted list.
+/// When all are smaller, returns self.len().
+/// When the last item is equal, returns self.len()-1.
+/// Example use: looking up cummulative probability density functions. 
+pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {     
+    let n = s.len();
+    if n < 2 { panic!("{} vec of data is too short!",here!()) }     
+    if val < s[0] { return 0_usize }; // v is smaller than the first item
+    let mut hi = n-1; // valid index of the last item
+    if val > s[hi] { return n }; // indicates that v is greater than the last item
+    let mut lo = 0_usize; // initial index of the low limit     
+    loop {
+        let gap = hi - lo;
+        if gap <= 1 { return hi }
+        let tryi = lo+gap/2; 
+        // if tryi index's value is above val, reduce the high index
+        if s[tryi] > val { hi = tryi; continue }            
+        // else indexed value is not greater than v, raise the low index;
+        // jumps also repeating equal values. 
+        lo = tryi
+    }  
+}
 
 /// Merges two ascending sorted generic vectors,
 /// by classical selection and copying of their head items into the result.
@@ -120,7 +147,7 @@ fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize>
 }
 
 /// A simple wrapper for mergesort, when we want just the sort index
-/// of the entire input vector.
+/// of the entire input vector. Simpler than sortm.
 pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy {
     mergesort(&s,0,s.len())
 }
@@ -152,26 +179,3 @@ pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy {
     rankvec 
 }
 
-/// Returns the index of the first item that is greater than val, 
-/// using binary search of an already ascending sorted list.
-/// When all are smaller, returns self.len().
-/// When the last item is equal, returns self.len()-1.
-/// Example use: looking up cummulative probability density functions. 
-pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {     
-    let n = s.len();
-    if n < 2 { panic!("{} vec of data is too short!",here!()) }     
-    if val < s[0] { return 0_usize }; // v is smaller than the first item
-    let mut hi = n-1; // valid index of the last item
-    if val > s[hi] { return n }; // indicates that v is greater than the last item
-    let mut lo = 0_usize; // initial index of the low limit     
-    loop {
-        let gap = hi - lo;
-        if gap <= 1 { return hi }
-        let tryi = lo+gap/2; 
-        // if tryi index's value is above val, reduce the high index
-        if s[tryi] > val { hi = tryi; continue }            
-        // else indexed value is not greater than v, raise the low index;
-        // jumps also repeating equal values. 
-        lo = tryi
-    }  
-} 
