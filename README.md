@@ -38,7 +38,7 @@ The functions of this trait are implemented for vectors of subscripts, i.e. `&[u
 
 * `invindex` - method for inverting an index, e.g. given a sort index, returns ranks and vice versa.
 
-* `unindex` - collects values from a vector in the order given by an index. This will, for example, sort a vector into sort order when supplied with a sort index.
+* `unindex` - collects values from a vector in the order given by an index. This will, for example, sort a vector into sort order when supplied with a sort index. Can also be used for key sort, whereby a vector of keys is extracted from some data, then a sort index is obtained for the keys (with `sortidx`) and that is applied (with `unindex`) to the original data. Also, the original sort order can be easily and efficiently reversed by supplying a boolean `false` second argument to `unindex`. This without repeating the sort or reversing the potentially bulky sorted data.
 
 * `ucorrelation` - Pearson's correlation coefficient of two indices, typically ranks. This is the same as Spearman's correlation of the original data.
 
