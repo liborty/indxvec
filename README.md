@@ -34,7 +34,7 @@ are in the module `src/merge.rs`. They mostly take some generic data and produce
 
 ## Trait Index
 
-The functions of this trait are implemented for vectors of subscripts, i.e. `&[usize]`.
+The methods of this trait are implemented for vectors of subscripts, i.e. `&[usize]`.
 
 * `invindex` - method for inverting an index, e.g. given a sort index, returns ranks and vice versa.
 
