@@ -44,6 +44,8 @@ The methods of this trait are implemented for vectors of subscripts, i.e. `&[usi
 
 ## Release Notes (Latest First)
 
+**Version 0.1.6** - improved comments. Used Vec::with_capacity for new vectors of known lengths. Maybe a bit faster but no change in functionality.
+
 **Version 0.1.5** - fixed an inconsistency in `binsearch` result.
 
 **Version 0.1.4** - swapped arguments of `unindex` for compatibility. Added more comments.

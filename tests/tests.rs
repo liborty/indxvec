@@ -6,7 +6,7 @@
 use indxvec::{GS,merge::*,Indices};
 
 #[test]
-fn vecf64() -> () { 
+fn indxvec() -> () { 
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,6.,9.,7.,8.,15.];
    println!("{}",GS(&v)); //  uses Display impl for GS 
    println!("{:?}",*GS(&v)); //  derefs the struct GS back to slice of concrete type

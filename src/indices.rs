@@ -2,9 +2,9 @@ use crate::Indices;
 
 impl Indices for &[usize] {
 
-    /// Constructs inverted index, eg. from sort index to data ranks
-    /// This is a symmetric operation, i.e. any even number of applications 
-    /// leads back to the original index form.
+    /// Inverts an index, eg. from sort index to data ranks. 
+    /// This is a symmetric operation: any even number of applications 
+    /// gives the original index, odd number gives the inverted form.
     fn invindex(self) -> Vec<usize> {
         let n = self.len();
         let mut index:Vec<usize> = vec![0;n];
@@ -13,18 +13,17 @@ impl Indices for &[usize] {
     }
 
     /// Collects values from v in the order given by self index. 
-    /// When ascending is false, creates descending order.
-    /// Used by msort for ascending or descending sort.
-    /// Good for efficient sorting of any vectors.    
+    /// When ascending is false, collects in descending order.  
+    /// It is used here by msort for ascending or descending sort.   
     fn unindex<T: Copy>(self, v:&[T], ascending: bool) -> Vec<T> {
         if ascending { self.iter().map(|&i| v[i]).collect() }
         else { self.iter().rev().map(|&i| v[i]).collect()   } 
     }
     
-    /// Pearson's correlation coefficient of two $[usize] slices.
+    /// Pearson's correlation coefficient of two `$[usize]` slices.
     /// When the inputs are ranks, then this gives Spearman's correlation 
     /// of the original data. However, in general, any other ordinal measures
-    /// can be deployed (not just the ranks). 
+    /// could be deployed (not just the ranks). 
     fn ucorrelation(self, v: &[usize]) -> f64 {
         let (mut sy, mut sxy, mut sx2, mut sy2) = (0_f64, 0_f64, 0_f64, 0_f64);
         let sx: f64 = self

@@ -2,7 +2,7 @@ pub mod indices;
 pub mod merge;
 use std::ops::{Deref,DerefMut};
 
-/// macro `here!()` gives `&str` with the current `file:line path::function` for error messages
+/// macro `here!()` gives `&str` with the current `file:line path::function` for error messages.
 #[macro_export]
 macro_rules! here {
     () => {{
@@ -20,7 +20,7 @@ macro_rules! here {
     }}
 }
 
-/// wrapper struct for Generic Slices (not really needed)
+/// wrapper struct for Generic Slices (not really needed).
 #[derive(Eq, Debug, Clone, Copy, PartialEq)]
 pub struct GS<'a,T>(pub &'a[T]);
 
@@ -48,7 +48,7 @@ impl<'a,T> DerefMut for GS<'a,T> {
     }
 }
 
-/// Display implemented for struct GS
+/// Display implemented for struct GS.
 impl<'a, T: std::fmt::Display> std::fmt::Display for GS<'a,T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut s = String::from("\x1B[01;92m[");
@@ -64,7 +64,7 @@ impl<'a, T: std::fmt::Display> std::fmt::Display for GS<'a,T> {
     }
 }
 
-/// Methods to manipulate indices of `Vec<usize>` type
+/// Methods to manipulate indices of `Vec<usize>` type.
 pub trait Indices { 
     /// Reverse index
     fn invindex(self) -> Vec<usize>;
