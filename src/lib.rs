@@ -66,9 +66,9 @@ impl<'a, T: std::fmt::Display> std::fmt::Display for GS<'a,T> {
 
 /// Methods to manipulate indices of `Vec<usize>` type.
 pub trait Indices { 
-    /// Reverse index
+    /// Invert an index.
     fn invindex(self) -> Vec<usize>;
-    /// Collects f64 values from `v` as per indices in self.
+    /// Collect values from `v` in the order of indices in self.
     fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
     /// Pearson's correlation coefficient of two slices, typically the ranks.  
     fn ucorrelation(self, v: &[usize]) -> f64;  
