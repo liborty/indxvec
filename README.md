@@ -44,6 +44,8 @@ The functions of this trait are implemented for vectors of subscripts, i.e. `&[u
 
 ## Release Notes (Latest First)
 
+**Version 0.1.5** - fixed an inconsistency in `binsearch` result.
+
 **Version 0.1.4** - swapped arguments of `unindex` for compatibility. Added more comments.
 
 **Version 0.1.3** - added wrapper struct GS (generic slice), though it is not really needed. However, it does pretty-print generic vectors.

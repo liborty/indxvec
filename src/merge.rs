@@ -8,17 +8,16 @@ use crate::here;
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy, 
     { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
 
-/// Returns the index of the first item that is greater than val, 
-/// using binary search of an already ascending sorted list.
-/// When all are smaller, returns self.len().
-/// When the last item is equal, returns self.len()-1.
+/// Binary search of a sorted list (in ascending order).
+/// Returns the index of the first item that is greater than val. 
+/// When none are greater, returns (invalid but logical index value) self.len().
 /// Example use: looking up cummulative probability density functions. 
 pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {     
     let n = s.len();
     if n < 2 { panic!("{} vec of data is too short!",here!()) }     
-    if val < s[0] { return 0_usize }; // v is smaller than the first item
+    if s[0] > val { return 0_usize }; // the first item already exceeds val
     let mut hi = n-1; // valid index of the last item
-    if val > s[hi] { return n }; // indicates that v is greater than the last item
+    if s[hi] <= val { return n }; // no items exceed val
     let mut lo = 0_usize; // initial index of the low limit     
     loop {
         let gap = hi - lo;
@@ -162,7 +161,7 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy {
 /// Sort index is in sorted order, giving indices to the original data positions.
 /// Ranking is in  original data order, giving positions in the sorted order (sort index).
 /// Thus they are in an inverse relationship, easily converted by `.invindex()`
-/// Fast ranking of many T items, with only n*(log(n)+1) complexity.
+/// Fast ranking of many T items, with only `n*(log(n)+1)` complexity.
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy {
     let n = s.len();
     let sortindex = mergesort(s,0,n);

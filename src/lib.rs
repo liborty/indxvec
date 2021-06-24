@@ -2,7 +2,7 @@ pub mod indices;
 pub mod merge;
 use std::ops::{Deref,DerefMut};
 
-/// macro here!() gives `&str` with the current `file:line path::function` for error messages
+/// macro `here!()` gives `&str` with the current `file:line path::function` for error messages
 #[macro_export]
 macro_rules! here {
     () => {{
@@ -64,7 +64,7 @@ impl<'a, T: std::fmt::Display> std::fmt::Display for GS<'a,T> {
     }
 }
 
-/// Methods to manipulate indices of Vec<usize> type
+/// Methods to manipulate indices of `Vec<usize>` type
 pub trait Indices { 
     /// Reverse index
     fn invindex(self) -> Vec<usize>;
