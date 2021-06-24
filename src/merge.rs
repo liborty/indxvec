@@ -10,7 +10,7 @@ pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy,
 
 /// Binary search of a sorted list (in ascending order).
 /// Returns the index of the first item that is greater than val. 
-/// When none are greater, returns (invalid but logical index value) self.len().
+/// When none are greater, returns (invalid but logical index value) s.len().
 /// Example use: looking up cummulative probability density functions. 
 pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {     
     let n = s.len();
@@ -128,7 +128,7 @@ fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
 /// Doubly recursive non-destructive merge sort. 
 /// The data is read-only, it is not moved or mutated.
 /// Efficiency is comparable to quicksort. 
-/// Returns a vector of indices to self from i to i+n,
+/// Returns a vector of indices to s from i to i+n,
 /// such that the indexed values are in sort order (sort index).  
 /// Thus only the index values are being moved. 
 fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize> 
