@@ -44,7 +44,7 @@ The methods of this trait are implemented for vectors of subscripts, i.e. `&[usi
 
 ## Release Notes (Latest First)
 
-**Version 0.1.7** - added conversion method `indx_to_f64`.
+**Version 0.1.7** - added convenience conversion method `indx_to_f64`.
 
 **Version 0.1.6** - improved comments. Used Vec::with_capacity for new vectors of known lengths. Maybe a bit faster but no change in functionality.
 
