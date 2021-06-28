@@ -42,4 +42,9 @@ impl Indices for &[usize] {
         let nf = self.len() as f64;
         (sxy - sx / nf * sy) / ((sx2 - sx / nf * sx) * (sy2 - sy / nf * sy)).sqrt()
     }
+    
+    /// Potentially useful clone-recast of &[usize] to Vec<f64> 
+    fn indx_to_f64 (self) -> Vec<f64> {
+        self.iter().map(| &x | x as f64).collect()
+    }
 }

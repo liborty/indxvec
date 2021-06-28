@@ -1,6 +1,6 @@
 [package]
 name = "indxvec"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Libor Spacek"]
 edition = "2018"
 description = "Efficiently sorting, merging, ranking, searching and reversing generic vectors"

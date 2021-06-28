@@ -7,9 +7,9 @@ use indxvec::{GS,merge::*,Indices};
 
 #[test]
 fn indxvec() -> () { 
-   let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,6.,9.,7.,8.,15.];
-   println!("{}",GS(&v)); //  uses Display impl for GS 
+   let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,6.,9.,7.,8.,15.]; 
    println!("{:?}",*GS(&v)); //  derefs the struct GS back to slice of concrete type
+   println!("Ranks to f64:\n{:?}",&rank(&v,true).indx_to_f64()); 
    println!("Sorted:       {}",GS(&sortm(&v,true))); // sorted data but index lost
    println!("Sorted:       {}",GS(&sortidx(&v).unindex(&v,true))); // same as sortm
    println!("Sorted:       {}",GS(&rank(&v,false).invindex().unindex(&v,false)));   
