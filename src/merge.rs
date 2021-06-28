@@ -1,4 +1,4 @@
-use crate::{Indices};
+use crate::Indices;
 use crate::here;
 
 /// Reverse a generic slice by reverse iteration.
@@ -7,6 +7,25 @@ use crate::here;
 /// efficiency reasons. Included here just for convenience.
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy, 
     { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
+
+/// Finds minimum, minimum's first index, maximum, maximum's first index of &[T] 
+pub fn minmax<T>(v:&[T])  -> (T, usize, T, usize) where T: PartialOrd+Copy {  
+    let mut min = v[0]; // initialise to the first value
+    let mut mini = 0;
+    let mut max = v[0]; // initialised as min, allowing 'else' below
+    let mut maxi = 0;
+    for i in 1..v.len() {
+        let x = v[i];
+        if x < min {
+            min = x;
+            mini = i
+        } else if x > max {
+            max = x;
+            maxi = i
+        }
+    }
+    (min, mini, max, maxi)
+}
 
 /// Binary search of a sorted list (in ascending order).
 /// Returns the index of the first item that is greater than val. 
