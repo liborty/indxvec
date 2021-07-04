@@ -1,15 +1,15 @@
 [package]
 name = "indxvec"
-version = "0.1.8"
+version = "0.1.9"
 authors = ["Libor Spacek"]
 edition = "2018"
-description = "Efficiently sorting, merging, ranking, searching and reversing generic vectors"
+description = "Sets implemented as generic vectors. Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."
 readme = "README.md"
 homepage = "https://github.com/liborty/indxvec"
 repository = "https://github.com/liborty/indxvec"
 license = "Apache-2.0"
-keywords = ["merge-sort","ranking","merge","binary-search","generic-vectors"]
-categories = ["science","mathematics","algorithms","data-structures","rust-patterns"]
+keywords = ["ordered-sets","merge-sort","set-operations","ranking-searching","generic-vectors"]
+categories = ["mathematics","algorithms","data-structures","rust-patterns","simulation"]
 include = [
     "src/*.rs",
     "tests/*.rs",

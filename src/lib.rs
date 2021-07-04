@@ -20,7 +20,7 @@ macro_rules! here {
     }}
 }
 
-/// wrapper struct for Generic Slices (not really needed).
+/// Wrapper struct for Generic Sets.
 #[derive(Eq, Debug, Clone, Copy, PartialEq)]
 pub struct GS<'a,T>(pub &'a[T]);
 
@@ -68,6 +68,8 @@ impl<'a, T: std::fmt::Display> std::fmt::Display for GS<'a,T> {
 pub trait Indices { 
     /// Invert an index.
     fn invindex(self) -> Vec<usize>;
+    /// complement of the index - turns ranks from/to ascending/descending
+    fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
     fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
     /// Pearson's correlation coefficient of two slices, typically the ranks.  

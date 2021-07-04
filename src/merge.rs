@@ -1,5 +1,5 @@
 use crate::Indices;
-use crate::here;
+use crate::{here};
 
 /// Reverse a generic slice by reverse iteration.
 /// Creates a new Vec (is immutable).
@@ -10,20 +10,11 @@ pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy,
 
 /// Finds minimum, minimum's first index, maximum, maximum's first index of &[T] 
 pub fn minmax<T>(v:&[T])  -> (T, usize, T, usize) where T: PartialOrd+Copy {  
-    let mut min = v[0]; // initialise to the first value
-    let mut mini = 0;
-    let mut max = v[0]; // initialised as min, allowing 'else' below
-    let mut maxi = 0;
-    for i in 1..v.len() {
-        let x = v[i];
-        if x < min {
-            min = x;
-            mini = i
-        } else if x > max {
-            max = x;
-            maxi = i
-        }
-    }
+    let (mut min, mut max) = (v[0],v[0]); // initialise both to the first item 
+    let (mut mini,mut maxi) = (0,0); // indices of min, max
+    v.iter().enumerate().for_each(|(i,&x)|  
+        if x < min { min = x; mini = i } 
+        else if x > max { max = x; maxi = i });
     (min, mini, max, maxi)
 }
 
@@ -52,6 +43,7 @@ pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {
 
 /// Merges two ascending sorted generic vectors,
 /// by classical selection and copying of their head items into the result.
+/// This is the union of two ordered sets.
 /// Consider using merge_indexed instead, especially for non-primitive end types T. 
 pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy, {  
     let l1 = v1.len();

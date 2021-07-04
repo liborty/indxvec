@@ -44,6 +44,8 @@ The methods of this trait are implemented for vectors of subscripts, i.e. `&[usi
 
 ## Release Notes (Latest First)
 
+**Version 0.1.9** - added method `complindex` to trait `Indices`.
+
 **Version 0.1.8** - added function `minmax` to module `merge`.
 
 **Version 0.1.7** - added convenience conversion method `indx_to_f64`.

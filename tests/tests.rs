@@ -17,15 +17,19 @@ fn indxvec() -> () {
    println!("Sorted:       {}",GS(&rank(&v,false).invindex().unindex(&v,false)));   
    println!("Ranks:        {}",GS(&rank(&v,true))); // how to get ranks
    println!("Ranks rev:    {}",GS(&revs(&rank(&v,true)))); // reverse funtion reverses any vector
+   println!("Ranks rev:    {}",GS(&sortidx(&v).complindex().invindex()));  // via sort index
    println!("Ranks desc:   {}",GS(&rank(&v,false))); // descending ranks, not the same as ranks reversed!!   
+   println!("Ranks desc:   {}",GS(&sortidx(&v).invindex().complindex())); // descending ranks, not the same as ranks reversed!!  
    println!("Sort index:   {}",GS(&sortidx(&v))); // sortindex, can be unindexed at anytime
-   println!("Ranks to idx: {}",GS(&rank(&v,true).invindex()));  // ascending sort index from ranks
-   println!("Sort ix desc: {}",GS(&rank(&v,false).invindex())); // descending sort index from ranks
-   println!("Idx to ranks: {}",GS(&rank(&v,false).invindex().invindex())); // even inverses = original
+   println!("Sortix rev:   {}",GS(&rank(&v,false).invindex())); // descending sort index from desc ranks
+   println!("Sortix compl: {}",GS(&sortidx(&v).complindex())); 
+   println!("Ranks to idx: {}",GS(&rank(&v,true).invindex()));  // ascending sort index from ranks 
+   println!("Idx to ranks: {}",GS(&sortidx(&v).invindex()));  
    println!("Sorted rev:   {}",GS(&sortm(&v,false))); // descending sort, index lost
    println!("Sorted rev:   {}",GS(&revs(&sortm(&v,true)))); // the above simply reversed
    println!("Sorted rev:   {}",GS(&sortidx(&v).unindex(&v,false))); // more efficient reversal  
-   println!("Sorted rev:   {}",GS(&rank(&v,false).invindex().unindex(&v,true))); // odd falses = reversed
+   println!("Sorted rev:   {}",GS(&sortidx(&v).invindex().complindex().invindex().unindex(&v,true)));
+   println!("Sorted rev:   {}",GS(&rank(&v,true).complindex().invindex().unindex(&v,true))); // odd falses = reversed
    println!("Spearman corr against itself: {}",rank(&v,true).ucorrelation(&rank(&v,true))); //  1 for any Vec
    println!("Spearman corr against reversed: {}",rank(&v,true).ucorrelation(&rank(&v,false))); // -1 for any Vec
    let (vm,vi) = merge_indexed(&v,&sortidx(&v),&v,&sortidx(&v)); // merge two vecs using their sort indices

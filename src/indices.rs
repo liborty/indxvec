@@ -2,13 +2,15 @@ use crate::Indices;
 
 impl Indices for &[usize] {
 
-    /// Inverts an index, eg. from sort index to data ranks. 
+    /// Inverts an index, eg. from sort index to ranks. 
     /// This is a symmetric operation: any even number of applications 
     /// gives the original index, odd number gives the inverted form.
     fn invindex(self) -> Vec<usize> {
         let n = self.len();
         let mut index:Vec<usize> = vec![0;n];
-        for i in 0..n { index[self[i]] = i };    
+        for (i,&indxpos) in self.iter().enumerate() {
+            index[indxpos] = i 
+        } 
         index
     }
 
@@ -18,6 +20,20 @@ impl Indices for &[usize] {
     fn unindex<T: Copy>(self, v:&[T], ascending: bool) -> Vec<T> {
         if ascending { self.iter().map(|&i| v[i]).collect() }
         else { self.iter().rev().map(|&i| v[i]).collect()   } 
+    }
+
+    /// Complement of an index - 
+    /// turns ranks from/to ascending/descending.  
+    /// `.complindex().invindex()` applied to sort index makes reversed ranks. 
+    /// `.invindex().complindex()` applied to sort index makes descending ranks. 
+    /// `complindex` is symmetric.
+    fn complindex(self) -> Vec<usize> {
+        let n = self.len();
+        let mut index:Vec<usize> = vec![0;n];
+        for (i,&inx) in self.iter().enumerate() {
+            index[i] = n-inx-1
+        }
+        index  
     }
     
     /// Pearson's correlation coefficient of two `$[usize]` slices.
