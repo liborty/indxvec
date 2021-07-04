@@ -8,7 +8,7 @@ use crate::{here};
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy, 
     { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
 
-/// Finds minimum, minimum's first index, maximum, maximum's first index of &[T] 
+/// Finds minimum, minimum's first index, maximum, maximum's first index 
 pub fn minmax<T>(v:&[T])  -> (T, usize, T, usize) where T: PartialOrd+Copy {  
     let (mut min, mut max) = (v[0],v[0]); // initialise both to the first item 
     let (mut mini,mut maxi) = (0,0); // indices of min, max
@@ -143,7 +143,7 @@ fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
 /// Returns a vector of indices to s from i to i+n,
 /// such that the indexed values are in ascending sort order (a sort index).  
 /// Only the index values are being moved. 
-fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize> 
+pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize> 
     where T: PartialOrd+Copy {
     if n == 1 { let res = vec![i]; return res };  // recursion termination
     if n == 2 {  // also terminate with two sorted items (for efficiency)          
