@@ -18,7 +18,6 @@ macro_rules! here {
 /// GreenIt (GI) struct facilitates printing (in green) any
 /// singular type that has Display implemented.
 #[derive(Eq, Debug, Clone, Copy, PartialEq)]
-
 pub struct GI<T: std::fmt::Display>(pub T);
 impl<T: std::fmt::Display> std::fmt::Display for GI<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
