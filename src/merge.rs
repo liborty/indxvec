@@ -12,9 +12,11 @@ pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy,
 pub fn minmax<T>(v:&[T])  -> (T, usize, T, usize) where T: PartialOrd+Copy {  
     let (mut min, mut max) = (v[0],v[0]); // initialise both to the first item 
     let (mut mini,mut maxi) = (0,0); // indices of min, max
-    v.iter().enumerate().for_each(|(i,&x)|  
+    for i in 1..v.len() {
+        let x = v[i];
         if x < min { min = x; mini = i } 
-        else if x > max { max = x; maxi = i });
+        else if x > max { max = x; maxi = i }
+    };
     (min, mini, max, maxi)
 }
 
