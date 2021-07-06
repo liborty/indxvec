@@ -10,14 +10,20 @@ macro_rules! here {
         fn type_name_of<T>(_: T) -> &'static str {
             std::any::type_name::<T>()
         }
-        let name = type_name_of(f);
-        // For function name only:
-        // let fnct = match &name[..name.len()-3].rfind(':') {
-        //    Some(pos) => &name[pos + 1..name.len() - 3],
-        //    None => &name[..name.len()-3],
-        // };
+        let name = type_name_of(f); 
         format!("\n{}:{} {}", file!(), line!(), &name[..name.len()-3])
     }}
+}
+
+/// GreenIt (GI) struct facilitates printing (in green) any
+/// singular type that has Display implemented.
+#[derive(Eq, Debug, Clone, Copy, PartialEq)]
+
+pub struct GI<T: std::fmt::Display>(pub T);
+impl<T: std::fmt::Display> std::fmt::Display for GI<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "\x1B[01;92m{}\x1B[0m", self.0.to_string())
+    }
 }
 
 /// Wrapper struct for Generic Sets.

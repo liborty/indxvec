@@ -36,6 +36,8 @@ The methods of this trait are implemented for slices of subscripts, i.e. they ta
 
 ## Release Notes (Latest First)
 
+**Version 0.2.1** - moved GI from `rstats` to here.
+
 **Version 0.2.0** - added set operations: `sansrepeat, member, memsearch, memsearch_indexed, unite, unite_indexed, intersect, intersect_indexed, diff, diff_indexed`.  They are also used, with type/struct  wrappers, by crate `sets`.
 
 **Version 0.1.9** - added method `complindex` to trait `Indices`.
