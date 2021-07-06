@@ -5,7 +5,7 @@
 Insert into your Cargo.toml file [dependencies] section:
 
 ```rust
-indxvec = "^0.1" 
+indxvec = "^0.2" 
 ```
 
 Import into your source file(s) macro `here`, struct `GS`, functions and trait as you need. There is just one trait `Indices` implemented on indices of type &[usize]. There is a bunch of functions in module `merge` which usually take generic vector(s) as arguments and may produce some indices.
@@ -22,9 +22,9 @@ cargo test --release -- --test-threads=1 --nocapture --color always
 
 ## Description
 
-Indxvec is a spin-off from `rstats`. It is a self-contained unit, both in terms of the subject matter and also in not having any dependencies at all.
+Indxvec is a spin-off from `rstats`. It is a self-contained unit, both in terms of the subject matter and also in not having any dependencies.
 
-The tools included are: efficient ranking, sorting, merging, searching and indices manipulations. They are  applicable to generic slices `&[T]`. Thus they will work on primitive types but also on any arbitrarily complex end type `T`, as long as you implement their required traits, mostly just PartialOrd and/or Copy for `T`.
+The tools included are: efficient ranking, sorting, merging, searching, set operations and indices manipulations. They are  applicable to generic slices `&[T]`. Thus they will work on primitive types but also on any arbitrarily complex end type `T`, as long as you implement their required traits, mostly just PartialOrd and/or Copy for `T`.
 
 ## Functions
 
@@ -35,6 +35,8 @@ are in the module `src/merge.rs`. They mostly take some generic slice(s) `&[T]` 
 The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self).
 
 ## Release Notes (Latest First)
+
+**Version 0.2.0** - added set operations: `sansrepeat, member, memsearch, memsearch_indexed, unite, unite_indexed, intersect, intersect_indexed, diff, diff_indexed`.  They are also used, with type/struct  wrappers, by crate `sets`.
 
 **Version 0.1.9** - added method `complindex` to trait `Indices`.
 

@@ -21,20 +21,10 @@ macro_rules! here {
 }
 
 /// Wrapper struct for Generic Sets.
+/// Constructor is not needed, plain brackets GS(&slice) work just as well
 #[derive(Eq, Debug, Clone, Copy, PartialEq)]
 pub struct GS<'a,T>(pub &'a[T]);
-
-
-// impl<'a,T> GS<'a,T> {
-
-    // constructor not needed, plain brackets GS(&slice) work just as well
-    // pub fn from_slice(x: &'a[T]) -> GS<'a,T> { GS(x) }
-
-    // Can associate functions with GS but it is simpler to call them directly
-    // pub fn revs(s: &[T]) -> Vec<T> where T: Copy, 
-    // { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
-//}
-
+ 
 impl<'a,T> Deref for GS<'a,T> {
     type Target = &'a[T]; // Vec<T>;
     fn deref(& self) -> &Self::Target {

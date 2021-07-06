@@ -18,11 +18,98 @@ pub fn minmax<T>(v:&[T])  -> (T, usize, T, usize) where T: PartialOrd+Copy {
     (min, mini, max, maxi)
 }
 
-/// Binary search of a sorted list (in ascending order).
+/// Removes repetitions from an explicitly ordered set.
+pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy {
+    let mut r:Vec<T> = Vec::new();       
+    let n = s.len();
+    if n == 0 { return r }
+    let mut last:T = s[0];
+    r.push(last);  
+    for i in 1..n { 
+        let si = s[i];
+        if si == last { continue }
+        else { last = si; r.push(si) }
+    }
+    r
+}
+
+/// Finds the first occurence of item `m` in slice `s` by full iteration.
+/// Returns `Some(index)` to the slice or `None` (when it  has gone to the end).
+/// Note that it uses only partial order and thus accepts any item that is neither 
+/// greater nor smaller than `m` (equality by default). 
+/// Suitable for small unordered sets. 
+/// For longer lists or repeated membership tests, it is better to
+/// index sort them and then use faster binary `memsearch` (see below).
+pub fn member<T>(s:&[T], m:T) -> Option<usize> where T: PartialOrd+Copy {
+    for (i,&x) in s.iter().enumerate() { 
+        if x < m { continue }
+        if x > m { continue }
+        return Some(i) 
+    };
+    None
+}
+
+/// Binary search of an explicitly sorted list (in ascending order).
+/// Returns `Some(index)` of any item that is 
+/// neither smaller nor greater than val. 
+/// When none are found, returns `None`.
+/// Example use: membership of an ordered set. 
+pub fn memsearch<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd {     
+    let n = s.len();
+    if n == 0 { return None } // the slice s is empty
+    if n == 1 {  // the slice contains a single item 
+        if s[0] < val { return None }
+        if s[0] > val { return None }
+        return Some(0) } 
+    let mut lo = 0_usize; // initial index of the low limit   
+    if val < s[lo] { return None } // val is smaller than the smallest item in s 
+    let mut hi = n-1; // index of the last item
+    if s[hi] < val { return None }; // val exceeds the greatest item in s   
+    loop {
+        let gap = hi - lo;
+        if gap <= 1 { return None } // termination, nothing left in the middle
+        let mid = hi-gap/2; 
+        // if mid's value is greater than val, reduce the high index to it
+        if s[mid] > val { hi = mid; continue } 
+        // if mid's value is smaller than val, raise the low index to it
+        if s[mid] < val { lo = mid; continue } 
+        return Some(mid) // otherwise found it!     
+    }
+}
+
+/// Binary search of an indexed list (in ascending order).
+/// Returns `Some(index)` of any item that is 
+/// neither smaller nor greater than val. 
+/// When none are found, returns `None`.
+/// Example use: membership of an indexed ordered set. 
+pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where T: PartialOrd {     
+    let n = s.len();
+    if n == 0 { return None } // the slice s is empty
+    if n == 1 {  // the slice contains a single item 
+        if s[0] < val { return None }
+        if s[0] > val { return None }
+        return Some(0) } 
+    let mut lo = 0_usize; // initial index of the low limit   
+    if val < s[i[lo]] { return None } // val is smaller than the smallest item in s 
+    let mut hi = n-1; // index of the last item
+    if s[i[hi]] < val { return None }; // val exceeds the greatest item in s   
+    loop {
+        let gap = hi - lo;
+        if gap <= 1 { return None } // termination, nothing left in the middle
+        let mid = hi-gap/2; 
+        // if mid's value is greater than val, reduce the high index to it
+        if s[i[mid]] > val { hi = mid; continue } 
+        // if mid's value is smaller than val, raise the low index to it
+        if s[i[mid]] < val { lo = mid; continue } 
+        return Some(mid) // otherwise found it!     
+    }
+}
+
+/// Binary search of an explicitly sorted list (in ascending order).
 /// Returns the index of the first item that is greater than val. 
 /// When none are greater, returns s.len() (invalid index but logical).
 /// Example use: looking up cummulative probability density functions. 
-pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {     
+pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd {     
     let n = s.len();
     if n < 2 { panic!("{} vec of data is too short!",here!()) }     
     if s[0] > val { return 0_usize }; // the first item already exceeds val
@@ -41,9 +128,147 @@ pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd, {
     }  
 }
 
-/// Merges two ascending sorted generic vectors,
+/// Unites two ascending explicitly sorted generic vectors,
 /// by classical selection and copying of their head items into the result.
 /// This is the union of two ordered sets.
+pub fn unite<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy, {  
+    let l1 = v1.len();
+    let l2 = v2.len();
+    let mut resvec:Vec<T> = Vec::new();
+    let mut i1 = 0;
+    let mut i2 = 0;
+
+    loop {
+        if i1 == l1 { // v1 is now processed
+            for i in i2..l2 { resvec.push(v2[i]) } // copy out the rest of v2
+            break // and terminate
+        }
+        if i2 == l2 { // v2 is now processed
+            for i in i1..l1 { resvec.push(v1[i])} // copy out the rest of v1
+            break // and terminate
+        }
+        if v1[i1] < v2[i2] { resvec.push(v1[i1]); i1 += 1; continue };
+        if v1[i1] > v2[i2] { resvec.push(v2[i2]); i2 += 1; continue }; 
+        // here they are equal, so consume one, skip the other
+        resvec.push(v1[i1]); i1 += 1; i2 += 1
+    }
+    resvec
+}
+
+/// Unites two ascending index-sorted generic vectors.
+/// This is the union of two index ordered sets.
+/// Returns a single explicitly ordered set.
+pub fn unite_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy, {  
+    let l1 = v1.len();
+    let l2 = v2.len();
+    let mut resvec:Vec<T> = Vec::new();
+    let mut i1 = 0;
+    let mut i2 = 0;
+
+    loop {
+        if i1 == l1 { // v1 is now processed
+            for i in i2..l2 { resvec.push(v2[ix2[i]]) } // copy out the rest of v2
+            break // and terminate
+        }
+        if i2 == l2 { // v2 is now processed
+            for i in i1..l1 { resvec.push(v1[ix1[i]]) } // copy out the rest of v1
+            break // and terminate
+        }
+        if v1[ix1[i1]] < v2[ix2[i2]] { resvec.push(v1[ix1[i1]]); i1 += 1; continue };
+        if v1[ix1[i1]] > v2[ix2[i2]] { resvec.push(v2[ix2[i2]]); i2 += 1; continue }; 
+        // here they are equal, so consume the first, skip both
+        resvec.push(v1[ix1[i1]]); i1 += 1; i2 += 1
+    }
+    resvec
+}
+
+/// Intersects two ascending explicitly sorted generic vectors.
+pub fn intersect<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy, {  
+    let l1 = v1.len();
+    let l2 = v2.len();
+    let mut resvec:Vec<T> = Vec::new();
+    let mut i1 = 0;
+    let mut i2 = 0;
+
+    loop {
+        if i1 == l1 {  break } // v1 is now empty 
+        if i2 == l2 {  break } // v2 is now empty 
+        if v1[i1] < v2[i2] { i1 += 1; continue };
+        if v1[i1] > v2[i2] { i2 += 1; continue }; 
+        // here they are equal, so consume one, skip both
+        resvec.push(v1[i1]); i1 += 1; i2 += 1
+    }
+    resvec
+}
+
+/// Intersects two ascending index-sorted generic vectors. 
+/// Returns a single explicitly ordered set.
+pub fn intersect_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy, {  
+    let l1 = v1.len();
+    let l2 = v2.len();
+    let mut resvec:Vec<T> = Vec::new();
+    let mut i1 = 0;
+    let mut i2 = 0;
+
+    loop {
+        if i1 == l1 { break } // v1 is now processed, terminate 
+        if i2 == l2 { break }  // v2 is now processed, terminate
+        if v1[ix1[i1]] < v2[ix2[i2]] { i1 += 1; continue }; // skip v1 value
+        if v1[ix1[i1]] > v2[ix2[i2]] { i2 += 1; continue }; // skip v2 value
+        // here they are equal, so consume the first
+        resvec.push(v1[ix1[i1]]); i1 += 1; i2 += 1
+    }
+    resvec
+}
+
+/// Sets difference: deleting elements of the second from the first.
+/// Two ascending explicitly sorted generic vectors.
+pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy, {  
+    let l1 = v1.len();
+    let l2 = v2.len();
+    let mut resvec:Vec<T> = Vec::new();
+    let mut i1 = 0;
+    let mut i2 = 0;
+
+    loop {
+        if i1 == l1 { break } // v1 is now empty 
+        if i2 == l2 { 
+            for i in i1..l1 { resvec.push(v1[i]) } // copy out the rest of v1
+            break // and terminate
+        }
+        if v1[i1] < v2[i2] { resvec.push(v1[i1]); i1 += 1; continue }; // this v1 survived
+        if v1[i1] > v2[i2] { i2 += 1; continue }; // this v2 is unused
+        // here they are equal, so subtract them out, i.e. skip both
+        i1 += 1; i2 += 1
+    }
+    resvec
+}
+
+/// Sets difference: deleting elements of the second from the first.
+/// Two ascending index sorted generic vectors.
+pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy, {  
+    let l1 = v1.len();
+    let l2 = v2.len();
+    let mut resvec:Vec<T> = Vec::new();
+    let mut i1 = 0;
+    let mut i2 = 0;
+
+    loop {
+        if i1 == l1 { break } // v1 is now empty 
+        if i2 == l2 { 
+            for i in i1..l1 { resvec.push(v1[ix1[i]]) } // copy out the rest of v1
+            break // and terminate
+        }
+        if v1[ix1[i1]] < v2[ix2[i2]] { resvec.push(v1[ix1[i1]]); i1 += 1; continue }; // this v1 survived
+        if v1[ix1[i1]] > v2[ix2[i2]] { i2 += 1; continue }; // this v2 is unused
+        // here they are equal, so subtract them out, i.e. skip both
+        i1 += 1; i2 += 1
+    }
+    resvec
+}
+
+/// Merges two ascending sorted generic vectors,
+/// by classical selection and copying of their head items into the result.
 /// Consider using merge_indexed instead, especially for non-primitive end types T. 
 pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy, {  
     let l1 = v1.len();

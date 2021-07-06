@@ -7,7 +7,7 @@ use indxvec::{GS,merge::*,Indices};
 
 #[test]
 fn indxvec() -> () { 
-   let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,6.,9.,7.,8.,15.]; 
+   let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,6.,9.,7.,8.,16.]; 
    println!("{:?}",*GS(&v)); //  derefs the struct GS back to slice of concrete type
    let (min,minix,max,maxi) = minmax(&v);
    println!("Min {}, minidx {}, max {}, maxidx {}",min,minix,max,maxi);
@@ -33,7 +33,16 @@ fn indxvec() -> () {
    println!("Spearman corr against itself: {}",rank(&v,true).ucorrelation(&rank(&v,true))); //  1 for any Vec
    println!("Spearman corr against reversed: {}",rank(&v,true).ucorrelation(&rank(&v,false))); // -1 for any Vec
    let (vm,vi) = merge_indexed(&v,&sortidx(&v),&v,&sortidx(&v)); // merge two vecs using their sort indices
-   println!("Twice sorted, Concatenated and Merged:\n{}",GS(&vi.unindex(&vm,true))); 
-   println!("Searched for {}, found at: {}\n",14.0,binsearch(&vi.unindex(&vm,true),14.0)); // binary search  
+   let sorted = vi.unindex(&vm, true);
+   println!("Twice sorted, Merged and Unindexed:\n{}",GS(&sorted));  
+   println!("Binsearch for {}, found before: {}",15.0,GS(&[binsearch(&sorted,15.0)])); // binsearch 
+   let opt = memsearch(&sorted,15.0);
+   print!("Memsearch for 15, found at: ");
+   if opt.is_none() { println!("{}",GS(&["not found"])) } 
+    else { println!("{}",GS(&[opt.unwrap()])) } 
+   println!("Memsearch_indexed for {}, found at: {:?}",14.0,memsearch_indexed(&vm,&vi,14.0)); // binsearch 
+   println!("Intersect_indexed: {}",GS(&intersect_indexed(&vm, &vi, &v, &sortidx(&v))));
+   println!("Diff_indexed: {}",GS(&diff_indexed(&vm, &vi, &v, &sortidx(&v))));
+   println!("Sansrepeat:   {}\n",GS(&sansrepeat(&sorted)));  
    ()
 }
