@@ -54,7 +54,7 @@ pub fn member<T>(s:&[T], m:T) -> Option<usize> where T: PartialOrd+Copy {
 /// Returns `Some(index)` of any item that is 
 /// neither smaller nor greater than val. 
 /// When none are found, returns `None`.
-/// Example use: membership of an ordered set. 
+/// Example use: membership of an ascending ordered set. 
 pub fn memsearch<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd {     
     let n = s.len();
     if n == 0 { return None } // the slice s is empty
@@ -73,6 +73,34 @@ pub fn memsearch<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd {
         // if mid's value is greater than val, reduce the high index to it
         if s[mid] > val { hi = mid; continue } 
         // if mid's value is smaller than val, raise the low index to it
+        if s[mid] < val { lo = mid; continue } 
+        return Some(mid) // otherwise found it!     
+    }
+}
+
+/// Binary search of an explicitly sorted list (in descending order).
+/// Returns `Some(index)` of any item that is 
+/// neither smaller nor greater than val. 
+/// When none are found, returns `None`.
+/// Example use: membership of an descending ordered set. 
+pub fn memsearchdesc<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd {     
+    let n = s.len();
+    if n == 0 { return None } // the slice s is empty
+    if n == 1 {  // the slice contains a single item 
+        if s[0] < val { return None }
+        if s[0] > val { return None }
+        return Some(0) } 
+    let mut lo = n-1; // initial index of the low limit   
+    if val < s[lo] { return None } // val is smaller than the smallest item in s 
+    let mut hi = 0_usize; // index of the last item
+    if val > s[hi]  { return None }; // val exceeds the greatest item in s   
+    loop {
+        let gap = lo - hi;
+        if gap <= 1 { return None } // termination, nothing left in the middle
+        let mid = lo-gap/2; 
+        // if mid's value is greater than val, increase the high index to it
+        if s[mid] > val { hi = mid; continue } 
+        // if mid's value is smaller than val, lower the low index to it
         if s[mid] < val { lo = mid; continue } 
         return Some(mid) // otherwise found it!     
     }

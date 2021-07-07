@@ -37,6 +37,8 @@ The methods of this trait are implemented for slices of subscripts, i.e. they ta
 
 ## Release Notes (Latest First)
 
+**Version 0.2.4** - added helper function `wt` = write tuple. Added `memsearchdesc` = binary search of a descending ordered set.
+
 **Version 0.2.3** - general tidying up and readme update.
 
 **Version 0.2.2** - prettification of tests: replaced GV and GI with functions `wv` and `wi` respectively. Added `revindex` to `Indices` trait, so that it can be functionally chained with its other methods.

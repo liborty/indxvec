@@ -3,14 +3,13 @@
 #[cfg(test)]
 
 // use anyhow::{Result};
-use indxvec::{wv,wi,merge::*,Indices};
+use indxvec::{wv,wi,wt,merge::*,Indices};
 
 #[test]
 fn indxvec() -> () { 
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,6.,9.,7.,8.,16.]; 
    println!("{}",wv(&v));
-   let (min,minix,max,maxi) = minmax(&v);
-   println!("Min {}, minidx {}, max {}, maxidx {}",min,minix,max,maxi);
+   println!("Minmax:       {}",wt(&minmax(&v)));
    println!("Ranks to f64: {}",wv(&rank(&v,true).indx_to_f64()));    
    println!("Sorted:       {}",wv(&sortm(&v,true))); // sorted data but index lost
    println!("Sorted:       {}",wv(&sortidx(&v).unindex(&v,true))); // same as sortm
@@ -37,8 +36,8 @@ fn indxvec() -> () {
    let sorted = vi.unindex(&vm, true);
    println!("Twice sorted, Merged and Unindexed:\n{}",wv(&sorted));  
    println!("Binsearch for {}, found before: {}",15.0,wi(&binsearch(&sorted,15.0))); // binsearch 
-   let opt = memsearch(&sorted,15.0);
-   print!("Memsearch for 15, found at: ");
+   let opt = memsearchdesc(&revs(&sorted),14.0);
+   print!("Memsearchdesc for 14, found at: ");
    if opt.is_none() { println!("{}",wi(&"None")) } else { println!("{}",wi(&opt.unwrap())) } 
    println!("Memsearch_indexed for {}, found at: {}",14.0,wi(&memsearch_indexed(&vm,&vi,14.0).unwrap())); // binsearch 
    println!("Intersect_indexed: {}",wv(&intersect_indexed(&vm, &vi, &v, &sortidx(&v))));

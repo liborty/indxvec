@@ -15,8 +15,10 @@ macro_rules! here {
     }}
 }
 
-/// Helper function `write vector`. Formats Vec<T> as a space separated list 
-/// that can be Displayed without recourse to Debug.
+/// Helper function `write vector`. Formats Vec<T> as 
+/// space separated values (ssv)  
+/// that can be Displayed without recourse to Debug. 
+/// Saves space by using ssv instead of csv. 
 /// This must be done in Rust item by item, hence the iteration.
 /// You can remove the green colour incantations at the beginning
 /// and at the end, if not wanted.
@@ -26,6 +28,13 @@ pub fn wv<T>(v: &[T]) -> String where T:Copy+std::fmt::Display {
         |mut s,&n| {write!(s,"{} ",n).ok(); s} )
         +"]\x1B[0m";
     s
+}
+
+/// Helper function to `write tuple`, as produced by `minmax`
+pub fn wt<T>(&(mi,mix,mx,mxi):&(T,usize,T,usize)) -> String where T:Copy+std::fmt::Display {
+    let mut s = String::new();
+    write!(s,"\x1B[01;92m({},{},{},{})\x1B[0m",mi,mix,mx,mxi).ok();
+    s 
 }
 
 /// Helper function to format in green a single item. 
