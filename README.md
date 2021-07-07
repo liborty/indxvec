@@ -36,7 +36,7 @@ The methods of this trait are implemented for slices of subscripts, i.e. they ta
 
 ## Release Notes (Latest First)
 
-**Version 0.2.2** - prettification of tests: replaced GV and GI with functions wv and wi respectively. Added `revindex` to `Indices` trait, so that it can be functionally chained with the others. 
+**Version 0.2.2** - prettification of tests: replaced GV and GI with functions wv and wi respectively. Added `revindex` to `Indices` trait, so that it can be functionally chained with the others.
 
 **Version 0.2.1** - moved GI from `rstats` to here. Fixed `minmax`.
 
