@@ -2,9 +2,8 @@ use crate::Indices;
 use crate::{here};
 
 /// Reverse a generic slice by reverse iteration.
-/// Creates a new Vec (is immutable).
-/// Its naive use for descending sort etc. is to be avoided for
-/// efficiency reasons. Included here just for convenience.
+/// Creates a new Vec. Its naive use for descending sort etc. 
+/// is to be avoided for efficiency reasons. 
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy, 
     { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
 
