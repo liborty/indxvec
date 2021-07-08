@@ -15,14 +15,18 @@ fn indxvec() -> () {
    println!("Sorted:       {}",wv(&sortidx(&v).unindex(&v,true))); // same as sortm
    println!("Sorted:       {}",wv(&rank(&v,false).invindex().unindex(&v,false)));   
    println!("Ranks:        {}",wv(&rank(&v,true))); // how to get ranks
-   println!("Ranks rev:    {}",wv(&rank(&v,true).revindex())); // revs() funtion reverses any vector
+   println!("Ranks:        {}",wv(&rank(&v,true).complindex().complindex())); // symmetry
+   println!("Ranks rev:    {}",wv(&rank(&v,true).revindex())); // revindex() reverses any index 
    println!("Ranks rev:    {}",wv(&sortidx(&v).complindex().invindex()));  // via sortidx()  and complindex()
    println!("Ranks rev:    {}",wv(&sortidx(&v).invindex().revindex())); // via revindex()
    println!("Ranks desc:   {}",wv(&rank(&v,false))); // descending ranks, not the same as ranks reversed!!   
+   println!("Ranks desc:   {}",wv(&rank(&v,true).complindex())); // descending ranks, not the same as ranks reversed!!   
    println!("Ranks desc:   {}",wv(&sortidx(&v).invindex().complindex())); // descending ranks, not the same as ranks reversed!!  
    println!("Sort index:   {}",wv(&sortidx(&v))); // sortindex, can be unindexed at anytime
+   println!("Sortix rev:   {}",wv(&sortidx(&v).revindex())); 
    println!("Sortix rev:   {}",wv(&rank(&v,false).invindex())); // descending sort index from desc ranks
    println!("Ranks to idx: {}",wv(&rank(&v,true).invindex()));  // ascending sort index from ranks 
+   println!("Ranks to idx: {}",wv(&rank(&v,false).complindex().invindex())); 
    println!("Idx to ranks: {}",wv(&sortidx(&v).invindex()));  
    println!("Sorted rev:   {}",wv(&sortm(&v,false))); // descending sort, index lost
    println!("Sorted rev:   {}",wv(&revs(&sortm(&v,true)))); // the above simply reversed

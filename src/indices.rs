@@ -28,11 +28,9 @@ impl Indices for &[usize] {
         else { self.iter().rev().map(|&i| v[i]).collect()   } 
     }
 
-    /// Complement of an index - 
-    /// turns ranks from/to ascending/descending.
-    /// `.complindex().invindex()` reverses the target index 
-    /// `.invindex().complindex()` applied to sort index makes descending ranks. 
-    /// `complindex` is symmetric.
+    /// Complement of an index  (is symmetric) - 
+    /// .complindex() toggles rank index between ascending/descending.
+    /// `.complindex().invindex()` = .invindex().revindex() 
     fn complindex(self) -> Vec<usize> {
         let n = self.len();
         let mut index:Vec<usize> = vec![0;n];
