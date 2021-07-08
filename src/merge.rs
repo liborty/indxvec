@@ -134,6 +134,34 @@ pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where 
     }
 }
 
+/// Binary search of an indexed list (in descending order).
+/// Returns `Some(index)` of any item that is 
+/// neither smaller nor greater than val. 
+/// When none are found, returns `None`.
+/// Example use: membership of an indexed descending set. 
+pub fn memsearchdesc_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where T: PartialOrd {     
+    let n = s.len();
+    if n == 0 { return None } // the slice s is empty
+    if n == 1 {  // the slice contains a single item 
+        if s[0] < val { return None }
+        if s[0] > val { return None }
+        return Some(0) } 
+    let mut lo = n-1; // initial index of the low limit   
+    if val < s[i[lo]] { return None } // val is smaller than the smallest item in s 
+    let mut hi = 0_usize; // index of the last item
+    if s[i[hi]] < val { return None }; // val exceeds the greatest item in s   
+    loop {
+        let gap = lo-hi;
+        if gap <= 1 { return None } // termination, nothing left in the middle
+        let mid = lo-gap/2; 
+        // if mid's value is greater than val, reduce the high index to it
+        if s[i[mid]] > val { hi = mid; continue } 
+        // if mid's value is smaller than val, raise the low index to it
+        if s[i[mid]] < val { lo = mid; continue } 
+        return Some(mid) // otherwise found it!     
+    }
+}
+
 /// Binary search of an explicitly sorted list (in ascending order).
 /// Returns the index of the first item that is greater than val. 
 /// When none are greater, returns s.len() (invalid index but logical).
