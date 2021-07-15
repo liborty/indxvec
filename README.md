@@ -2,24 +2,17 @@
 
 ## Usage
 
-Insert into your Cargo.toml file [dependencies] section:
+Insert into your Cargo.toml file [dependencies] section:  
+`indxvec = "^0.2"`
 
-```rust
-indxvec = "^0.2" 
-```
-
-Import into your source file(s) macro `here`, functions and trait, as needed. There is just one trait `Indices` implemented on type `&[usize]`. There is a bunch of functions in module `merge` which usually take generic slices `&[T]` as arguments and produce new index vectors and/or other results.
-The following `use` statement imports everything from `indxvec`:
+Import into your source file(s) macro `here`, functions and trait, as needed. There is just one trait `Indices` implemented on type `&[usize]`. There is a bunch of functions in module `merge` which usually take generic slices `&[T]` as arguments and produce new index vectors and/or other results. The following `use` statement imports everything from `indxvec`:
 
 ```rust
 use indxvec::{here,wv,wi,merge::*,Indices};
 ```
 
-See tests/tests.rs for examples of usage. To run the tests, use single thread. It may be slower but will produce the results in the right order:
-
-```rust
-cargo test --release -- --test-threads=1 --nocapture --color always
-```
+See tests/tests.rs for examples of usage. To run the tests, use a single thread. It may be slower but will produce the results in the right order:  
+`cargo test --release -- --test-threads=1 --nocapture --color always`
 
 ## Description
 

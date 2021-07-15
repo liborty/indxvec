@@ -30,7 +30,7 @@ pub fn wv<T>(v: &[T]) -> String where T:Copy+std::fmt::Display {
     s
 }
 
-/// Helper function to `write tuple`, as produced by `minmax`
+/// Helper function to write four tuple (as produced by, e.g. `minmax`)
 pub fn wt<T>(&(mi,mix,mx,mxi):&(T,usize,T,usize)) -> String where T:Copy+std::fmt::Display {
     let mut s = String::new();
     write!(s,"\x1B[01;92m({},{},{},{})\x1B[0m",mi,mix,mx,mxi).ok();
