@@ -6,10 +6,7 @@ Insert into your Cargo.toml file [dependencies] section:
 `indxvec = "^0.2"`
 
 Import into your source file(s) macro `here`, functions and trait, as needed. There is just one trait `Indices` implemented on type `&[usize]`. There is a bunch of functions in module `merge` which usually take generic slices `&[T]` as arguments and produce new index vectors and/or other results. The following `use` statement imports everything from `indxvec`:
-
-```rust
-use indxvec::{here,wv,wi,merge::*,Indices};
-```
+`use indxvec::{here,wv,wi,merge::*,Indices};`
 
 See tests/tests.rs for examples of usage. To run the tests, use a single thread. It may be slower but will produce the results in the right order:  
 `cargo test --release -- --test-threads=1 --nocapture --color always`
@@ -29,6 +26,8 @@ are in the module `src/merge.rs`. They mostly take some generic slice(s) `&[T]` 
 The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results.
 
 ## Release Notes (Latest First)
+
+**Version 0.2.6** - added `unindexf64` for convenience. Same as `unindex` but the output is always converted to `Vec<f64>`.
 
 **Version 0.2.5** - added `memsearchdesc_indexed` = binary search of a descending indexed set.
 

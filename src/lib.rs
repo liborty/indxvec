@@ -53,6 +53,8 @@ pub trait Indices {
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
     fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
+    /// Collects values from v, as f64s, in the order given by self index.    
+    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> Vec<f64> where f64:From<T>;
     /// Pearson's correlation coefficient of two slices, typically the ranks.  
     fn ucorrelation(self, v: &[usize]) -> f64; 
     /// Potentially useful clone-recast of &[usize] to Vec<f64> 
