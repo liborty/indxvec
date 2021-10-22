@@ -15,6 +15,21 @@ macro_rules! here {
     }}
 }
 
+/// Minimum value, its index, Maximum value, its index
+#[derive(Default)]
+pub struct MinMax<T> {
+    pub min: T,
+    pub minindex: usize,
+    pub max: T,
+    pub maxindex: usize
+}
+impl <T>std::fmt::Display for MinMax<T> where T:std::fmt::Display {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f,"min: {:?}, minindex {}, max: {}, maxindex: {}", 
+        wi(&self.min), wi(&self.minindex), wi(&self.max), wi(&self.maxindex) )
+    }
+}
+
 /// Helper function `write vector`. Formats Vec<T> as 
 /// space separated values (ssv)  
 /// that can be Displayed without recourse to Debug. 
