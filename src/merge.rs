@@ -1,5 +1,5 @@
 use crate::Indices;
-use crate::here;
+use crate::{MinMax,here};
 
 /// Reverse a generic slice by reverse iteration.
 /// Creates a new Vec. Its naive use for descending sort etc. 
@@ -8,15 +8,15 @@ pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy,
     { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
 
 /// Finds minimum, minimum's first index, maximum, maximum's first index 
-pub fn minmax<T>(v:&[T])  -> (T, usize, T, usize) where T: PartialOrd+Copy {  
+pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy {  
     let (mut min, mut max) = (v[0],v[0]); // initialise both to the first item 
-    let (mut mini,mut maxi) = (0,0); // indices of min, max
+    let (mut minindex,mut maxindex) = (0,0); // indices of min, max
     for i in 1..v.len() {
         let x = v[i];
-        if x < min { min = x; mini = i } 
-        else if x > max { max = x; maxi = i }
+        if x < min { min = x; minindex = i } 
+        else if x > max { max = x; maxindex = i }
     };
-    (min, mini, max, maxi)
+    MinMax{min,minindex,max,maxindex}
 }
 
 /// Removes repetitions from an explicitly ordered set.
