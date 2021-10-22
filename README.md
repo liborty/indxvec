@@ -27,7 +27,7 @@ The methods of this trait are implemented for slices of subscripts, i.e. they ta
 
 ## Release Notes (Latest First)
 
-**Version 0.2.8** - added struct MinMax for returning values from function 'minmax' and displaying them.
+**Version 0.2.9** - added struct MinMax for returning values from function 'minmax' and displaying them.
 
 **Version 0.2.6** - added `unindexf64` for convenience. Same as `unindex` but the output is always converted to `Vec<f64>`.
 

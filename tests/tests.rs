@@ -9,7 +9,7 @@ use indxvec::{wv,wi,wt,merge::*,Indices};
 fn indxvec() -> () { 
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,6.,9.,7.,8.,16.]; 
    println!("{}",wv(&v));
-   println!("Minmax:       {}",wt(&minmax(&v)));
+   println!("Minmax:       {}",&minmax(&v));
    println!("Ranks to f64: {}",wv(&rank(&v,true).indx_to_f64()));    
    println!("Sorted:       {}",wv(&sortm(&v,true))); // sorted data but index lost
    println!("Sorted:       {}",wv(&sortidx(&v).unindex(&v,true))); // same as sortm

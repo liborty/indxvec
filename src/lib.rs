@@ -25,7 +25,7 @@ pub struct MinMax<T> {
 }
 impl <T>std::fmt::Display for MinMax<T> where T:std::fmt::Display {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f,"min: {:?}, minindex {}, max: {}, maxindex: {}", 
+        write!(f,"min: {}, minindex {}, max: {}, maxindex: {}", 
         wi(&self.min), wi(&self.minindex), wi(&self.max), wi(&self.maxindex) )
     }
 }
