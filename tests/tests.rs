@@ -3,7 +3,7 @@
 #[cfg(test)]
 
 // use anyhow::{Result};
-use indxvec::{wv,wi,wt,merge::*,Indices};
+use indxvec::{wv,wi,merge::*,Indices};
 
 #[test]
 fn indxvec() -> () { 

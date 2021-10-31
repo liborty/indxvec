@@ -45,13 +45,6 @@ pub fn wv<T>(v: &[T]) -> String where T:Copy+std::fmt::Display {
     s
 }
 
-/// Helper function to write four tuple (as produced by, e.g. `minmax`)
-pub fn wt<T>(&(mi,mix,mx,mxi):&(T,usize,T,usize)) -> String where T:Copy+std::fmt::Display {
-    let mut s = String::new();
-    write!(s,"\x1B[01;92m({},{},{},{})\x1B[0m",mi,mix,mx,mxi).ok();
-    s 
-}
-
 /// Helper function to format in green a single item. 
 pub fn wi<T>(item: &T) -> String where T:std::fmt::Display {
     let s = String::from("\x1B[01;92m");
