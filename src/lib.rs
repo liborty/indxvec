@@ -39,8 +39,9 @@ impl <T>std::fmt::Display for MinMax<T> where T:std::fmt::Display {
 /// and at the end, if not wanted.
 pub fn wv<T>(v: &[T]) -> String where T:Copy+std::fmt::Display {
     let s =
-        v.iter().fold(String::from("\x1B[01;92m[ "),
-        |mut s,&n| {write!(s,"{} ",n).ok(); s} )
+        v.iter().fold(
+            String::from("\x1B[01;92m[ "),
+            |mut s,&n| { write!(s,"{} ",n).ok(); s} )
         +"]\x1B[0m";
     s
 }
