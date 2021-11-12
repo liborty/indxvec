@@ -30,6 +30,11 @@ impl <T>std::fmt::Display for MinMax<T> where T:std::fmt::Display {
     }
 }
 
+/// Print vector of vectors
+pub fn printvv<T>(s: Vec<Vec<T>>) where T:Copy+std::fmt::Display { 
+    for v in s { println!("{}",wv(&v)) }; 
+}
+
 /// Helper function `write vector`. Formats Vec<T> as 
 /// space separated values (ssv)  
 /// that can be Displayed without recourse to Debug. 
@@ -41,15 +46,15 @@ pub fn wv<T>(v: &[T]) -> String where T:Copy+std::fmt::Display {
     let s =
         v.iter().fold(
             String::from("\x1B[01;92m[ "),
-            |mut s,&n| { write!(s,"{} ",n).ok(); s} )
+            |mut s,&n| { write!(s,"{} ",n).ok(); s } )
         +"]\x1B[0m";
     s
 }
 
 /// Helper function to format in green a single item. 
 pub fn wi<T>(item: &T) -> String where T:std::fmt::Display {
-    let s = String::from("\x1B[01;92m");
-    s + &item.to_string() + "\x1B[0m"
+    "\x1B[01;92m".to_owned() + 
+    &item.to_string() + "\x1B[0m" 
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.

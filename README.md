@@ -30,6 +30,9 @@ are in the module `src/merge.rs`. They mostly take some generic slice(s) `&[T]` 
 The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results as appropriate.
 
 ## Release Notes (Latest First)
+
+**Version 0.2.12** - added utility function `printvv` to prettyprint vectors of vectors.
+
 **Version 0.2.11** - added some badges and improved `readme`.
 
 **Version 0.2.9** - added struct MinMax for returning values from function 'minmax' and displaying them. Removed function `wt` used previously for displaying them as tuples.
