@@ -5,31 +5,71 @@
 [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec)
 [<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec)
 
+## Description
+
+`Indxvec` is a self-contained crate: it has no dependencies. It is used by higher level crates  `sets` and `rstats`.
+
+The tools included are: efficient ranking, sorting, merging, searching, set operations and indices manipulations. They are  applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for T.
+
 ## Usage
 
-Import into your source file(s) macro `here`, trait `Indices` and functions  as needed. The trait `Indices` is implemented on type `&[usize]`, i.e.  subscripts to slices/vectors. The functions are in module `merge.rs`. They usually take generic slices `&[T]` as arguments and produce new index vectors and/or other results. The following `use` statement imports everything:
+Import into your source file(s) from the top `crate` level:
+* struct `MinMax`: a convenience wrapper for returning the minimum and the maximum values of a vector or slice and their indices
+* macro `here`: for more informative error reports
+* functions `wi,wv` to pretty print in green a single generic item and a generic vector, respectively.
+* function `printvv` to pretty-print a generic vector of vectors.
 
-`use indxvec::{MinMax,here,wv,wi,Indices,merge::*};`
+Import trait `Indices`
 
-It is highly recommended that you read and run tests/tests.rs to learn from examples of usage. To run the tests, use a single thread. It may be slower but it will write the results in the right order:
+> Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors (more details below).
+
+Import functions from module `merge.rs` 
+
+> These functions usually take generic slices of data `&[T]` as arguments and produce new index vectors and/or other results (more details below). 
+
+The following `use` statement imports everything from `indxvec`:
+
+`use indxvec::{MinMax,here,wv,wi,printvv,Indices,merge::*};`
+
+It is highly recommended to read and run `tests/tests.rs` to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
 
 `cargo test --release -- --test-threads=1 --nocapture --color always`
 
-## Description
-
-`Indxvec` is a self-contained crate in terms of the subject matter. It does not have any dependencies. Some of its primitive elements are  used by higher level crates  `sets` and `rstats`.
-
-The tools included are: efficient ranking, sorting, merging, searching, set operations and indices manipulations. They are  applicable to generic slices `&[T]`. Thus they will work on Rust  primitive types but also on slices holding any arbitrarily complex end type `T` of your own, as long as you implement for it the required traits, mostly just `PartialOrd` and/or `Copy`.
-
 ## Functions
 
-are in the module `src/merge.rs`. They mostly take some generic slice(s) `&[T]` and produce the indices into them of type `Vec<usize>`, onto which the methods of the `Indices` trait can be conveniently chained. See the documentation.
+are in module `src/merge.rs`. They mostly take some generic slice(s) `&[T]` and produce the indices into them of type `Vec<usize>`, onto which the methods of the `Indices` trait can be conveniently chained. See the documentation.
 
-## Trait Index
+## Trait Indices
 
-The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results as appropriate.
+The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results as appropriate:
+
+```rust
+/// Methods to manipulate indices of `Vec<usize>` type.
+pub trait Indices { 
+    /// Reverse an index slice by simple reverse iteration.
+    fn revindex(self) -> Vec<usize>; 
+    /// Invert an index.
+    fn invindex(self) -> Vec<usize>;
+    /// complement of an index - turns ranks from/to 
+    /// ascending/descending
+    fn complindex(self) -> Vec<usize>;
+    /// Collect values from `v` in the order of index in self.
+    fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
+    /// Collects values from v, as f64s, 
+    /// in the order given by self index.    
+    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> 
+        Vec<f64> where f64:From<T>;
+    /// Pearson's correlation coefficient of two slices, 
+    /// typically the ranks.  
+    fn ucorrelation(self, v: &[usize]) -> f64; 
+    /// Potentially useful clone-recast of &[usize] to Vec<f64> 
+    fn indx_to_f64 (self) -> Vec<f64>;
+}
+```
 
 ## Release Notes (Latest First)
+
+**Version 1.0.0** - `indxvec` has been stable for some time now, so it gets promoted to v1.0.0. There are some improvements to `README.md` to mark the occasion. 
 
 **Version 0.2.12** - added utility function `printvv` to prettyprint vectors of vectors.
 
