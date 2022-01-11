@@ -5,32 +5,26 @@ use crate::{MinMax,here};
 /// Creates a new Vec. Its naive use for descending sort etc. 
 /// is to be avoided for efficiency reasons. 
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy 
-    { s.iter().rev().map(|&x| x).collect::<Vec<T>>() }
+    { s.iter().rev().copied().collect::<Vec<T>>() }
 
 /// Finds minimum, minimum's first index, maximum, maximum's first index 
 pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy {  
     let (mut min, mut max) = (v[0],v[0]); // initialise both to the first item 
     let (mut minindex,mut maxindex) = (0,0); // indices of min, max
-    for i in 1..v.len() {
-        let x = v[i];
+    v.iter().enumerate().skip(1).for_each(|(i,&x)| { 
         if x < min { min = x; minindex = i } 
         else if x > max { max = x; maxindex = i }
-    };
+    });
     MinMax{min,minindex,max,maxindex}
 }
 
 /// Removes repetitions from an explicitly ordered set.
 pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy {
-    let mut r:Vec<T> = Vec::new();       
-    let n = s.len();
-    if n == 0 { return r }
+    if s.len() < 2 { return s.to_vec() };
+    let mut r:Vec<T> = Vec::new();  
     let mut last:T = s[0];
     r.push(last);  
-    for i in 1..n { 
-        let si = s[i];
-        if si == last { continue }
-        else { last = si; r.push(si) }
-    }
+    s.iter().skip(1).for_each(|&si| if si != last { last = si; r.push(si) }); 
     r
 }
 
@@ -162,26 +156,58 @@ pub fn memsearchdesc_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> wh
     }
 }
 
-/// Binary search of an explicitly sorted list (in ascending order).
-/// Returns the index of the first item that is greater than val. 
+/// Binary search of an explicitly sorted list in ascending order.
+/// Returns an index of the first item that is greater than val. 
 /// When none are greater, returns s.len() (invalid index but logical).
+/// The complement index (the result subtracted from s.len()), gives
+/// the first item in descending order that is not greater than val.
+/// Note that both complements of binsearch and binsearchdesc,
+/// in their respective opposite orderings, refer to the same preceding item
+/// iff there exists precisely one item equal to val.
+/// However, there can be more than one such items or none.
 /// Example use: looking up cummulative probability density functions. 
-pub fn binsearch<T>(s:&[T], val: T)  -> usize where T: PartialOrd {     
+pub fn binsearch<T>(s:&[T], val:T)  -> usize where T: PartialOrd {     
     let n = s.len();
-    if n < 2 { panic!("{} vec of data is too short!",here!()) }     
+    if n == 0 { panic!("{} empty vec of data!",here!()) }; 
+    let mut hi = n-1; // valid index of the last item 
     if s[0] > val { return 0_usize }; // the first item already exceeds val
-    let mut hi = n-1; // valid index of the last item
     if s[hi] <= val { return n }; // no items exceed val
     let mut lo = 0_usize; // initial index of the low limit     
     loop {
-        let gap = hi - lo;
-        if gap <= 1 { return hi }
-        let tryi = lo+gap/2; 
-        // if tryi's value is above val, reduce the high index to it
-        if s[tryi] > val { hi = tryi; continue }            
-        // else tryi's value is not greater than val, raise the low index to it
-        // jumps also over any repeated equal values. 
-        lo = tryi
+        let gap = hi-lo;
+        if gap <= 1 { return hi };
+        let mid = lo+gap/2;
+        // mid item is greater than val, reduce the high index to it
+        if s[mid] > val { hi = mid; continue };    
+        // else raise the low index to mid; jumps also over any multiple equal values. 
+        lo = mid;
+    }  
+}
+/// Binary search of an explicitly sorted list in descending order.
+/// Returns an index of the first item that is smaller than val. 
+/// When none are smaller, returns s.len() (invalid index but logical).
+/// The complement index (the result subtracted from s.len()), gives
+/// the first item in ascending order that is not smaller than val.
+/// Note that both complements of binsearch and binsearchdesc,
+/// in their respective opposite orderings, refer to the same preceding item
+/// iff there exists precisely one item equal to val.
+/// However, there can be more than one such items or none.
+/// Example use: looking up cummulative probability density functions. 
+pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd {     
+    let n = s.len();
+    if n == 0 { panic!("{} empty vec of data!",here!()) }; 
+    let mut hi = n-1; // valid index of the last item 
+    if s[0] < val { return 0_usize }; // the first item is already less than val
+    if s[hi] >= val { return n }; // no item is less than val 
+    let mut lo = 0_usize; // initial index of the low limit     
+    loop {
+        let gap = hi-lo;
+        if gap <= 1 { return hi };
+        let mid = lo+gap/2;
+        //mid item is less than val, reduce the high index to it
+        if s[mid] < val { hi = mid; continue };    
+        // else raise the low index to mid; jumps also over any multiple equal values. 
+        lo = mid;
     }  
 }
 
@@ -197,11 +223,11 @@ pub fn unite<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy, {
 
     loop {
         if i1 == l1 { // v1 is now processed
-            for i in i2..l2 { resvec.push(v2[i]) } // copy out the rest of v2
+            v2.iter().skip(i2).for_each(|&v| resvec.push(v)); // copy out the rest of v2
             break // and terminate
         }
         if i2 == l2 { // v2 is now processed
-            for i in i1..l1 { resvec.push(v1[i])} // copy out the rest of v1
+            v1.iter().skip(i1).for_each(|&v| resvec.push(v)); // copy out the rest of v1
             break // and terminate
         }
         if v1[i1] < v2[i2] { resvec.push(v1[i1]); i1 += 1; continue };
@@ -290,7 +316,7 @@ pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy, {
     loop {
         if i1 == l1 { break } // v1 is now empty 
         if i2 == l2 { 
-            for i in i1..l1 { resvec.push(v1[i]) } // copy out the rest of v1
+            v1.iter().skip(i1).for_each(|&v| resvec.push(v)); // copy out the rest of v1
             break // and terminate
         }
         if v1[i1] < v2[i2] { resvec.push(v1[i1]); i1 += 1; continue }; // this v1 survived
@@ -335,11 +361,11 @@ pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy, {
     let mut i2 = 0;
     loop {
         if i1 == l1 { // v1 is now processed
-            for i in i2..l2 { resvec.push(v2[i]) } // copy out the rest of v2
+            v2.iter().skip(i2).for_each(|&v| resvec.push(v)); // copy out the rest of v2
             break // and terminate
         }
         if i2 == l2 { // v2 is now processed
-            for i in i1..l1 { resvec.push(v1[i])} // copy out the rest of v1
+            v1.iter().skip(i1).for_each(|&v| resvec.push(v)); // copy out the rest of v1
             break // and terminate
         }
         if v1[i1] < v2[i2] { resvec.push(v1[i1]); i1 += 1; continue };
@@ -384,7 +410,7 @@ fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
             residx.push(idx1[i1]);
             i1 += 1;  
             if i1 == l1 { // idx1 is now fully processed
-                for i in i2..l2 { residx.push(idx2[i]) } // copy out the rest of idx2
+                idx2.iter().skip(i2).for_each(|&v| residx.push(v)); // copy out the rest of idx2
                 break // and terminate
             }
             head1 = s[idx1[i1]]; // else move to the next idx1 value
@@ -394,7 +420,7 @@ fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
             residx.push(idx2[i2]); 
             i2 += 1; 
             if i2 == l2 { // idx2 is now processed
-                for i in i1..l1 { residx.push(idx1[i]) } // copy out the rest of idx1
+                idx1.iter().skip(i1).for_each(|&v| residx.push(v)); // copy out the rest of idx1
                 break // and terminate
             }                    
             head2 = s[idx2[i2]]; // else move to the next idx2 value
@@ -404,14 +430,14 @@ fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
         residx.push(idx1[i1]); 
         i1 += 1; 
         if i1 == l1 { // idx1 is now fully processed
-            for i in i2..l2 { residx.push(idx2[i]) } // copy out the rest of idx2
+            idx2.iter().skip(i2).for_each(|&v| residx.push(v)); // copy out the rest of idx2 
             break // and terminate
         }
         head1 = s[idx1[i1]];
         residx.push(idx2[i2]); 
         i2 += 1; 
         if i2 == l2 { // idx2 is now processed
-            for i in i1..l1 { residx.push(idx1[i]) } // copy out the rest of idx1
+            idx1.iter().skip(i1).for_each(|&v| residx.push(v)); // copy out the rest of idx1
             break // and terminate
         }                    
         head2 = s[idx2[i2]];            
@@ -442,7 +468,7 @@ pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize>
 /// A wrapper for mergesort, to obtain the sort index
 /// of the (whole) input vector. Simpler than sortm.
 pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy {
-    mergesort(&s,0,s.len())
+    mergesort(s,0,s.len())
 }
 
 /// Immutable sort. Returns new sorted vector (ascending or descending). 

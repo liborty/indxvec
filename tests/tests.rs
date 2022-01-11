@@ -6,7 +6,7 @@
 use indxvec::{wv,wi,merge::*,Indices};
 
 #[test]
-fn indxvec() -> () { 
+fn indxvec() { 
    let v = vec![1.,14.,2.,13.,3.,12.,4.,11.,5.,10.,6.,9.,7.,8.,16.]; 
    println!("{}",wv(&v));
    println!("Minmax:       {}",&minmax(&v));
@@ -37,9 +37,12 @@ fn indxvec() -> () {
    println!("Spearman corr against itself: {}",wi(&rank(&v,true).ucorrelation(&rank(&v,true)))); //  1 for any Vec
    println!("Spearman corr against reversed: {}",wi(&rank(&v,true).ucorrelation(&rank(&v,false)))); // -1 for any Vec
    let (vm,vi) = merge_indexed(&v,&sortidx(&v),&v,&sortidx(&v)); // merge two vecs using their sort indices
-   let sorted = vi.unindex(&vm, true);
-   println!("Twice sorted, Merged and Unindexed:\n{}",wv(&sorted));  
+   let sorted = vi.unindex(&vm, true);   
+   println!("Twice sorted, Merged and Unindexed:\n{}",wv(&sorted)); 
+   let sorteddesc = revs(&sorted); 
+   println!("The above reversed:\n{}",wv(&sorteddesc)); 
    println!("Binsearch for {}, found before: {}",wi(&15.0),wi(&binsearch(&sorted,15.0))); // binsearch 
+   println!("Binsearchdesc for {}, found before: {}",wi(&15.0),wi(&binsearchdesc(&sorteddesc,15.0))); // binsearch 
    let opt = memsearchdesc(&revs(&sorted),14.0);
    print!("Memsearchdesc for {}, found at: ",wi(&14));
    if opt.is_none() { println!("{}",wi(&"None")) } else { println!("{}",wi(&opt.unwrap())) } 
@@ -47,5 +50,4 @@ fn indxvec() -> () {
    println!("Intersect_indexed: {}",wv(&intersect_indexed(&vm, &vi, &v, &sortidx(&v))));
    println!("Diff_indexed: {}",wv(&diff_indexed(&vm, &vi, &v, &sortidx(&v))));
    println!("Sansrepeat:   {}\n",wv(&sansrepeat(&sorted)));  
-   ()
 }

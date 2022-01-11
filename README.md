@@ -1,4 +1,4 @@
-# IndxVec
+# Indxvec
 
 [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github">](https://github.com/liborty/indxvec)
 [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec)
@@ -14,6 +14,7 @@ The tools included are: efficient ranking, sorting, merging, searching, set oper
 ## Usage
 
 Import into your source file(s) from the top `crate` level:
+
 * struct `MinMax`: a convenience wrapper for returning the minimum and the maximum values of a vector or slice and their indices
 * macro `here`: for more informative error reports
 * functions `wi,wv` to pretty print in green a single generic item and a generic vector, respectively.
@@ -23,9 +24,9 @@ Import trait `Indices`
 
 > Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors (more details below).
 
-Import functions from module `merge.rs` 
+Import functions from module `merge.rs`
 
-> These functions usually take generic slices of data `&[T]` as arguments and produce new index vectors and/or other results (more details below). 
+> These functions usually take generic slices of data `&[T]` as arguments and produce new index vectors and/or other results (more details below).
 
 The following `use` statement imports everything from `indxvec`:
 
@@ -37,7 +38,77 @@ It is highly recommended to read and run `tests/tests.rs` to learn from examples
 
 ## Functions
 
-are in module `src/merge.rs`. They mostly take some generic slice(s) `&[T]` and produce the indices into them of type `Vec<usize>`, onto which the methods of the `Indices` trait can be conveniently chained. See the documentation.
+are in module `src/merge.rs`. They mostly take some generic slice(s) `&[T]` and produce the indices into them of type `Vec<usize>`, onto which the methods of the `Indices` trait can be conveniently chained:
+
+```rust
+// Reverse a generic slice by reverse iteration.
+pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy
+
+/// Finds minimum, minimum's first index, maximum, maximum's first index 
+pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy
+
+/// Removes repetitions from an explicitly ordered set.
+pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy
+
+/// Finds the first occurence of item `m` in slice `s` by full iteration.
+pub fn member<T>(s:&[T], m:T) -> Option<usize> where T: PartialOrd+Copy 
+
+/// Binary search of an explicitly sorted list (in ascending order).
+pub fn memsearch<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd
+
+/// Binary search of an explicitly sorted list (in descending order).
+pub fn memsearchdesc<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd
+
+/// Binary search of an indexed list (in ascending order).
+pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where T: PartialOrd 
+
+/// Binary search of an explicitly sorted list in ascending order.
+pub fn binsearch<T>(s:&[T], val:T)  -> usize where T: PartialOrd
+
+/// Binary search of an explicitly sorted list in descending order.
+pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd 
+
+/// Unites two ascending explicitly sorted generic slices
+pub fn unite<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
+
+/// Unites two ascending index-sorted generic vectors.
+pub fn unite_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy
+
+/// Intersects two ascending explicitly sorted generic vectors.
+pub fn intersect<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
+
+/// Intersects two ascending index-sorted generic vectors. 
+pub fn intersect_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy
+
+/// Sets difference: deleting elements of the second from the first.
+pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
+
+/// Sets difference: deleting elements of the second from the first.
+pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy
+
+/// Merges two ascending sorted generic vectors.
+pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
+
+/// Merges two ascending sort indices.
+pub fn merge_indexed<T>(v1:&[T], idx1: &[usize], v2: &[T], idx2: &[usize]) -> ( Vec<T>,Vec<usize> ) where T: PartialOrd+Copy
+
+/// Merges the sort indices of two concatenated vectors.
+fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
+    where T: PartialOrd+Copy
+
+/// Doubly recursive non-destructive merge sort.
+pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize> 
+    where T: PartialOrd+Copy
+
+/// A wrapper for mergesort, to obtain the sort index
+pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy
+
+/// Immutable sort. Returns new sorted vector (ascending or descending)
+pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy
+
+/// Fast ranking of many T items, with only `n*(log(n)+1)` complexity
+pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy 
+```
 
 ## Trait Indices
 
@@ -69,7 +140,9 @@ pub trait Indices {
 
 ## Release Notes (Latest First)
 
-**Version 1.0.0** - `indxvec` has been stable for some time now, so it gets promoted to v1.0.0. There are some improvements to `README.md` to mark the occasion. 
+**Version 1.0.1** - Some code style tidying up. Added function `binsearchdesc` for completeness and symmetry with `binsearch`.
+
+**Version 1.0.0** - `indxvec` has been stable for some time now, so it gets promoted to v1.0.0. There are some improvements to `README.md` to mark the occasion.
 
 **Version 0.2.12** - added utility function `printvv` to prettyprint vectors of vectors.
 
@@ -85,7 +158,7 @@ pub trait Indices {
 
 **Version 0.2.3** - general tidying up and readme update.
 
-**Version 0.2.2** - prettification of tests: replaced GV and GI with functions `wv` and `wi` respectively. Added `revindex` to `Indices` trait, so that it can be functionally chained with its other methods.
+**Version 0.2.2** - replaced GV and GI with functions `wv` and `wi` respectively. Added `revindex` to `Indices` trait, so that it can be functionally chained with its other methods.
 
 **Version 0.2.1** - moved GI from `rstats` to here. Fixed `minmax`.
 

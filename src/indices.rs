@@ -6,7 +6,7 @@ impl Indices for &[usize] {
     /// Creates a new Vec<usize>. Its naive use for descending sort etc. 
     /// Is probably to be avoided for efficiency reasons. 
     fn revindex(self) -> Vec<usize> { 
-        self.iter().rev().map(|&x| x).collect::<Vec<usize>>() }
+        self.iter().rev().copied().collect::<Vec<usize>>() }
 
     /// Inverts an index, eg. from sort index to ranks. 
     /// This is a symmetric operation: any even number of applications 
