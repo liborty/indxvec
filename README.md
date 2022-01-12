@@ -13,32 +13,41 @@ The tools included are: efficient ranking, sorting, merging, searching, set oper
 
 ## Usage
 
-Import into your source file(s) from the top `crate` level:
+### Import into your source file(s) from the top `crate` level these auxiliary utilities, as needed:
 
-* struct `MinMax`: a convenience wrapper for returning the minimum and the maximum values of a vector or slice and their indices
-* macro `here`: for more informative error reports
-* functions `wi,wv` to pretty print in green a single generic item and a generic vector, respectively.
-* function `printvv` to pretty-print a generic vector of vectors.
+`use indxvec::{MinMax,here,wi,wv,printvv};`
 
-Import trait `Indices`
+* struct `MinMax`: is a wrapper for the minimum value, its index, maximum value, its index, of a vector or a slice 
+* macro `here`: is for more informative error reports
+* function `wi` pretty prints in green a single generic item
+* function `wv` prettyprints in green a vector of generic items
+* function `printvv` pretty prints a vector of vectors of generic items
 
-> Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors (more details below).
+### Import trait `Indices`
 
-Import functions from module `merge.rs`
+`use indxvec::Indices;`
 
-> These functions usually take generic slices of data `&[T]` as arguments and produce new index vectors and/or other results (more details below).
+> Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors.
 
-The following `use` statement imports everything from `indxvec`:
+### Import functions from module `merge.rs`
+
+`use indxvec::{merge::*};`
+
+> These functions usually take some generic slice(s) of data `&[T]` as arguments and produce indices into them of type `Vec<usize>` (index vectors). The methods of `Indices` trait can be conveniently chained onto them.
+
+The following `use` statement imports everything:
 
 `use indxvec::{MinMax,here,wv,wi,printvv,Indices,merge::*};`
+
+## Testing
 
 It is highly recommended to read and run `tests/tests.rs` to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
 
 `cargo test --release -- --test-threads=1 --nocapture --color always`
 
-## Functions
+## Functions Signatures
 
-are in module `src/merge.rs`. They mostly take some generic slice(s) `&[T]` and produce the indices into them of type `Vec<usize>`, onto which the methods of the `Indices` trait can be conveniently chained:
+Functions can be found in module `src/merge.rs`:
 
 ```rust
 // Reverse a generic slice by reverse iteration.
@@ -50,7 +59,7 @@ pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy
 /// Removes repetitions from an explicitly ordered set.
 pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy
 
-/// Finds the first occurence of item `m` in slice `s` by full iteration.
+/// Finds the first occurrence of item `m` in slice `s` by full iteration.
 pub fn member<T>(s:&[T], m:T) -> Option<usize> where T: PartialOrd+Copy 
 
 /// Binary search of an explicitly sorted list (in ascending order).
@@ -67,6 +76,9 @@ pub fn binsearch<T>(s:&[T], val:T)  -> usize where T: PartialOrd
 
 /// Binary search of an explicitly sorted list in descending order.
 pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd 
+
+/// Counts occurrences of val using ascending and descending sorts of some set
+pub fn occurs<T>(sasc:&[T],sdesc:&[T],val:T) -> usize where T: PartialOrd+Copy+Display
 
 /// Unites two ascending explicitly sorted generic slices
 pub fn unite<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
@@ -139,6 +151,8 @@ pub trait Indices {
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.0.2** - Added function `occurs` that efficiently counts occurrences of specified items in a set with repetitions.
 
 **Version 1.0.1** - Some code style tidying up. Added function `binsearchdesc` for completeness and symmetry with `binsearch`.
 

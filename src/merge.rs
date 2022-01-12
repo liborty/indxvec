@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::Indices;
 use crate::{MinMax,here};
 
@@ -133,7 +135,7 @@ pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where 
 /// neither smaller nor greater than val. 
 /// When none are found, returns `None`.
 /// Example use: membership of an indexed descending set. 
-pub fn memsearchdesc_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where T: PartialOrd {     
+pub fn memsearchdesc_indexed<T>(s:&[T], i:&[usize], val:T)  -> Option<usize> where T: PartialOrd {     
     let n = s.len();
     if n == 0 { return None } // the slice s is empty
     if n == 1 {  // the slice contains a single item 
@@ -209,6 +211,31 @@ pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd {
         // else raise the low index to mid; jumps also over any multiple equal values. 
         lo = mid;
     }  
+}
+
+/// Counts occurrences of val, using previously obtained 
+/// ascending explicit sort `sasc` and descending sort `sdesc`.
+/// This is to facilitate counting of many
+/// different values without ever having to repeat the sorting.
+/// This function is very efficient at counting 
+/// numerous repetitions in large sets (e.g. probabilities in stats).
+/// Binary search from both ends is deployed: O(2log(n)).
+/// # Example:
+/// ```
+/// use crate::indxvec::Indices;
+/// use indxvec::merge::{sortidx,occurs};
+/// let s = [3.141,3.14159,3.14159,3.142];
+/// let sindx = sortidx(&s); // only one sort ever
+/// let sasc = sindx.unindex(&s,true);
+/// let sdesc = sindx.unindex(&s,false);
+/// assert_eq!(occurs(&sasc,&sdesc,3.14159),2);
+/// ```
+pub fn occurs<T>(sasc:&[T],sdesc:&[T],val:T) -> usize where T: PartialOrd+Copy+Display {
+    let ascindex = binsearch(sasc, val); 
+    if ascindex == 0 { return 0 }; // val not found 
+    let descindex = binsearchdesc(sdesc, val);
+    if descindex == 0 { return 0 };
+    ascindex + descindex - sasc.len()
 }
 
 /// Unites two ascending explicitly sorted generic vectors,

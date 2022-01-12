@@ -39,14 +39,16 @@ fn indxvec() {
    let (vm,vi) = merge_indexed(&v,&sortidx(&v),&v,&sortidx(&v)); // merge two vecs using their sort indices
    let sorted = vi.unindex(&vm, true);   
    println!("Twice sorted, Merged and Unindexed:\n{}",wv(&sorted)); 
-   let sorteddesc = revs(&sorted); 
+   let sorteddesc = vi.unindex(&vm,false); 
    println!("The above reversed:\n{}",wv(&sorteddesc)); 
    println!("Binsearch for {}, found before: {}",wi(&15.0),wi(&binsearch(&sorted,15.0))); // binsearch 
    println!("Binsearchdesc for {}, found before: {}",wi(&15.0),wi(&binsearchdesc(&sorteddesc,15.0))); // binsearch 
    let opt = memsearchdesc(&revs(&sorted),14.0);
    print!("Memsearchdesc for {}, found at: ",wi(&14));
    if opt.is_none() { println!("{}",wi(&"None")) } else { println!("{}",wi(&opt.unwrap())) } 
-   println!("Memsearch_indexed for {}, found at: {}",wi(&14.0),wi(&memsearch_indexed(&vm,&vi,14.0).unwrap())); // binsearch 
+   println!("Memsearch_indexed for {}, found at: {}",wi(&14.0),wi(&memsearch_indexed(&vm,&vi,14.0).unwrap()));
+   println!("Occurrences count of {}: {}",wi(&14.0),wi(&occurs(&sorted,&sorteddesc,14.0)));
+   println!("Occurrences count of {}: {}",wi(&15.0),wi(&occurs(&sorted,&sorteddesc,15.0)));
    println!("Intersect_indexed: {}",wv(&intersect_indexed(&vm, &vi, &v, &sortidx(&v))));
    println!("Diff_indexed: {}",wv(&diff_indexed(&vm, &vi, &v, &sortidx(&v))));
    println!("Sansrepeat:   {}\n",wv(&sansrepeat(&sorted)));  
