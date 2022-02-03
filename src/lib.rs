@@ -5,8 +5,6 @@ use std::fmt::Write;
 
 pub const GR:&str = "\x1B[01;92m";
 pub const UNGR:&str = "\x1B[0m";
-pub const GRBRACKET:&str = "\x1B[01;92m[";
-pub const BRACKETUNGR:&str = "]\x1B[0m";
 
 /// macro `here!()` gives `&str` with the current `file:line path::function` for error messages.
 #[macro_export]
@@ -47,18 +45,18 @@ pub fn tof64<T>(s: &[T]) -> Vec<f64> where T: Copy, f64: From<T> {
 pub trait Printing<T> {
 
     /// Method `gr()` to serialize and make the resulting string 
-    /// come out in bold green when printed.
-    /// This is a default implementation applicable to all types that
+    /// bold green when printed.
+    /// This is the default implementation applicable to all types that
     /// trait `Printing` is implemented for
     fn gr(self) -> String where Self:Sized {
         format!("{GR}{}{UNGR}",self.to_str())
     }
 
-    /// Method to serialize generic items, slices, and slices of slices.  
+    /// Method to serialize generic items, slices, and slices of Vecs.  
     fn to_str(self) -> String; 
 }
 
-impl<T> Printing<T> for T where T:std::fmt::Display {
+impl<T> Printing<T> for T  where T:std::fmt::Display {
     fn to_str(self) -> String { self.to_string() } 
 }
 
@@ -75,9 +73,25 @@ impl<T> Printing<T> for &[&[T]] where T:std::fmt::Display {
     fn to_str(self) -> String {
         self.iter().fold(
             String::from("["),
+            |mut s,&item| { writeln!(s," {}",item.to_str()).ok(); s } )
+        +"]"    
+    }
+}
+
+impl<T> Printing<T> for &[Vec<T>] where T:std::fmt::Display {
+    fn to_str(self) -> String {
+        self.iter().fold(
+            String::from("[\n"),
             |mut s,item| { writeln!(s," {}",item.to_str()).ok(); s } )
         +"]"    
     }
+}
+
+/// This just prints the items one by one instead of serializing
+pub fn printvv<T>(s: &[Vec<T>]) where T:Copy+std::fmt::Display { 
+    println!("{GR}[");
+    for v in s { println!(" {}",v.to_str()) }; 
+    println!("]{UNGR}");
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.

@@ -75,15 +75,16 @@ pub trait Indices {
     /// Potentially useful clone-recast of &[usize] to Vec<f64> 
     fn indx_to_f64 (self) -> Vec<f64>;
 }
+
 ```
+
 ## Trait Printing
 
-This trait is implemented for generic individual items T, for slices &[T] and for slices of slices &[&[T]]:
+This trait is implemented for generic individual items T, for slices &[T] and for slices of vecs &[Vec<T>]
 
-```rust 
-/// Method `to_str()` to serialize generic items, slices and slices of slices.
-/// Method `gr()` to serialize and make the resulting string 
-/// come out in bold green when printed.
+```rust
+/// Method `to_str()` to serialize generic items, slices, and slices of Vecs.
+/// Method `gr()` to serialize and make the resulting string bold green when printed.
 pub trait Printing<T> {
     fn gr(self) -> String where Self:Sized {
         format!("{GR}{}{UNGR}",self.to_str())
@@ -180,7 +181,7 @@ pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy
 
 ## Release Notes (Latest First)
 
-**Version 1.0.3** - Added utilities functions `maxt, mint, minmaxt`. Rationalised the  functions for printing generic slices and slices of slices. They are now in trait `Printing`, so they are turned into chainable methods. There is now just `.to_str()` and `.gr()`. The latter also serialises the slices to strings but additionally makes them bold green.
+**Version 1.0.3** - Added utilities functions `maxt, mint, minmaxt`. Rationalised the functions for printing generic slices and slices of vectors. They are now turned into two chainable methods in trait `Printing`: `.to_str()` and `.gr()`. The latter also serialises slices to strings but additionally makes them bold green.
 
 **Version 1.0.2** - Added function `occurs` that efficiently counts occurrences of specified items in a set with repetitions.
 
