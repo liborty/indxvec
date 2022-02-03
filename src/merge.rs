@@ -3,22 +3,47 @@ use std::fmt::Display;
 use crate::Indices;
 use crate::{MinMax,here};
 
+/// Maximum value T of slice &[T]
+pub fn maxt<T>(v:&[T]) -> T where T:PartialOrd+Copy {
+    let mut max = &v[0];
+    v.iter().skip(1).for_each(|s| if s > max { max = s }); 
+    *max
+}
+
+/// Minimum value T of slice &[T]
+pub fn mint<T>(v:&[T]) -> T where T:PartialOrd+Copy {
+    let mut min = &v[0];
+    v.iter().skip(1).for_each(|s| if s < min { min = s }); 
+    *min
+}
+
+/// Minimum and maximum (T,T) of a slice &[T]
+pub fn minmaxt<T>(v:&[T]) -> (T,T) where T:PartialOrd+Copy {
+    let mut x1 = &v[0];
+    let mut x2 = x1;
+    v.iter().skip(1).for_each(|s| {
+        if s < x1 { x1 = s } 
+        else if s > x2 { x2 = s }; 
+    });
+    (*x1,*x2)
+}
+
+/// Minimum, minimum's first index, maximum, maximum's first index 
+pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy {  
+    let (mut min, mut max) = (&v[0],&v[0]); // initialise both to the first item 
+    let (mut minindex,mut maxindex) = (0,0); // indices of min, max
+    v.iter().enumerate().skip(1).for_each(|(i,x)| { 
+        if x < min { min = x; minindex = i } 
+        else if x > max { max = x; maxindex = i }
+    });
+    MinMax{min: *min, minindex, max: *max, maxindex}
+}
+
 /// Reverse a generic slice by reverse iteration.
 /// Creates a new Vec. Its naive use for descending sort etc. 
 /// is to be avoided for efficiency reasons. 
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy 
     { s.iter().rev().copied().collect::<Vec<T>>() }
-
-/// Finds minimum, minimum's first index, maximum, maximum's first index 
-pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy {  
-    let (mut min, mut max) = (v[0],v[0]); // initialise both to the first item 
-    let (mut minindex,mut maxindex) = (0,0); // indices of min, max
-    v.iter().enumerate().skip(1).for_each(|(i,&x)| { 
-        if x < min { min = x; minindex = i } 
-        else if x > max { max = x; maxindex = i }
-    });
-    MinMax{min,minindex,max,maxindex}
-}
 
 /// Removes repetitions from an explicitly ordered set.
 pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy {

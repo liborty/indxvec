@@ -15,19 +15,23 @@ The tools included are: efficient ranking, sorting, merging, searching, set oper
 
 ### Import into your source file(s) from the top `crate` level these auxiliary utilities, as needed:
 
-`use indxvec::{MinMax,here,wi,wv,printvv};`
+`use indxvec::{MinMax,here,tof64};`
 
-* struct `MinMax`: is a wrapper for the minimum value, its index, maximum value, its index, of a vector or a slice 
-* macro `here`: is for more informative error reports
-* function `wi` pretty prints in green a single generic item
-* function `wv` prettyprints in green a vector of generic items
-* function `printvv` pretty prints a vector of vectors of generic items
+* struct `MinMax` - is a wrapper for the minimum value, minimum's index, maximum value, maximum's index, of a vector or a slice
+* macro `here` - is for more informative error reports
+* function `tof64` - copies and recasts vectors or slices of generic end type T to end type f64, when such conversion is possible.
 
 ### Import trait `Indices`
 
 `use indxvec::Indices;`
 
-> Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors.
+Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors.
+
+### Import trait `Printing`
+
+`use indxvec::Printing`;
+
+This trait provides utility methods to stringify (serialise for printing) generic slices and slices of slices. Optionally enables printing in bold green for emphasis (see `tests/tests.rs`).
 
 ### Import functions from module `merge.rs`
 
@@ -45,16 +49,68 @@ It is highly recommended to read and run `tests/tests.rs` to learn from examples
 
 `cargo test --release -- --test-threads=1 --nocapture --color always`
 
-## Functions Signatures
+## Trait Indices
 
-Functions can be found in module `src/merge.rs`:
+The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results as appropriate:
 
 ```rust
+/// Methods to manipulate indices of `Vec<usize>` type.
+pub trait Indices { 
+    /// Reverse an index slice by simple reverse iteration.
+    fn revindex(self) -> Vec<usize>; 
+    /// Invert an index.
+    fn invindex(self) -> Vec<usize>;
+    /// complement of an index - turns ranks from/to 
+    /// ascending/descending
+    fn complindex(self) -> Vec<usize>;
+    /// Collect values from `v` in the order of index in self.
+    fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
+    /// Collects values from v, as f64s, 
+    /// in the order given by self index.    
+    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> 
+        Vec<f64> where f64:From<T>;
+    /// Pearson's correlation coefficient of two slices, 
+    /// typically the ranks.  
+    fn ucorrelation(self, v: &[usize]) -> f64; 
+    /// Potentially useful clone-recast of &[usize] to Vec<f64> 
+    fn indx_to_f64 (self) -> Vec<f64>;
+}
+```
+## Trait Printing
+
+This trait is implemented for generic individual items T, for slices &[T] and for slices of slices &[&[T]]:
+
+```rust 
+/// Method `to_str()` to serialize generic items, slices and slices of slices.
+/// Method `gr()` to serialize and make the resulting string 
+/// come out in bold green when printed.
+pub trait Printing<T> {
+    fn gr(self) -> String where Self:Sized {
+        format!("{GR}{}{UNGR}",self.to_str())
+    }  
+    fn to_str(self) -> String; 
+}
+```
+
+## Functions Signatures
+
+These functions can be found in module `src/merge.rs`:
+
+```rust
+/// Maximum value T of slice &[T]
+pub fn maxt<T>(v:&[T]) -> T where T:PartialOrd+Copy
+
+/// Minimum value T of slice &[T]
+pub fn mint<T>(v:&[T]) -> T where T:PartialOrd+Copy 
+
+/// Minimum and maximum (T,T) of a slice &[T]
+pub fn minmaxt<T>(v:&[T]) -> (T,T) where T:PartialOrd+Copy
+
+/// Minimum, minimum's first index, maximum, maximum's first index 
+pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy
+
 // Reverse a generic slice by reverse iteration.
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy
-
-/// Finds minimum, minimum's first index, maximum, maximum's first index 
-pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy
 
 /// Removes repetitions from an explicitly ordered set.
 pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy
@@ -122,35 +178,9 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy 
 ```
 
-## Trait Indices
-
-The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results as appropriate:
-
-```rust
-/// Methods to manipulate indices of `Vec<usize>` type.
-pub trait Indices { 
-    /// Reverse an index slice by simple reverse iteration.
-    fn revindex(self) -> Vec<usize>; 
-    /// Invert an index.
-    fn invindex(self) -> Vec<usize>;
-    /// complement of an index - turns ranks from/to 
-    /// ascending/descending
-    fn complindex(self) -> Vec<usize>;
-    /// Collect values from `v` in the order of index in self.
-    fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
-    /// Collects values from v, as f64s, 
-    /// in the order given by self index.    
-    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> 
-        Vec<f64> where f64:From<T>;
-    /// Pearson's correlation coefficient of two slices, 
-    /// typically the ranks.  
-    fn ucorrelation(self, v: &[usize]) -> f64; 
-    /// Potentially useful clone-recast of &[usize] to Vec<f64> 
-    fn indx_to_f64 (self) -> Vec<f64>;
-}
-```
-
 ## Release Notes (Latest First)
+
+**Version 1.0.3** - Added utilities functions `maxt, mint, minmaxt`. Rationalised the  functions for printing generic slices and slices of slices. They are now in trait `Printing`, so they are turned into chainable methods. There is now just `.to_str()` and `.gr()`. The latter also serialises the slices to strings but additionally makes them bold green.
 
 **Version 1.0.2** - Added function `occurs` that efficiently counts occurrences of specified items in a set with repetitions.
 

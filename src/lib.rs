@@ -1,6 +1,12 @@
 pub mod indices;
 pub mod merge;
 use std::fmt::Write;
+//use std::fmt::Pointer;
+
+pub const GR:&str = "\x1B[01;92m";
+pub const UNGR:&str = "\x1B[0m";
+pub const GRBRACKET:&str = "\x1B[01;92m[";
+pub const BRACKETUNGR:&str = "]\x1B[0m";
 
 /// macro `here!()` gives `&str` with the current `file:line path::function` for error messages.
 #[macro_export]
@@ -23,38 +29,55 @@ pub struct MinMax<T> {
     pub max: T,
     pub maxindex: usize
 }
-impl <T>std::fmt::Display for MinMax<T> where T:std::fmt::Display {
+impl <T>std::fmt::Display for MinMax<T> where T:Copy+std::fmt::Display {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f,"min: {}, minindex {}, max: {}, maxindex: {}", 
-        wi(&self.min), wi(&self.minindex), wi(&self.max), wi(&self.maxindex) )
+        self.min.gr(),self.minindex.gr(),self.max.gr(),self.maxindex.gr() )
     }
 }
 
-/// Print vector of vectors
-pub fn printvv<T>(s: Vec<Vec<T>>) where T:Copy+std::fmt::Display { 
-    for v in s { println!("{}",wv(&v)) }; 
+/// Helper function to copy and cast entire &[T] to Vec<f64>.
+/// Like the standard .to_vec() method but also casts to f64 end type
+pub fn tof64<T>(s: &[T]) -> Vec<f64> where T: Copy, f64: From<T> {
+    s.iter().map(| &x | f64::from(x)).collect()
 }
 
-/// Helper function `write vector`. Formats Vec<T> as 
-/// space separated values (ssv)  
-/// that can be Displayed without recourse to Debug. 
-/// Saves space by using ssv instead of csv. 
-/// This must be done in Rust item by item, hence the iteration.
-/// You can remove the green colour incantations at the beginning
-/// and at the end, if not wanted.
-pub fn wv<T>(v: &[T]) -> String where T:Copy+std::fmt::Display {
-    let s =
-        v.iter().fold(
-            String::from("\x1B[01;92m[ "),
-            |mut s,&n| { write!(s,"{} ",n).ok(); s } )
-        +"]\x1B[0m";
-    s
+/// Method `to_str()` to serialize generic items, slices, and slices of slices.
+/// Method `gr()` to serialize and make the resulting string come out in bold green when printed
+pub trait Printing<T> {
+
+    /// Method `gr()` to serialize and make the resulting string 
+    /// come out in bold green when printed.
+    /// This is a default implementation applicable to all types that
+    /// trait `Printing` is implemented for
+    fn gr(self) -> String where Self:Sized {
+        format!("{GR}{}{UNGR}",self.to_str())
+    }
+
+    /// Method to serialize generic items, slices, and slices of slices.  
+    fn to_str(self) -> String; 
 }
 
-/// Helper function to format in green a single item. 
-pub fn wi<T>(item: &T) -> String where T:std::fmt::Display {
-    "\x1B[01;92m".to_owned() + 
-    &item.to_string() + "\x1B[0m" 
+impl<T> Printing<T> for T where T:std::fmt::Display {
+    fn to_str(self) -> String { self.to_string() } 
+}
+
+impl<T> Printing<T> for &[T] where T:std::fmt::Display {
+    fn to_str(self) -> String {
+        self.iter().fold(
+            String::from("["),
+            |mut s,item| { write!(s," {}",item).ok(); s } )
+        +" ]"    
+    } 
+}
+
+impl<T> Printing<T> for &[&[T]] where T:std::fmt::Display {
+    fn to_str(self) -> String {
+        self.iter().fold(
+            String::from("["),
+            |mut s,item| { writeln!(s," {}",item.to_str()).ok(); s } )
+        +"]"    
+    }
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.
