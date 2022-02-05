@@ -8,7 +8,7 @@ readme = "README.md"
 homepage = "https://github.com/liborty/indxvec"
 repository = "https://github.com/liborty/indxvec"
 license = "Apache-2.0"
-keywords = ["ordered-sets","merge-sort","set-operations","ranking-searching","generic-vectors"]
+keywords = ["merge-sort","set-operations","ranking-searching","random","generic-vectors"]
 categories = ["mathematics","algorithms","data-structures","rust-patterns","simulation"]
 include = [
     "src/*.rs",
