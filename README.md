@@ -32,7 +32,8 @@ Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to 
 
 `use indxvec::Printing;`
 
-This trait provides utility methods to stringify (serialise for printing) generic slices and slices of slices. Optionally, it enables printing in bold green for emphasis (see `tests/tests.rs`).
+This trait provides utility methods to stringify (serialise for printing) generic slices and slices of vecs.
+Optionally, it enables printing in bold green for emphasis (see `tests/tests.rs`).
 
 ### Use functions from module `merge.rs`
 
@@ -40,7 +41,7 @@ This trait provides utility methods to stringify (serialise for printing) generi
 
 They are  applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
 
-## The following statement will import everything:
+### The following statement will import everything:
 
 `use indxvec::{MinMax,here,tof64,ranf64,ranv64,ranvu8,ranvvf64,rannvvu8,Indices,Printing,merge::*};`
 
