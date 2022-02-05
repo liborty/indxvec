@@ -1,10 +1,9 @@
 [package]
 name = "indxvec"
-version = "1.0.3"
+version = "1.0.4"
 authors = ["Libor Spacek"]
 edition = "2021"
-description = """Sets implemented as generic vectors.  
-    Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."""
+description = """Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."""
 readme = "README.md"
 homepage = "https://github.com/liborty/indxvec"
 repository = "https://github.com/liborty/indxvec"

@@ -7,41 +7,42 @@
 
 ## Description
 
-`Indxvec` is a self-contained crate: it has no dependencies. It is used by higher level crates  `sets` and `rstats`.
+This crate is lightweight and it has no dependencies.
 
-The tools included are: efficient ranking, sorting, merging, searching, set operations and indices manipulations. They are  applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for T.
+The facilities provided are:
+
+* simple and efficient random numbers,
+* ranking, sorting, merging, searching,
+* set operations and indices manipulations,
+* easy printing of generic slices and slices of vectors.
 
 ## Usage
 
-### Import into your source file(s) from the top `crate` level these auxiliary utilities, as needed:
+### Import into your source file(s) struct `MinMax`, macro `here!()` and other auxiliary functions, as needed:
 
-`use indxvec::{MinMax,here,tof64};`
+`use indxvec::{MinMax,here,tof64,ranf64,ranv64,ranvu8,ranvvf64,rannvvu8};`
 
-* struct `MinMax` - is a wrapper for the minimum value, minimum's index, maximum value, maximum's index, of a vector or a slice
-* macro `here` - is for more informative error reports
-* function `tof64` - copies and recasts vectors or slices of generic end type T to end type f64, when such conversion is possible.
-
-### Import trait `Indices`
+### Use trait `Indices`
 
 `use indxvec::Indices;`
 
 Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors.
 
-### Import trait `Printing`
+### Use trait `Printing`
 
-`use indxvec::Printing`;
+`use indxvec::Printing;`
 
-This trait provides utility methods to stringify (serialise for printing) generic slices and slices of slices. Optionally enables printing in bold green for emphasis (see `tests/tests.rs`).
+This trait provides utility methods to stringify (serialise for printing) generic slices and slices of slices. Optionally, it enables printing in bold green for emphasis (see `tests/tests.rs`).
 
-### Import functions from module `merge.rs`
+### Use functions from module `merge.rs`
 
 `use indxvec::{merge::*};`
 
-> These functions usually take some generic slice(s) of data `&[T]` as arguments and produce indices into them of type `Vec<usize>` (index vectors). The methods of `Indices` trait can be conveniently chained onto them.
+They are  applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
 
-The following `use` statement imports everything:
+## The following statement will import everything:
 
-`use indxvec::{MinMax,here,wv,wi,printvv,Indices,merge::*};`
+`use indxvec::{MinMax,here,tof64,ranf64,ranv64,ranvu8,ranvvf64,rannvvu8,Indices,Printing,merge::*};`
 
 ## Testing
 
@@ -55,27 +56,23 @@ The methods of this trait are implemented for slices of subscripts, i.e. they ta
 
 ```rust
 /// Methods to manipulate indices of `Vec<usize>` type.
-pub trait Indices { 
+pub trait Indices {
     /// Reverse an index slice by simple reverse iteration.
-    fn revindex(self) -> Vec<usize>; 
+    fn revindex(self) -> Vec<usize>;
     /// Invert an index.
     fn invindex(self) -> Vec<usize>;
-    /// complement of an index - turns ranks from/to 
-    /// ascending/descending
+    /// Complement of an index - turns ranks from/to ascending/descending
     fn complindex(self) -> Vec<usize>;
-    /// Collect values from `v` in the order of index in self.
+    /// Collect values from `v` in the order of index in self. Or opposite order.
     fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
-    /// Collects values from v, as f64s, 
-    /// in the order given by self index.    
-    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> 
-        Vec<f64> where f64:From<T>;
-    /// Pearson's correlation coefficient of two slices, 
-    /// typically the ranks.  
-    fn ucorrelation(self, v: &[usize]) -> f64; 
-    /// Potentially useful clone-recast of &[usize] to Vec<f64> 
+    /// Collects values from v, as f64s, in the order given by self index.    
+    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> Vec<f64>
+      where f64:From<T>;
+    /// Pearson's correlation coefficient of two slices, typically ranks.  
+    fn ucorrelation(self, v: &[usize]) -> f64;
+    /// Potentially useful clone-recast of &[usize] to Vec<f64>
     fn indx_to_f64 (self) -> Vec<f64>;
 }
-
 ```
 
 ## Trait Printing
@@ -86,10 +83,8 @@ This trait is implemented for generic individual items T, for slices &[T] and fo
 /// Method `to_str()` to serialize generic items, slices, and slices of Vecs.
 /// Method `gr()` to serialize and make the resulting string bold green when printed.
 pub trait Printing<T> {
-    fn gr(self) -> String where Self:Sized {
-        format!("{GR}{}{UNGR}",self.to_str())
-    }  
-    fn to_str(self) -> String; 
+    fn gr(self) -> String where Self:Sized;  
+    fn to_str(self) -> String;
 }
 ```
 
@@ -102,12 +97,12 @@ These functions can be found in module `src/merge.rs`:
 pub fn maxt<T>(v:&[T]) -> T where T:PartialOrd+Copy
 
 /// Minimum value T of slice &[T]
-pub fn mint<T>(v:&[T]) -> T where T:PartialOrd+Copy 
+pub fn mint<T>(v:&[T]) -> T where T:PartialOrd+Copy
 
 /// Minimum and maximum (T,T) of a slice &[T]
 pub fn minmaxt<T>(v:&[T]) -> (T,T) where T:PartialOrd+Copy
 
-/// Minimum, minimum's first index, maximum, maximum's first index 
+/// Minimum, minimum's first index, maximum, maximum's first index
 pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy
 
 // Reverse a generic slice by reverse iteration.
@@ -117,7 +112,7 @@ pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy
 pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy
 
 /// Finds the first occurrence of item `m` in slice `s` by full iteration.
-pub fn member<T>(s:&[T], m:T) -> Option<usize> where T: PartialOrd+Copy 
+pub fn member<T>(s:&[T], m:T) -> Option<usize> where T: PartialOrd+Copy
 
 /// Binary search of an explicitly sorted list (in ascending order).
 pub fn memsearch<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd
@@ -126,13 +121,13 @@ pub fn memsearch<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd
 pub fn memsearchdesc<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd
 
 /// Binary search of an indexed list (in ascending order).
-pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where T: PartialOrd 
+pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where T: PartialOrd
 
 /// Binary search of an explicitly sorted list in ascending order.
 pub fn binsearch<T>(s:&[T], val:T)  -> usize where T: PartialOrd
 
 /// Binary search of an explicitly sorted list in descending order.
-pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd 
+pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd
 
 /// Counts occurrences of val using ascending and descending sorts of some set
 pub fn occurs<T>(sasc:&[T],sdesc:&[T],val:T) -> usize where T: PartialOrd+Copy+Display
@@ -146,7 +141,7 @@ pub fn unite_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec
 /// Intersects two ascending explicitly sorted generic vectors.
 pub fn intersect<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
 
-/// Intersects two ascending index-sorted generic vectors. 
+/// Intersects two ascending index-sorted generic vectors.
 pub fn intersect_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy
 
 /// Sets difference: deleting elements of the second from the first.
@@ -166,7 +161,7 @@ fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
     where T: PartialOrd+Copy
 
 /// Doubly recursive non-destructive merge sort.
-pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize> 
+pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize>
     where T: PartialOrd+Copy
 
 /// A wrapper for mergesort, to obtain the sort index
@@ -176,10 +171,12 @@ pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy
 pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy
 
 /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity
-pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy 
+pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.0.4** - here!() now highlights the (first) error in bold red. Added fast random number generation functions `ranf64, ranv64, ranvu8, ranvvf64, rannvvu8`.
 
 **Version 1.0.3** - Added utilities functions `maxt, mint, minmaxt`. Rationalised the functions for printing generic slices and slices of vectors. They are now turned into two chainable methods in trait `Printing`: `.to_str()` and `.gr()`. The latter also serialises slices to strings but additionally makes them bold green.
 
