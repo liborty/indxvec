@@ -7,43 +7,48 @@
 
 ## Description
 
-This crate is lightweight and it has no dependencies.
+This crate is lightweight and has no dependencies.
 
 The facilities provided are:
 
-* simple and efficient random numbers,
-* ranking, sorting, merging, searching,
-* set operations and indices manipulations,
-* easy printing of generic slices and slices of vectors.
+* ranking, sorting, merging, searching, indexing, selecting, partitioning
+* general operations on/with indices
+* set operations
+* simple and efficient random numbers, mostly for testing
+* printing of generic slices and slices of vectors
+* macro for easy error reporting
 
 ## Usage
 
-### Import into your source file(s) struct `MinMax`, macro `here!()` and other auxiliary functions, as needed:
+#### Import into your source file(s) constants `GR,UN` for colour printing, struct `MinMax`, macro `here!()` and `tof64`  auxiliary function, if needed
 
-`use indxvec::{MinMax,here,tof64,ranf64,ranv64,ranvu8,ranvvf64,rannvvu8};`
+`use indxvec::{GR,UN,MinMax,here,tof64};`
 
-### Use trait `Indices`
+#### Use traits `Indices` and/or `Printing`
 
-`use indxvec::Indices;`
+`use indxvec::{Indices,Printing};`
 
 Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors.
 
-### Use trait `Printing`
+Trait `Printing` provides utility methods to stringify (serialise for printing) generic slices and slices of vecs.
+Optionally, it enables printing in bold green for adding emphasis (see `tests/tests.rs`).
 
-`use indxvec::Printing;`
-
-This trait provides utility methods to stringify (serialise for printing) generic slices and slices of vecs.
-Optionally, it enables printing in bold green for emphasis (see `tests/tests.rs`).
-
-### Use functions from module `merge.rs`
+#### Use functions from `merge.rs`
 
 `use indxvec::{merge::*};`
 
-They are  applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
+These functions are  applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
+
+#### Use functions from `random.rs`
+
+`use indxvec::{random::*};`
+
+These functions will create various vectors and vectors of vectors (matrices),
+filled with random numbers. Very fast and useful for testing. They take an argument `&mut seed`, declared as follows: `mut seed:u64 = initvalue;`. It can be reset at any time to any new value to initiate a new sequence.
 
 ### The following statement will import everything:
 
-`use indxvec::{MinMax,here,tof64,ranf64,ranv64,ranvu8,ranvvf64,rannvvu8,Indices,Printing,merge::*};`
+`use indxvec::{GR,UN,MinMax,here,tof64,merge::*,random::*,Indices,Printing};`
 
 ## Testing
 
@@ -67,8 +72,7 @@ pub trait Indices {
     /// Collect values from `v` in the order of index in self. Or opposite order.
     fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
     /// Collects values from v, as f64s, in the order given by self index.    
-    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> Vec<f64>
-      where f64:From<T>;
+    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> Vec<f64> where f64:From<T>;
     /// Pearson's correlation coefficient of two slices, typically ranks.  
     fn ucorrelation(self, v: &[usize]) -> f64;
     /// Potentially useful clone-recast of &[usize] to Vec<f64>
@@ -78,13 +82,21 @@ pub trait Indices {
 
 ## Trait Printing
 
-This trait is implemented for generic individual items T, for slices &[T] and for slices of vecs &[Vec<T>]
+This trait is implemented for generic individual items `T`, for slices `&[T]` and for slices of vecs `&[Vec<T>]`
 
 ```rust
-/// Method `to_str()` to serialize generic items, slices, and slices of Vecs.
-/// Method `gr()` to serialize and make the resulting string bold green when printed.
+/// Trait to serialize slices of generic items (vectors) and slices of
+/// Vecs of generic items (matrices). Turns them all into printable strings.
 pub trait Printing<T> {
-    fn gr(self) -> String where Self:Sized;  
+    /// Method `gr()` to serialize and make the resulting string
+    /// bold green when printed.
+    /// This is the default implementation applicable to all types that
+    /// trait `Printing` is implemented for
+    fn gr(self) -> String  where  Self: Sized,    {
+        format!("{GR}{}{UN}", self.to_str())
+    }
+    /// Method to serialize generic items, slices, and slices of Vecs.
+    /// Can be implemented on any other types.
     fn to_str(self) -> String;
 }
 ```
@@ -151,6 +163,9 @@ pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
 /// Sets difference: deleting elements of the second from the first.
 pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy
 
+/// Partition about pivot into two sets of indices
+pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize) where T: PartialOrd+Copy, f64: From<T>
+
 /// Merges two ascending sorted generic vectors.
 pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
 
@@ -176,6 +191,8 @@ pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.0.5** - Added `partition_indexed` for partitioning into two sets of indices about a pivot. Moved all random number generating functions into new module `random.rs` (import changed to: `random::*`). Moved the implementations of Printing trait to new module `printing.rs` (this has no effect on users).
 
 **Version 1.0.4** - here!() now highlights the (first) error in bold red. Added fast random number generation functions `ranf64, ranv64, ranvu8, ranvvf64, rannvvu8`.
 

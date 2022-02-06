@@ -1,24 +1,26 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-// use anyhow::{Result};
-use indxvec::{merge::*, ranvu8, Indices, Printing, GR, UN};
+use indxvec::{merge::*, random::*, Indices, Printing, GR, UN};
 
 #[test]
 fn indxvec() {
     let mut seed: u64 = 555;
     let v = ranvu8(20, &mut seed);
-    println!("{}", v.gr());
+    println!("\n{}", v.gr());
     let v2 = ranvu8(20, &mut seed);
     println!("{}", v2.gr());
     println!("Minmax:       {}", minmax(&v));
     println!("minmaxt:      {GR}{:?}{UN}", minmaxt(&v));
+    let (lset,gset) = partition_indexed(&v, 128);
+    println!( "Partition indices around 128:\n{}\n{}", lset.gr(),gset.gr() );
     println!("Ranks to f64: {}", rank(&v, true).gr());
     println!("Sorted:       {}", sortm(&v, true).gr()); // sorted data but index lost
     println!("Sorted:       {}", sortidx(&v).unindex(&v, true).gr()); // same as sortm
-    println!("Sorted:       {}", rank(&v, false).invindex().unindex(&v, false).gr());
+    println!("Sorted:       {}", rank(&v, false).invindex().unindex(&v, false).gr() );
     println!("Ranks:        {}", rank(&v, true).gr()); // how to get ranks
-    println!("Ranks:        {}", rank(&v, true).complindex().complindex().gr()); // symmetry
+    println!("Ranks:        {}", rank(&v, true).complindex().complindex().gr() ); // symmetry
+    println!("Ranks:        {}", sortidx(&v).invindex().gr()); // simplest ranks from sortindex
     println!("Ranks rev:    {}", rank(&v, true).revindex().gr()); // revindex() reverses any index
     println!("Ranks rev:    {}", sortidx(&v).complindex().invindex().gr()); // via sortidx()  and complindex()
     println!("Ranks rev:    {}", sortidx(&v).invindex().revindex().gr()); // via revindex()
@@ -28,8 +30,8 @@ fn indxvec() {
     println!("Sort index:   {}", sortidx(&v).gr()); // sortindex, can be unindexed at anytime
     println!("Sortix rev:   {}", sortidx(&v).revindex().gr());
     println!("Sortix rev:   {}", rank(&v, false).invindex().gr()); // descending sort index from desc ranks
-    println!("Ranks to idx: {}", rank(&v, true).invindex().gr()); // ascending sort index from ranks
-    println!("Ranks to idx: {}", rank(&v, false).complindex().invindex().gr());
+    println!("Ranks to idx: {}", rank(&v, true).invindex().gr()); // ascending sort index from ascending ranks
+    println!("Ranks to idx: {}", rank(&v, false).complindex().invindex().gr()); // from ascending ranks
     println!("Idx to ranks: {}", sortidx(&v).invindex().gr());
     println!("Sorted rev:   {}", sortm(&v, false).gr()); // descending sort, index lost
     println!("Sorted rev:   {}", revs(&sortm(&v, true)).gr()); // the above simply reversed
@@ -38,7 +40,8 @@ fn indxvec() {
     println!("Sorted rev:   {}", sortidx(&v).invindex().complindex().invindex().unindex(&v, true).gr());
     println!("Sorted rev:   {}", rank(&v, true).complindex().invindex().unindex(&v, true).gr()); // complindex reverses ranks
     println!("Spearman corr against itself: {}",rank(&v, true).ucorrelation(&rank(&v, true)).gr()); //  1 for any Vec
-    println!("Spearman corr against reversed: {}",rank(&v, true).ucorrelation(&rank(&v, false)).gr()); // -1 for any Vec
+    println!("Spearman corr against reversed: {}",
+        rank(&v, true).ucorrelation(&rank(&v, false)).gr()); // -1 for any Vec
     let (vm, vi) = merge_indexed(&v, &sortidx(&v), &v, &sortidx(&v)); // merge two vecs using their sort indices
     let sorted = vi.unindex(&vm, true);
     println!("Twice sorted, Merged and Unindexed:\n{}", sorted.gr());
@@ -47,15 +50,12 @@ fn indxvec() {
     println!("Binsearch for 15, found before: {}",binsearch(&sorted, 15).gr()); // binsearch
     println!("Binsearchdesc for 15, found before: {}",binsearchdesc(&sorteddesc, 15).gr()); // binsearch
     println!("Memsearchdesc for 14, found at: {}",
-        memsearchdesc(&revs(&sorted), 14).map_or_else(|| "None".gr(), |x| x.gr()) );
+        memsearchdesc(&revs(&sorted), 14).map_or_else(|| "None".gr(), |x| x.gr()));
     println!("Memsearch_indexed for 14, found at: {}",
-        memsearch_indexed(&vm, &vi, 14).map_or_else(|| "None".gr(), |x| x.gr()) );
+        memsearch_indexed(&vm, &vi, 14).map_or_else(|| "None".gr(), |x| x.gr()));
     println!("Occurrences count of 14: {}",occurs(&sorted, &sorteddesc, 14).gr());
     println!("Occurrences count of 15: {}",occurs(&sorted, &sorteddesc, 15).gr());
     println!("Intersect_indexed: {}",intersect_indexed(&vm, &vi, &v, &sortidx(&v)).gr());
-    println!(
-        "Diff_indexed: {}",
-        diff_indexed(&vm, &vi, &v, &sortidx(&v)).gr()
-    );
+    println!("Diff_indexed: {}",diff_indexed(&vm, &vi, &v, &sortidx(&v)).gr());
     println!("Sansrepeat:   {}\n", sansrepeat(&sorted).gr());
 }
