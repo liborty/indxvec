@@ -189,7 +189,9 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy
 /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy
 ```
+
 #### Functions in module `src/random.rs`
+
 ```Rust
 /// Generates f64 random number in the the standardised interval [0,1)
 #[inline]
