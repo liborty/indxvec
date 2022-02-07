@@ -173,12 +173,10 @@ pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 pub fn merge_indexed<T>(v1:&[T], idx1: &[usize], v2: &[T], idx2: &[usize]) -> ( Vec<T>,Vec<usize> ) where T: PartialOrd+Copy;
 
 /// Merges the sort indices of two concatenated vectors.
-fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
-    where T: PartialOrd+Copy;
+fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize> where T: PartialOrd+Copy;
 
 /// Doubly recursive non-destructive merge sort.
-pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize>
-    where T: PartialOrd+Copy;
+pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize> where T: PartialOrd+Copy;
 
 /// A wrapper for mergesort, to obtain the sort index
 pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy;
