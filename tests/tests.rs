@@ -51,10 +51,12 @@ fn indxvec() {
     println!("Binsearchdesc for 15, found before: {}",binsearchdesc(&sorteddesc, 15).gr()); // binsearch
     println!("Memsearchdesc for 14, found at: {}",
         memsearchdesc(&revs(&sorted), 14).map_or_else(|| "None".gr(), |x| x.gr()));
-    println!("Memsearch_indexed for 14, found at: {}",
-        memsearch_indexed(&vm, &vi, 14).map_or_else(|| "None".gr(), |x| x.gr()));
-    println!("Occurrences count of 14: {}",occurs(&sorted, &sorteddesc, 14).gr());
-    println!("Occurrences count of 15: {}",occurs(&sorted, &sorteddesc, 15).gr());
+    println!("Memsearch_indexed for 105, found at: {}",
+        memsearch_indexed(&vm, &vi, 105).map_or_else(|| "None".gr(), |x| x.gr()));
+    println!("Memsearch_indexed for 105, found at: {}",
+        memsearchdesc_indexed(&vm, &vi.revindex(), 105).map_or_else(|| "None".gr(), |x| x.gr()));
+    println!("Occurrences count of 105: {}",occurs(&sorted, 105).gr());
+    println!("Occurrences count of 105: {}",occurs_multiple(&sorted,&sorteddesc,105).gr());
     println!("Intersect_indexed: {}",intersect_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
     println!("Diff_indexed: {}",diff_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
     println!("Sansrepeat:   {}\n", sansrepeat(&sorted).gr());

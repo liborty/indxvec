@@ -142,8 +142,11 @@ pub fn binsearch<T>(s:&[T], val:T)  -> usize where T: PartialOrd;
 /// Binary search of an explicitly sorted list in descending order.
 pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd;
 
-/// Counts occurrences of val using ascending and descending sorts of some set
-pub fn occurs<T>(sasc:&[T],sdesc:&[T],val:T) -> usize where T: PartialOrd+Copy+Display;
+/// Counts occurrences of val by simple linear search of any unordered set
+pub fn occurs<T>(set: &[T], val:T) -> usize where T: PartialOrd+Copy;
+
+/// Counts occurrences of val by binary search, using previously obtained sorts.
+pub fn occurs_multiple<T>(sasc: &[T], sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
 
 /// Unites two ascending explicitly sorted generic slices
 pub fn unite<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
@@ -209,6 +212,8 @@ pub fn ranvvu8(d: usize, n: usize, seed: &mut u64) -> Vec<Vec<u8>>;
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.0.7** - Renamed function `occurs` to `occurs_multiple` and added a simple linear count of item occurences: `occurs`.
 
 **Version 1.0.6** - Some cosmetic changes to the code, readme and tests, no change of functionality.
 

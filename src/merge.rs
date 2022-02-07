@@ -1,7 +1,7 @@
 // use std::cmp::Ordering;
 use crate::Indices;
 use crate::{here, MinMax};
-use std::fmt::Display;
+// use std::fmt::Display;
 
 /// Maximum value T of slice &[T]
 pub fn maxt<T>(v: &[T]) -> T
@@ -412,26 +412,38 @@ where
     }
 }
 
+/// Counts occurrences of val by simple linear search of any unordered set
+pub fn occurs<T>(set: &[T], val:T) -> usize where T: PartialOrd+Copy {
+    let mut count:usize = 0;
+    for &s in set {
+        if val < s { continue;};
+        if val > s { continue;};
+        count += 1;
+    };
+    count
+}
+
 /// Counts occurrences of val, using previously obtained
 /// ascending explicit sort `sasc` and descending sort `sdesc`.
+/// The two sorts must be of the same original set!
 /// This is to facilitate counting of many
-/// different values without ever having to repeat the sorting.
-/// This function is very efficient at counting
+/// different values without having to repeat the sorting.
+/// This function is efficient at counting
 /// numerous repetitions in large sets (e.g. probabilities in stats).
 /// Binary search from both ends is deployed: O(2log(n)).
 /// # Example:
 /// ```
 /// use crate::indxvec::Indices;
-/// use indxvec::merge::{sortidx,occurs};
+/// use indxvec::merge::{sortidx,occurs_multiple};
 /// let s = [3.141,3.14159,3.14159,3.142];
-/// let sindx = sortidx(&s); // only one sort ever
-/// let sasc = sindx.unindex(&s,true);
-/// let sdesc = sindx.unindex(&s,false);
-/// assert_eq!(occurs(&sasc,&sdesc,3.14159),2);
+/// let sindx = sortidx(&s); // only one sorting
+/// let sasc = sindx.unindex(&s,true);   // explicit ascending
+/// let sdesc = sindx.unindex(&s,false); // explicit descending
+/// assert_eq!(occurs_multiple(&sasc,&sdesc,3.14159),2);
 /// ```
-pub fn occurs<T>(sasc: &[T], sdesc: &[T], val: T) -> usize
+pub fn occurs_multiple<T>(sasc: &[T], sdesc: &[T], val: T) -> usize
 where
-    T: PartialOrd + Copy + Display,
+    T: PartialOrd + Copy,
 {
     let ascindex = binsearch(sasc, val);
     if ascindex == 0 {
@@ -439,7 +451,7 @@ where
     }; // val not found
     let descindex = binsearchdesc(sdesc, val);
     if descindex == 0 {
-        return 0;
+        eprintln!("{} The two sorts are not of the same list?", here!());
     };
     ascindex + descindex - sasc.len()
 }
