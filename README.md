@@ -60,7 +60,7 @@ It is highly recommended to read and run `tests/tests.rs` to learn from examples
 
 The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results as appropriate:
 
-```rust
+```Rust
 /// Methods to manipulate indices of `Vec<usize>` type.
 pub trait Indices {
     /// Reverse an index slice by simple reverse iteration.
@@ -84,7 +84,7 @@ pub trait Indices {
 
 This trait is implemented for generic individual items `T`, for slices `&[T]` and for slices of vecs `&[Vec<T>]`
 
-```rust
+```Rust
 /// Trait to serialize slices of generic items (vectors) and slices of
 /// Vecs of generic items (matrices). Turns them all into printable strings.
 pub trait Printing<T> {
@@ -105,7 +105,7 @@ pub trait Printing<T> {
 
 #### Functions in module `src/merge.rs`:
 
-```rust
+```Rust
 /// Maximum value T of slice &[T]
 pub fn maxt<T>(v:&[T]) -> T where T:PartialOrd+Copy
 
