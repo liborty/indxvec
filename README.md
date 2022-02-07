@@ -164,7 +164,7 @@ pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Partition about pivot into two sets of indices
-pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize) where T: PartialOrd+Copy, f64: From<T>;
+pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize) where T: PartialOrd+Copy;
 
 /// Merges two ascending sorted generic vectors.
 pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
