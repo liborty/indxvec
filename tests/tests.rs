@@ -6,45 +6,45 @@ use indxvec::{merge::*, random::*, Indices, Printing, GR, UN};
 #[test]
 fn indxvec() {
     let mut seed: u64 = 555;
-    let v = ranvu8(20, &mut seed);
-    println!("\n{}", v.gr());
+    let v1 = ranvu8(20, &mut seed);
+    println!("\nv1: {}", v1.gr());
     let v2 = ranvu8(20, &mut seed);
-    println!("{}", v2.gr());
-    println!("Minmax:       {}", minmax(&v));
-    println!("minmaxt:      {GR}{:?}{UN}", minmaxt(&v));
-    let (lset,gset) = partition_indexed(&v, 128);
+    println!("v2: {}", v2.gr());
+    println!("Minmax:       {}", minmax(&v1));
+    println!("minmaxt:      {GR}{:?}{UN}", minmaxt(&v1));
+    let (lset,gset) = partition_indexed(&v1, 128);
     println!( "Partition indices around 128:\n{}\n{}", lset.gr(),gset.gr() );
-    println!("Ranks to f64: {}", rank(&v, true).gr());
-    println!("Sorted:       {}", sortm(&v, true).gr()); // sorted data but index lost
-    println!("Sorted:       {}", sortidx(&v).unindex(&v, true).gr()); // same as sortm
-    println!("Sorted:       {}", rank(&v, false).invindex().unindex(&v, false).gr() );
-    println!("Ranks:        {}", rank(&v, true).gr()); // how to get ranks
-    println!("Ranks:        {}", rank(&v, true).complindex().complindex().gr() ); // symmetry
-    println!("Ranks:        {}", sortidx(&v).invindex().gr()); // simplest ranks from sortindex
-    println!("Ranks rev:    {}", rank(&v, true).revindex().gr()); // revindex() reverses any index
-    println!("Ranks rev:    {}", sortidx(&v).complindex().invindex().gr()); // via sortidx()  and complindex()
-    println!("Ranks rev:    {}", sortidx(&v).invindex().revindex().gr()); // via revindex()
-    println!("Ranks desc:   {}", rank(&v, false).gr()); // descending ranks, not the same as ranks reversed!!
-    println!("Ranks desc:   {}", rank(&v, true).complindex().gr()); // descending ranks, not the same as ranks reversed!!
-    println!("Ranks desc:   {}", sortidx(&v).invindex().complindex().gr()); // descending ranks, not the same as ranks reversed!!
-    println!("Sort index:   {}", sortidx(&v).gr()); // sortindex, can be unindexed at anytime
-    println!("Sortix rev:   {}", sortidx(&v).revindex().gr());
-    println!("Sortix rev:   {}", rank(&v, false).invindex().gr()); // descending sort index from desc ranks
-    println!("Ranks to idx: {}", rank(&v, true).invindex().gr()); // ascending sort index from ascending ranks
-    println!("Ranks to idx: {}", rank(&v, false).complindex().invindex().gr()); // from ascending ranks
-    println!("Idx to ranks: {}", sortidx(&v).invindex().gr());
-    println!("Sorted rev:   {}", sortm(&v, false).gr()); // descending sort, index lost
-    println!("Sorted rev:   {}", revs(&sortm(&v, true)).gr()); // the above simply reversed
-    println!("Sorted rev:   {}", sortidx(&v).unindex(&v, false).gr()); // more efficient reversal
-    println!("Sorted rev:   {}", sortidx(&v).revindex().unindex(&v, true).gr()); // by reversing the sort index
-    println!("Sorted rev:   {}", sortidx(&v).invindex().complindex().invindex().unindex(&v, true).gr());
-    println!("Sorted rev:   {}", rank(&v, true).complindex().invindex().unindex(&v, true).gr()); // complindex reverses ranks
-    println!("Spearman corr against itself: {}",rank(&v, true).ucorrelation(&rank(&v, true)).gr()); //  1 for any Vec
-    println!("Spearman corr against reversed: {}",
-        rank(&v, true).ucorrelation(&rank(&v, false)).gr()); // -1 for any Vec
-    let (vm, vi) = merge_indexed(&v, &sortidx(&v), &v, &sortidx(&v)); // merge two vecs using their sort indices
+    println!("Ranks to f64: {}", rank(&v1, true).gr());
+    println!("Sorted:       {}", sortm(&v1, true).gr()); // sorted data but index lost
+    println!("Sorted:       {}", sortidx(&v1).unindex(&v1, true).gr()); // same as sortm
+    println!("Sorted:       {}", rank(&v1, false).invindex().unindex(&v1, false).gr() );
+    println!("Ranks:        {}", rank(&v1, true).gr()); // how to get ranks
+    println!("Ranks:        {}", rank(&v1, true).complindex().complindex().gr() ); // symmetry
+    println!("Ranks:        {}", sortidx(&v1).invindex().gr()); // simplest ranks from sortindex
+    println!("Ranks rev:    {}", rank(&v1, true).revindex().gr()); // revindex() reverses any index
+    println!("Ranks rev:    {}", sortidx(&v1).complindex().invindex().gr()); // via sortidx()  and complindex()
+    println!("Ranks rev:    {}", sortidx(&v1).invindex().revindex().gr()); // via revindex()
+    println!("Ranks desc:   {}", rank(&v1, false).gr()); // descending ranks, not the same as ranks reversed!!
+    println!("Ranks desc:   {}", rank(&v1, true).complindex().gr()); // descending ranks, not the same as ranks reversed!!
+    println!("Ranks desc:   {}", sortidx(&v1).invindex().complindex().gr()); // descending ranks, not the same as ranks reversed!!
+    println!("Sort index:   {}", sortidx(&v1).gr()); // sortindex, can be unindexed at anytime
+    println!("Sortix rev:   {}", sortidx(&v1).revindex().gr());
+    println!("Sortix rev:   {}", rank(&v1, false).invindex().gr()); // descending sort index from desc ranks
+    println!("Ranks to idx: {}", rank(&v1, true).invindex().gr()); // ascending sort index from ascending ranks
+    println!("Ranks to idx: {}", rank(&v1, false).complindex().invindex().gr()); // from ascending ranks
+    println!("Idx to ranks: {}", sortidx(&v1).invindex().gr());
+    println!("Sorted rev:   {}", sortm(&v1, false).gr()); // descending sort, index lost
+    println!("Sorted rev:   {}", revs(&sortm(&v1, true)).gr()); // the above simply reversed
+    println!("Sorted rev:   {}", sortidx(&v1).unindex(&v1, false).gr()); // more efficient reversal
+    println!("Sorted rev:   {}", sortidx(&v1).revindex().unindex(&v1, true).gr()); // by reversing the sort index
+    println!("Sorted rev:   {}", sortidx(&v1).invindex().complindex().invindex().unindex(&v1, true).gr());
+    println!("Sorted rev:   {}", rank(&v1, true).complindex().invindex().unindex(&v1, true).gr()); // complindex reverses ranks
+    println!("Spearman corr v1,v2: {}",rank(&v1, true).ucorrelation(&rank(&v2, true)).gr()); //  1 for any Vec
+    //println!("Spearman corr against reversed: {}",
+    //    rank(&v1, true).ucorrelation(&rank(&v1, false)).gr()); // -1 for any Vec
+    let (vm, vi) = merge_indexed(&v1, &sortidx(&v1), &v2, &sortidx(&v2)); // merge two vecs using their sort indices
     let sorted = vi.unindex(&vm, true);
-    println!("Twice sorted, Merged and Unindexed:\n{}", sorted.gr());
+    println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.gr());
     let sorteddesc = vi.unindex(&vm, false);
     println!("The above reversed:\n{}", sorteddesc.gr());
     println!("Binsearch for 15, found before: {}",binsearch(&sorted, 15).gr()); // binsearch
@@ -55,7 +55,7 @@ fn indxvec() {
         memsearch_indexed(&vm, &vi, 14).map_or_else(|| "None".gr(), |x| x.gr()));
     println!("Occurrences count of 14: {}",occurs(&sorted, &sorteddesc, 14).gr());
     println!("Occurrences count of 15: {}",occurs(&sorted, &sorteddesc, 15).gr());
-    println!("Intersect_indexed: {}",intersect_indexed(&vm, &vi, &v, &sortidx(&v)).gr());
-    println!("Diff_indexed: {}",diff_indexed(&vm, &vi, &v, &sortidx(&v)).gr());
+    println!("Intersect_indexed: {}",intersect_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
+    println!("Diff_indexed: {}",diff_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
     println!("Sansrepeat:   {}\n", sansrepeat(&sorted).gr());
 }

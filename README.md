@@ -103,7 +103,7 @@ pub trait Printing<T> {
 
 ## Functions Signatures
 
-These functions can be found in module `src/merge.rs`:
+#### Functions in module `src/merge.rs`:
 
 ```rust
 /// Maximum value T of slice &[T]
@@ -189,8 +189,28 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy
 /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy
 ```
+#### Functions in module `src/random.rs`
+```Rust
+/// Generates f64 random number in the the standardised interval [0,1)
+#[inline]
+pub fn ranf64(rseed: &mut u64) -> f64
+
+/// Generates vector of random numbers in the interval [0_f64,1_f64)
+pub fn ranvf64(size: usize, seed: &mut u64) -> Vec<f64>
+
+/// Generates vector of random numbers in the interval [0_u8,255_u8].
+pub fn ranvu8(size: usize, seed: &mut u64) -> Vec<u8>
+
+/// Generates n vectors of size d, filled with random numbers in the interval [0_f64,1_f64).
+pub fn ranvvf64(d: usize, n: usize, seed: &mut u64) -> Vec<Vec<f64>>
+
+/// Generates n vectors of size d, filled with random numbers in the interval [0_u8;255_u8]
+pub fn ranvvu8(d: usize, n: usize, seed: &mut u64) -> Vec<Vec<u8>>
+```
 
 ## Release Notes (Latest First)
+
+**Version 1.0.6** - Some cosmetic changes to the code, readme and tests, no change of functionality.
 
 **Version 1.0.5** - Added `partition_indexed` for partitioning into two sets of indices about a pivot. Moved all random number generating functions into new module `random.rs` (import changed to: `random::*`). Moved the implementations of Printing trait to new module `printing.rs` (this has no effect on users).
 

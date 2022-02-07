@@ -53,9 +53,9 @@ pub fn minmax<T>(v: &[T]) -> MinMax<T>
 where
     T: PartialOrd + Copy,
 {
-    let (mut min, mut max) = (&v[0], &v[0]); // initialise both to the first item
+    let (mut min, mut max) = (v[0], v[0]); // initialise both to the first item
     let (mut minindex, mut maxindex) = (0, 0); // indices of min, max
-    v.iter().enumerate().skip(1).for_each(|(i, x)| {
+    v.iter().enumerate().skip(1).for_each(|(i, &x)| {
         if x < min {
             min = x;
             minindex = i
@@ -65,9 +65,9 @@ where
         }
     });
     MinMax {
-        min: *min,
+        min,
         minindex,
-        max: *max,
+        max,
         maxindex,
     }
 }
@@ -678,17 +678,19 @@ where
 /// Partition by pivot gives two sets of indices.
 /// Items that are equal to pivot are ignored.
 pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize>)
-    where T: PartialOrd+Copy, f64: From<T> {
-    let pivotf = f64::from(pivot);
-    let mut negset: Vec<usize> = Vec::new();
-    let mut posset: Vec<usize> = Vec::new();
+where
+    T: PartialOrd + Copy,
+{
+    let n = v.len();
+    let mut negset: Vec<usize> = Vec::with_capacity(n);
+    let mut posset: Vec<usize> = Vec::with_capacity(n);
     for (i, &vi) in v.iter().enumerate() {
-        let d = f64::from(vi)-pivotf;
-        if d.is_normal() {
-            if d < 0. { negset.push(i); }
-            else { posset.push(i); };
+        if vi > pivot {
+            posset.push(i);
+        } else {
+            negset.push(i);
         };
-    };
+    }
     (negset, posset)
 }
 
