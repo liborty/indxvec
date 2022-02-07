@@ -107,87 +107,87 @@ pub trait Printing<T> {
 
 ```Rust
 /// Maximum value T of slice &[T]
-pub fn maxt<T>(v:&[T]) -> T where T:PartialOrd+Copy
+pub fn maxt<T>(v:&[T]) -> T where T:PartialOrd+Copy;
 
 /// Minimum value T of slice &[T]
-pub fn mint<T>(v:&[T]) -> T where T:PartialOrd+Copy
+pub fn mint<T>(v:&[T]) -> T where T:PartialOrd+Copy;
 
 /// Minimum and maximum (T,T) of a slice &[T]
-pub fn minmaxt<T>(v:&[T]) -> (T,T) where T:PartialOrd+Copy
+pub fn minmaxt<T>(v:&[T]) -> (T,T) where T:PartialOrd+Copy;
 
 /// Minimum, minimum's first index, maximum, maximum's first index
-pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy
+pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy;
 
 // Reverse a generic slice by reverse iteration.
-pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy
+pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy;
 
 /// Removes repetitions from an explicitly ordered set.
-pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy
+pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Finds the first occurrence of item `m` in slice `s` by full iteration.
-pub fn member<T>(s:&[T], m:T) -> Option<usize> where T: PartialOrd+Copy
+pub fn member<T>(s:&[T], m:T) -> Option<usize> where T: PartialOrd+Copy;
 
 /// Binary search of an explicitly sorted list (in ascending order).
-pub fn memsearch<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd
+pub fn memsearch<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd;
 
 /// Binary search of an explicitly sorted list (in descending order).
-pub fn memsearchdesc<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd
+pub fn memsearchdesc<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd;
 
 /// Binary search of an indexed list (in ascending order).
-pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where T: PartialOrd
+pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where T: PartialOrd;
 
 /// Binary search of an explicitly sorted list in ascending order.
-pub fn binsearch<T>(s:&[T], val:T)  -> usize where T: PartialOrd
+pub fn binsearch<T>(s:&[T], val:T)  -> usize where T: PartialOrd;
 
 /// Binary search of an explicitly sorted list in descending order.
-pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd
+pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd;
 
 /// Counts occurrences of val using ascending and descending sorts of some set
-pub fn occurs<T>(sasc:&[T],sdesc:&[T],val:T) -> usize where T: PartialOrd+Copy+Display
+pub fn occurs<T>(sasc:&[T],sdesc:&[T],val:T) -> usize where T: PartialOrd+Copy+Display;
 
 /// Unites two ascending explicitly sorted generic slices
-pub fn unite<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
+pub fn unite<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Unites two ascending index-sorted generic vectors.
-pub fn unite_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy
+pub fn unite_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Intersects two ascending explicitly sorted generic vectors.
-pub fn intersect<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
+pub fn intersect<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Intersects two ascending index-sorted generic vectors.
-pub fn intersect_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy
+pub fn intersect_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Sets difference: deleting elements of the second from the first.
-pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
+pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Sets difference: deleting elements of the second from the first.
-pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy
+pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Partition about pivot into two sets of indices
-pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize) where T: PartialOrd+Copy, f64: From<T>
+pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize) where T: PartialOrd+Copy, f64: From<T>;
 
 /// Merges two ascending sorted generic vectors.
-pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy
+pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Merges two ascending sort indices.
-pub fn merge_indexed<T>(v1:&[T], idx1: &[usize], v2: &[T], idx2: &[usize]) -> ( Vec<T>,Vec<usize> ) where T: PartialOrd+Copy
+pub fn merge_indexed<T>(v1:&[T], idx1: &[usize], v2: &[T], idx2: &[usize]) -> ( Vec<T>,Vec<usize> ) where T: PartialOrd+Copy;
 
 /// Merges the sort indices of two concatenated vectors.
 fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>
-    where T: PartialOrd+Copy
+    where T: PartialOrd+Copy;
 
 /// Doubly recursive non-destructive merge sort.
 pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize>
-    where T: PartialOrd+Copy
+    where T: PartialOrd+Copy;
 
 /// A wrapper for mergesort, to obtain the sort index
-pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy
+pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy;
 
 /// Immutable sort. Returns new sorted vector (ascending or descending)
-pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy
+pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity
-pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy
+pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy;
 ```
 
 #### Functions in module `src/random.rs`
@@ -195,19 +195,19 @@ pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy
 ```Rust
 /// Generates f64 random number in the the standardised interval [0,1)
 #[inline]
-pub fn ranf64(rseed: &mut u64) -> f64
+pub fn ranf64(rseed: &mut u64) -> f64;
 
 /// Generates vector of random numbers in the interval [0_f64,1_f64)
-pub fn ranvf64(size: usize, seed: &mut u64) -> Vec<f64>
+pub fn ranvf64(size: usize, seed: &mut u64) -> Vec<f64>;
 
 /// Generates vector of random numbers in the interval [0_u8,255_u8].
-pub fn ranvu8(size: usize, seed: &mut u64) -> Vec<u8>
+pub fn ranvu8(size: usize, seed: &mut u64) -> Vec<u8>;
 
 /// Generates n vectors of size d, filled with random numbers in the interval [0_f64,1_f64).
-pub fn ranvvf64(d: usize, n: usize, seed: &mut u64) -> Vec<Vec<f64>>
+pub fn ranvvf64(d: usize, n: usize, seed: &mut u64) -> Vec<Vec<f64>>;
 
 /// Generates n vectors of size d, filled with random numbers in the interval [0_u8;255_u8]
-pub fn ranvvu8(d: usize, n: usize, seed: &mut u64) -> Vec<Vec<u8>>
+pub fn ranvvu8(d: usize, n: usize, seed: &mut u64) -> Vec<Vec<u8>>;
 ```
 
 ## Release Notes (Latest First)
