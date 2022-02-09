@@ -6,10 +6,10 @@ use ran::*;
 
 #[test]
 fn indxvec() {
-    set_seed(555);
-    let v1 = ranvu8(20);
-    println!("\nv1: {}", v1.gr());
-    let v2 = ranvu8(20);
+    let mut seeds = set_xoshiro(123456789);
+    let v1 = ranvu8_xoshiro(&mut seeds,20);
+    println!("\nv1: {}", v1.gr());  
+    let v2 = ranvu8_xoshiro(&mut seeds,20);
     println!("v2: {}", v2.gr());
     println!("Minmax:       {}", minmax(&v1));
     println!("minmaxt:      {GR}{:?}{UN}", minmaxt(&v1));
