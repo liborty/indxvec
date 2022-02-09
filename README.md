@@ -14,7 +14,6 @@ The facilities provided are:
 * ranking, sorting, merging, searching, indexing, selecting, partitioning
 * general operations on/with indices
 * set operations
-* simple and efficient random numbers, mostly for testing
 * printing of generic slices and slices of vectors
 * macro for easy error reporting
 
@@ -39,16 +38,9 @@ Optionally, it enables printing in bold green for adding emphasis (see `tests/te
 
 These functions are  applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
 
-#### Use functions from `random.rs`
-
-`use indxvec::{random::*};`
-
-These functions will create various vectors and vectors of vectors (matrices),
-filled with random numbers. Very fast and useful for testing. They take an argument `&mut seed`, declared as follows: `mut seed:u64 = initvalue;`. It can be reset at any time to any new value to initiate a new sequence.
-
 ### The following statement will import everything:
 
-`use indxvec::{GR,UN,MinMax,here,tof64,merge::*,random::*,Indices,Printing};`
+`use indxvec::{GR,UN,MinMax,here,tof64,merge::*,Indices,Printing};`
 
 ## Testing
 
@@ -191,27 +183,9 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy;
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy;
 ```
 
-#### Functions in module `src/random.rs`
-
-```Rust
-/// Generates f64 random number in the the standardised interval [0,1)
-#[inline]
-pub fn ranf64(rseed: &mut u64) -> f64;
-
-/// Generates vector of random numbers in the interval [0_f64,1_f64)
-pub fn ranvf64(size: usize, seed: &mut u64) -> Vec<f64>;
-
-/// Generates vector of random numbers in the interval [0_u8,255_u8].
-pub fn ranvu8(size: usize, seed: &mut u64) -> Vec<u8>;
-
-/// Generates n vectors of size d, filled with random numbers in the interval [0_f64,1_f64).
-pub fn ranvvf64(d: usize, n: usize, seed: &mut u64) -> Vec<Vec<f64>>;
-
-/// Generates n vectors of size d, filled with random numbers in the interval [0_u8;255_u8]
-pub fn ranvvu8(d: usize, n: usize, seed: &mut u64) -> Vec<Vec<u8>>;
-```
-
 ## Release Notes (Latest First)
+
+**Version 1.0.8** - Dependencies reorganization to minimise the footprint. The random numbers generation has now been moved to its own new crate `ran` and added here just as a development dependency.
 
 **Version 1.0.7** - Renamed function `occurs` to `occurs_multiple` and added a simple linear count of item occurences: `occurs`.
 

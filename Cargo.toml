@@ -1,6 +1,6 @@
 [package]
 name = "indxvec"
-version = "1.0.7"
+version = "1.0.8"
 authors = ["Libor Spacek"]
 edition = "2021"
 description = """Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."""
@@ -8,7 +8,7 @@ readme = "README.md"
 homepage = "https://github.com/liborty/indxvec"
 repository = "https://github.com/liborty/indxvec"
 license = "Apache-2.0"
-keywords = ["merge-sort","set-operations","ranking-searching","random","generic-vectors"]
+keywords = ["merge-sort","set-operations","ranking-searching","printing-vectors","generic"]
 categories = ["mathematics","algorithms","data-structures","rust-patterns","simulation"]
 include = [
     "src/*.rs",
@@ -20,4 +20,5 @@ include = [
 [badges]
 maintenance = { status = "actively-developed" }
 [lib]
-[dependencies]
+[dev-dependencies]
+ran = "^0.1"

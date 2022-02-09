@@ -1,7 +1,6 @@
 pub mod indices;  // implementation for trait Indices
 pub mod printing; // implementations for trait Printing<T>
 pub mod merge;    // set manipulating functions
-pub mod random;   // fast random number generation functions
 
 /// When printed, turns the terminal foreground rendering to bold green
 pub const GR: &str = "\x1B[01;32m";

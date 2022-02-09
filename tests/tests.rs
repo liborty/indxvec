@@ -1,14 +1,15 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use indxvec::{merge::*, random::*, Indices, Printing, GR, UN};
+use indxvec::{merge::*, Indices, Printing, GR, UN};
+use ran::*;
 
 #[test]
 fn indxvec() {
-    let mut seed: u64 = 555;
-    let v1 = ranvu8(20, &mut seed);
+    set_seed(555);
+    let v1 = ranvu8(20);
     println!("\nv1: {}", v1.gr());
-    let v2 = ranvu8(20, &mut seed);
+    let v2 = ranvu8(20);
     println!("v2: {}", v2.gr());
     println!("Minmax:       {}", minmax(&v1));
     println!("minmaxt:      {GR}{:?}{UN}", minmaxt(&v1));
