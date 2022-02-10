@@ -44,7 +44,7 @@ fn indxvec() {
     println!("Spearman corr v1,v2: {}",rank(&v1, true).ucorrelation(&rank(&v2, true)).gr()); //  1 for any Vec
     //println!("Spearman corr against reversed: {}",
     //    rank(&v1, true).ucorrelation(&rank(&v1, false)).gr()); // -1 for any Vec
-    let (vm, vi) = merge_indexed(&v1, &sortidx(&v1), &v2, &sortidx(&v2)); // merge two vecs using their sort indices
+    let (vm, vi) = merge_indexed(&v1, &hashsort(&v1), &v2, &hashsort(&v2)); // merge two vecs using their sort indices
     let sorted = vi.unindex(&vm, true);
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.gr());
     let sorteddesc = vi.unindex(&vm, false);
@@ -57,8 +57,8 @@ fn indxvec() {
         memsearch_indexed(&vm, &vi, 105).map_or_else(|| "None".gr(), |x| x.gr()));
     println!("Memsearch_indexed for 105, found at: {}",
         memsearchdesc_indexed(&vm, &vi.revindex(), 105).map_or_else(|| "None".gr(), |x| x.gr()));
-    println!("Occurrences count of 105: {}",occurs(&sorted, 105).gr());
-    println!("Occurrences count of 105: {}",occurs_multiple(&sorted,&sorteddesc,105).gr());
+    println!("Occurrences count of 170: {}",occurs(&sorted, 170).gr());
+    println!("Occurrences count of 170: {}",occurs_multiple(&sorted,&sorteddesc,170).gr());
     println!("Intersect_indexed: {}",intersect_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
     println!("Diff_indexed: {}",diff_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
     println!("Sansrepeat:   {}\n", sansrepeat(&sorted).gr());

@@ -962,8 +962,8 @@ where T: PartialOrd + Copy + Sub<Output=T>, f64:From<T>
     let minmax = minmax_indexed(s, idx, i, n);
     if minmax.min == minmax.max { return; } // items are all equal, nothing to sort
     // now swap minindex to the beginning of the index, its rightful sorted place
-    testswap(s,idx,i,minmax.minindex); 
-    testswap(s,idx,minmax.maxindex,i+n-1);  // same for maxindex
+    let mut hold = idx[i]; idx[i] = minmax.minindex; idx[minmax.minindex] = hold;
+    hold = idx[i+n-1]; idx[i+n-1] = minmax.maxindex; idx[minmax.maxindex] = hold; 
     // Now check again if we can terminate
     if n == 4 { testswap(s,idx,i+1,i+2); return; }; // swap the two middle index items
     if n == 5 { // insertion sort the three middle items 
@@ -979,10 +979,10 @@ where T: PartialOrd + Copy + Sub<Output=T>, f64:From<T>
     let mut freqvec:Vec<Vec<usize>> = vec![Vec::new();n+1];
     // group items from our remaining index list by linear hash transformation 
     // into buckets for similar values
-    for &xi in idx.iter().skip(i).take(n) { 
+    for &xi in idx.iter().skip(i+1).take(n-2) { 
         freqvec[(f64::from(s[xi]-minmax.min)*hash).floor()as usize].push(xi) }
     // flatten the buckets into the original index list 
-    let mut isub = i;
+    let mut isub = i+1;
     for v in freqvec { 
         let vlen = v.len();
         if vlen == 0 { continue; }; // empty bucket, there will be quite a few
