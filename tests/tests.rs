@@ -17,7 +17,7 @@ fn indxvec() {
     println!( "Partition indices around 128:\n{}\n{}", lset.gr(),gset.gr() );
     println!("Ranks to f64: {}", rank(&v1, true).gr());
     println!("Sorted:       {}", sortm(&v1, true).gr()); // sorted data but index lost
-    println!("Sorted:       {}", sortidx(&v1).unindex(&v1, true).gr()); // same as sortm
+    println!("Sorted:       {}", hashsort(&v1).unindex(&v1, true).gr()); // new hashsort
     println!("Sorted:       {}", rank(&v1, false).invindex().unindex(&v1, false).gr() );
     println!("Ranks:        {}", rank(&v1, true).gr()); // how to get ranks
     println!("Ranks:        {}", rank(&v1, true).complindex().complindex().gr() ); // symmetry
@@ -29,6 +29,7 @@ fn indxvec() {
     println!("Ranks desc:   {}", rank(&v1, true).complindex().gr()); // descending ranks, not the same as ranks reversed!!
     println!("Ranks desc:   {}", sortidx(&v1).invindex().complindex().gr()); // descending ranks, not the same as ranks reversed!!
     println!("Sort index:   {}", sortidx(&v1).gr()); // sortindex, can be unindexed at anytime
+    println!("Sort index:   {}", hashsort(&v1).gr()); 
     println!("Sortix rev:   {}", sortidx(&v1).revindex().gr());
     println!("Sortix rev:   {}", rank(&v1, false).invindex().gr()); // descending sort index from desc ranks
     println!("Ranks to idx: {}", rank(&v1, true).invindex().gr()); // ascending sort index from ascending ranks

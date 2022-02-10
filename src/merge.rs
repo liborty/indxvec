@@ -2,6 +2,8 @@
 use crate::Indices;
 use crate::{here, MinMax};
 // use std::fmt::Display;
+use std::iter::FromIterator;
+use std::ops::Sub;
 
 /// Maximum value T of slice &[T]
 pub fn maxt<T>(v: &[T]) -> T
@@ -36,16 +38,35 @@ pub fn minmaxt<T>(v: &[T]) -> (T, T)
 where
     T: PartialOrd + Copy,
 {
-    let mut x1 = &v[0];
+    let mut x1 = v[0];
     let mut x2 = x1;
-    v.iter().skip(1).for_each(|s| {
+    v.iter().skip(1).for_each(|&s| {
         if s < x1 {
             x1 = s
         } else if s > x2 {
             x2 = s
         };
     });
-    (*x1, *x2)
+    (x1, x2)
+}
+
+/// Minimum and maximum (T,T) of a slice &[T]
+/// found indirectly through its index from i to i+n
+pub fn minmax_indexed<T>(v:&[T], idx:&[usize], i:usize, n:usize) -> MinMax<T>
+where
+    T: PartialOrd + Copy,
+{
+    let mut min = v[idx[i]];
+    let mut max = min;
+    let (mut minindex, mut maxindex) = (i, i); // indices of min, max 
+    idx.iter().skip(i+1).take(n-1).for_each(|&s| {
+        if v[s] < min {
+            min = v[s]; minindex = s;
+        } else if v[s] > max {
+            max = v[s]; maxindex = s;
+        };
+    });
+    MinMax { min, minindex, max, maxindex }
 }
 
 /// Minimum, minimum's first index, maximum, maximum's first index
@@ -897,4 +918,77 @@ where
         }
     }
     rankvec
+}
+
+/// swap any two index items, if they are out of ascending order
+fn testswap<T>(s: &[T],  idx: &mut[usize], i1: usize, i2: usize) 
+where T: PartialOrd + Copy { 
+    if s[idx[i1]] > s[idx[i2]] { 
+        let hold = idx[i1]; 
+        idx[i1] = idx[i2]; 
+        idx[i2] = hold 
+    };
+}
+
+/// N recursive non-destructive hash sort.
+/// Input data is not moved or mutated, only the index values are reshuffled.
+/// Returns a vector of indices to s from i to i+n, with initial values 0 to n,
+/// such that the indexed values are in ascending sort order (a sort index).
+pub fn hashsort<T>(s: &[T]) -> Vec<usize>
+where T: PartialOrd + Copy + Sub<Output=T>, f64:From<T> {
+    let n = s.len();
+    let mut idx = Vec::from_iter(0..n); // generate an initial mutable index
+    hashsortrec(s,&mut idx,0,n); // sorts idx
+    idx
+}
+
+fn hashsortrec<T>(s: &[T], idx: &mut[usize], i: usize, n: usize) 
+where T: PartialOrd + Copy + Sub<Output=T>, f64:From<T>
+{
+    if n == 1 { return; }; // nothing to sort here, recursion termination 
+    if n == 2 { 
+        testswap(s, idx,i,i+1);  // swap these two index items  
+        return; 
+    };
+    if n == 3 { // insertion sort three items
+        testswap(s,idx,i,i+1);
+        testswap(s,idx,i+1,i+2);
+        testswap(s,idx,i,i+1);
+        return;
+    }
+    // The probability of a bucket containing more than three items is low,
+    // so we can afford relatively expensive search for their minmax values
+    let minmax = minmax_indexed(s, idx, i, n);
+    if minmax.min == minmax.max { return; } // items are all equal, nothing to sort
+    // now swap minindex to the beginning of the index, its rightful sorted place
+    testswap(s,idx,i,minmax.minindex); 
+    testswap(s,idx,minmax.maxindex,i+n-1);  // same for maxindex
+    // Now check again if we can terminate
+    if n == 4 { testswap(s,idx,i+1,i+2); return; }; // swap the two middle index items
+    if n == 5 { // insertion sort the three middle items 
+        testswap(s,idx,i+1,i+2);
+        testswap(s,idx,i+2,i+3);
+        testswap(s,idx,i+1,i+2);
+        return;
+    };
+    // Now, for n > 5, there is nothing for it but to do some proper sorting
+    let hash:f64 = (n as f64) / f64::from(minmax.max-minmax.min); 
+    // histogram (probability density function)
+    // add one overflow bucket as some remaining repeated max values may map to n
+    let mut freqvec:Vec<Vec<usize>> = vec![Vec::new();n+1];
+    // group items from our remaining index list by linear hash transformation 
+    // into buckets for similar values
+    for &xi in idx.iter().skip(i).take(n) { 
+        freqvec[(f64::from(s[xi]-minmax.min)*hash).floor()as usize].push(xi) }
+    // flatten the buckets into the original index list 
+    let mut isub = i;
+    for v in freqvec { 
+        let vlen = v.len();
+        if vlen == 0 { continue; }; // empty bucket, there will be quite a few
+        // overwriting the index in order with the grouped copies from freqvec v
+        for item in v { idx[isub] = item; isub += 1; } 
+        // recurse on each non empty bucket
+        hashsortrec(s,idx,isub-vlen,vlen); 
+    }
+    // nothing more to do
 }

@@ -107,6 +107,9 @@ pub fn mint<T>(v:&[T]) -> T where T:PartialOrd+Copy;
 /// Minimum and maximum (T,T) of a slice &[T]
 pub fn minmaxt<T>(v:&[T]) -> (T,T) where T:PartialOrd+Copy;
 
+/// Minimum and maximum (T,T) of a slice &[T] though its index idx from i to n
+pub fn minmax_indexed<T>(v:&[T], idx:&[usize], i:usize, n:usize) -> (T, T)
+
 /// Minimum, minimum's first index, maximum, maximum's first index
 pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy;
 
@@ -181,9 +184,14 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy;
+
+/// N recursive non-destructive hash sort. Returns sortindex
+pub fn hashsort<T>(s: &[T]) -> Vec<usize>;
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.0** - Added superfast n-recursive `hashsort`. Suitable for multithreading (todo).
 
 **Version 1.0.9** - Minor changes to testing.rs to better test `ran`.
 
