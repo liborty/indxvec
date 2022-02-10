@@ -93,9 +93,11 @@ pub trait Printing<T> {
 }
 ```
 
-## Functions Signatures
+## Functions 
 
-#### Functions in module `src/merge.rs`:
+The new `hashsort` really wins on longer lists. For lists of the order of one thousand items it is about 15% faster that the standard Rust sort. At around ten thousand items it is already about 30% faster.
+
+### Signatures of public functions in module `src/merge.rs`:
 
 ```Rust
 /// Maximum value T of slice &[T]
@@ -123,13 +125,14 @@ pub fn sansrepeat<T>(s:&[T]) -> Vec<T> where T: PartialOrd+Copy;
 pub fn member<T>(s:&[T], m:T) -> Option<usize> where T: PartialOrd+Copy;
 
 /// Binary search of an explicitly sorted list (in ascending order).
-pub fn memsearch<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd;
+pub fn memsearch<T>(s:&[T], val: T) -> Option<usize> where T: PartialOrd;
 
 /// Binary search of an explicitly sorted list (in descending order).
-pub fn memsearchdesc<T>(s:&[T], val: T)  -> Option<usize> where T: PartialOrd;
+pub fn memsearchdesc<T>(s:&[T], val: T) -> Option<usize> where T: PartialOrd;
 
 /// Binary search of an indexed list (in ascending order).
-pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T)  -> Option<usize> where T: PartialOrd;
+pub fn memsearch_indexed<T>(s:&[T], i:&[usize], val: T) -> Option<usize>  
+where T: PartialOrd;
 
 /// Binary search of an explicitly sorted list in ascending order.
 pub fn binsearch<T>(s:&[T], val:T)  -> usize where T: PartialOrd;
@@ -141,40 +144,49 @@ pub fn binsearchdesc<T>(s:&[T], val:T) -> usize where T: PartialOrd;
 pub fn occurs<T>(set: &[T], val:T) -> usize where T: PartialOrd+Copy;
 
 /// Counts occurrences of val by binary search, using previously obtained sorts.
-pub fn occurs_multiple<T>(sasc: &[T], sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
+pub fn occurs_multiple<T>(sasc: &[T], sdesc: &[T], val: T) -> usize  
+where T: PartialOrd+Copy;
 
 /// Unites two ascending explicitly sorted generic slices
 pub fn unite<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Unites two ascending index-sorted generic vectors.
-pub fn unite_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy;
+pub fn unite_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>  
+where T: PartialOrd+Copy;
 
 /// Intersects two ascending explicitly sorted generic vectors.
-pub fn intersect<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+pub fn intersect<T>(v1: &[T], v2: &[T]) -> Vec<T>
+where T: PartialOrd+Copy;
 
 /// Intersects two ascending index-sorted generic vectors.
-pub fn intersect_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy;
+pub fn intersect_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>  
+where T: PartialOrd+Copy;
 
 /// Sets difference: deleting elements of the second from the first.
 pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Sets difference: deleting elements of the second from the first.
-pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T> where T: PartialOrd+Copy;
+pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>  
+where T: PartialOrd+Copy;
 
 /// Partition about pivot into two sets of indices
-pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize>) where T: PartialOrd+Copy;
+pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize>)  
+where T: PartialOrd+Copy;
 
 /// Merges two ascending sorted generic vectors.
 pub fn merge<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 
 /// Merges two ascending sort indices.
-pub fn merge_indexed<T>(v1:&[T], idx1: &[usize], v2: &[T], idx2: &[usize]) -> ( Vec<T>,Vec<usize> ) where T: PartialOrd+Copy;
+pub fn merge_indexed<T>(v1:&[T], idx1: &[usize], v2: &[T], idx2: &[usize]) -> ( Vec<T>,Vec<usize> )  
+where T: PartialOrd+Copy;
 
 /// Merges the sort indices of two concatenated vectors.
-fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize> where T: PartialOrd+Copy;
+fn merge_indices<T>(s: &[T], idx1:&[usize], idx2:&[usize]) -> Vec<usize>  
+where T: PartialOrd+Copy;
 
 /// Doubly recursive non-destructive merge sort.
-pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize> where T: PartialOrd+Copy;
+pub fn mergesort<T>(s:&[T], i:usize, n:usize) -> Vec<usize>  
+where T: PartialOrd+Copy;
 
 /// A wrapper for mergesort, to obtain the sort index
 pub fn sortidx<T>(s:&[T]) -> Vec<usize> where T:PartialOrd+Copy;

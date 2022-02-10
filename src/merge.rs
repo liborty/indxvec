@@ -957,7 +957,8 @@ where T: PartialOrd + Copy + Sub<Output=T>, f64:From<T>
         return;
     }
     // The probability of a bucket containing more than three items is low,
-    // so we can afford relatively expensive search for their minmax values
+    // so we can afford relatively expensive exhaustive search for their minmax values.
+    // It is not as extravagant as it looks, as we need min,max for the hash.
     let minmax = minmax_indexed(s, idx, i, n);
     if minmax.min == minmax.max { return; } // items are all equal, nothing to sort
     // now swap minindex to the beginning of the index, its rightful sorted place
