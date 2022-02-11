@@ -7,9 +7,9 @@ use ran::*;
 #[test]
 fn indxvec() {
     let mut seeds = set_xoshiro(123456789);
-    let v1 = ranvu8_xoshiro(&mut seeds,20);
+    let v1 = ranvu8_xoshiro(&mut seeds,19);
     println!("\nv1: {}", v1.gr());  
-    let v2 = ranvu8_xoshiro(&mut seeds,20);
+    let v2 = ranvu8_xoshiro(&mut seeds,19);
     println!("v2: {}", v2.gr());
     println!("Minmax:       {}", minmax(&v1));
     println!("minmaxt:      {GR}{:?}{UN}", minmaxt(&v1));
