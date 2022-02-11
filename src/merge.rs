@@ -58,13 +58,11 @@ where
 {
     let mut min = v[idx[i]];
     let mut max = min;
-    let (mut minindex, mut maxindex) = (i, i); // indices of min, max 
-    idx.iter().skip(i+1).take(n-1).for_each(|&s| {
-        if v[s] < min {
-            min = v[s]; minindex = s;
-        } else if v[s] > max {
-            max = v[s]; maxindex = s;
-        };
+    let mut minindex = i; // indices of indices of min, max 
+    let mut maxindex = minindex;
+    idx.iter().enumerate().skip(i+1).take(n-1).for_each(|(j,&ix)| {
+        if v[ix] < min { min = v[ix]; minindex = j; } 
+        else if v[ix] > max { max = v[ix]; maxindex = j; };
     });
     MinMax { min, minindex, max, maxindex }
 }
@@ -934,8 +932,10 @@ where T: PartialOrd + Copy {
 /// Input data is not moved or mutated, only the index values are reshuffled.
 /// Returns a vector of indices to s from i to i+n, with initial values 0 to n,
 /// such that the indexed values are in ascending sort order (a sort index).
-pub fn hashsort<T>(s: &[T]) -> Vec<usize>
+/// Requires min,max, an estimated range of the data.
+pub fn hashsort<T>(s: &[T], min:f64, max:f64) -> Vec<usize>
 where T: PartialOrd + Copy, f64:From<T> {
+    if min >= max { panic!("{} data range must be min < max",here!()); };
     let n = s.len();
     match n {
         0 => panic!("{} zero size vector",here!()),
@@ -950,51 +950,36 @@ where T: PartialOrd + Copy, f64:From<T> {
         },
         _ => {
             let mut idx = Vec::from_iter(0..n); // initial mutable index
-            hashsortrec(s,&mut idx,0,n); // sorts idx
+            hashsortrec(s,&mut idx,0,n,min,max); // sorts idx
             idx
         }
     }   
 }
 
-fn hashsortrec<T>(s: &[T], idx: &mut[usize], i: usize, n: usize) 
+fn hashsortrec<T>(s: &[T], idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
 where T: PartialOrd+Copy, f64:From<T>
 {    
- // Relatively expensive exhaustive search for minmax values.
- // It is not as extravagant as it seems, we need min,max for the hash.
-    let mx = minmax_indexed(s, idx, i, n); 
-    if mx.minindex == mx.maxindex { return; } // items are all equal, nothing to sort
-    // swap them to beginning and end of the index, their rightful sorted places
-    let mut hold = idx[i]; idx[i] = mx.minindex; idx[mx.minindex] = hold;
-    hold = idx[i+n-1]; idx[i+n-1] = mx.maxindex; idx[mx.maxindex] = hold; 
-    // Now check if we can terminate
-    if n == 4 { testswap(s,idx,i+1,i+2); return; }; // swap the two middle index items
-    if n == 5 { // insertion sort the three middle items 
-        testswap(s,idx,i+1,i+2);
-        testswap(s,idx,i+2,i+3);
-        testswap(s,idx,i+1,i+2);        
-        return;
-    };
-    // Now, for n > 5, there is nothing for it but to do some proper sorting
-    let hash:f64 = (n as f64) / (f64::from(mx.max)-f64::from(mx.min)); 
-    // histogram (probability density function)
-    // add one overflow bucket as some remaining repeated max values may map to n
+    if n == 0 { panic!("{} unexpected zero length",here!())}; 
+    // hash is a constant s.t. (x-min)*hash is in [0,n]  
+    let hash = (n as f64) / (max-min); 
+    // we allocate one extra bucket so that the max values do not cause overflow with subscript n
     let mut freqvec:Vec<Vec<usize>> = vec![Vec::new();n+1];
-    // group items from our remaining index list by linear hash transformation 
-    // into buckets for similar values
-    for &xi in idx.iter().skip(i+1).take(n-2) { 
-        (freqvec[(((f64::from(s[xi])-f64::from(mx.min))*hash).floor())as usize]).push(xi) }
+    // group current index items into buckets by their associated s[] values
+    for &xi in idx.iter().skip(i).take(n) { 
+        let sub:usize = (hash*(f64::from(s[xi])-min)).floor() as usize;
+        freqvec[sub].push(xi) }
 
     // flatten the buckets into the original index list 
-    let mut isub = i+1; // skipping the already placed min 
-    for v in freqvec { 
+    let mut isub = i; 
+    for (vsub,v) in freqvec.iter().enumerate() { 
         let vlen = v.len();
-        // println!("{}",vlen);
+        // print!("{} ",vlen);
         match vlen {
         0 => continue, // empty bucket
         1 => { idx[isub] = v[0]; isub += 1; }, // copy the item to the main index
         2 => { 
-            if s[v[0]] > s[v[1]] { idx[isub] = v[1]; idx[isub+1] = v[0]; }
-            else { idx[isub] = v[0]; idx[isub+1] = v[1]; }; 
+            idx[isub] = v[0]; idx[isub+1] = v[1];
+            testswap(s,idx,isub,isub+1); 
             isub += 2 
         },
         3 => {
@@ -1005,9 +990,10 @@ where T: PartialOrd+Copy, f64:From<T>
             isub += 3
         },
         _ => {
-        // first fill the index with the grouped items from v
-        for item in v { idx[isub] = item; isub += 1; }  
-        hashsortrec(s,idx,isub-vlen,vlen);
+            // first fill the index with the grouped items from v
+            for &item in v { idx[isub] = item; isub += 1; }; 
+            let vsubf = vsub as f64;  
+            hashsortrec(s,idx,isub-vlen,vlen,vsubf/hash,(1.0+vsubf)/hash);
         }
         } 
     }

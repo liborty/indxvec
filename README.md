@@ -197,11 +197,14 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy;
 /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy;
 
-/// N recursive non-destructive hash sort. Returns sortindex
-pub fn hashsort<T>(s: &[T]) -> Vec<usize>;
+/// N recursive non-destructive hash sort. 
+/// Requires min,max, an estimated range of the data.
+pub fn hashsort<T>(s: &[T], min:f64, max:f64) -> Vec<usize>
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.1** - `hashsort` improved.
 
 **Version 1.1.0** - Added superfast n-recursive `hashsort`. Suitable for multithreading (todo).
 
