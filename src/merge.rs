@@ -983,33 +983,37 @@ where T: PartialOrd+Copy, f64:From<T>
             testswap(s,idx,isub,isub+1);
             isub += 3;
         },
-        x if x == n => { // only this bucket, items are most likely all equal
+        x if x == n => { 
+            // this bucket alone is populated, 
+            // items in it are most likely all equal
             let mx = minmax_indexed(s, idx, isub, vlen);
             if mx.minindex < mx.maxindex { // recurse with the new range 
-                let mut hold = idx[i]; // swap minindex to start
+                let mut hold = idx[i]; // swap minindex to the front
                 idx[i] = idx[mx.minindex]; 
                 idx[mx.minindex] = hold;
-                hold = idx[i+n-1]; // swap maxindex to end
+                hold = idx[i+n-1]; // swap maxindex to the end
                 idx[i+n-1] = idx[mx.maxindex]; 
                 idx[mx.maxindex] = hold;
+                // recurse to sort the rest
                 hashsortrec(s,idx,i+1,n-2,f64::from(mx.min),f64::from(mx.max)); 
             };
-            return; // items are all equal, nothing else to sort
+            return; // all items were equal, or are now sorted
         },
         _ => { 
             // first fill the index with the grouped items from v
             let isubprev = isub;
             for &item in v { idx[isub] = item; isub += 1; }; 
             let mx = minmax_indexed(s, idx, isubprev, vlen);
-            if mx.minindex < mx.maxindex { // recurse with the new range 
-                let mut hold = idx[isubprev]; // swap minindex to start
+            if mx.minindex < mx.maxindex { // else are all equal 
+                let mut hold = idx[isubprev]; // swap minindex to the front
                 idx[isubprev] = idx[mx.minindex]; 
                 idx[mx.minindex] = hold;
-                hold = idx[isub-1]; // swap maxindex to end
+                hold = idx[isub-1]; // swap maxindex to the end
                 idx[isub-1] = idx[mx.maxindex]; 
                 idx[mx.maxindex] = hold;
+                // recurse to sort the rest
                 hashsortrec(s,idx,isubprev+1,vlen-2,f64::from(mx.min),f64::from(mx.max)); 
-            };
+            }; // these items were equal or are now sorted
         } 
         /*
         _ => { 
