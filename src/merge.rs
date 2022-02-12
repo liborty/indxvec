@@ -1,9 +1,6 @@
-// use std::cmp::Ordering;
 use crate::Indices;
 use crate::{here, MinMax};
-// use std::fmt::Display;
 use std::iter::FromIterator;
-// use std::ops::Sub;
 
 /// Maximum value T of slice &[T]
 pub fn maxt<T>(v: &[T]) -> T
@@ -74,6 +71,22 @@ where
     }
 }
 
+/// Using only a subset of v, defined by its idx subslice between i,i+n.
+/// Returns min of v, its index's index, max of v, its index's index.
+pub fn minmax_indexed<T>(v:&[T], idx:&[usize], i:usize, n:usize) -> MinMax<T>
+where
+    T: PartialOrd + Copy,
+{
+    let mut min = v[idx[i]];
+    let mut max = min;
+    let mut minix = 0; // indices of indices of min, max 
+    let mut maxix = minix;
+    for (ii,&ix) in idx.iter().enumerate().skip(i+1).take(n-1) {
+        if v[ix] < min { min = v[ix]; minix = ii; } 
+        else if v[ix] > max { max = v[ix]; maxix = ii; };
+    };
+    MinMax { min, minindex:minix, max, maxindex:maxix }
+}
 /// Reverse a generic slice by reverse iteration.
 /// Creates a new Vec. Its naive use for descending sort etc.
 /// is to be avoided for efficiency reasons.
@@ -913,8 +926,8 @@ where T: PartialOrd + Copy {
 
 /// N recursive non-destructive hash sort.
 /// Input data are read only. Output is sort index.
-/// Requires min,max, an estimated range of the data, that must enclose all
-/// its values. This is often known in advance or can be obtained with `minmaxt`.
+/// Requires min,max, the data range, that must enclose all its values. 
+/// The range is often known. If not, it can be obtained with `minmaxt`.
 pub fn hashsort<T>(s: &[T], min:f64, max:f64) -> Vec<usize>
 where T: PartialOrd + Copy, f64:From<T> {
     if min >= max { panic!("{} data range must be min < max",here!()); };
@@ -940,44 +953,74 @@ where T: PartialOrd + Copy, f64:From<T> {
 
 fn hashsortrec<T>(s: &[T], idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
 where T: PartialOrd+Copy, f64:From<T>
-{    
-    if n == 0 { panic!("{} unexpected zero length",here!())}; 
-    if max == min { return };
-    // hash is a constant s.t. (x-min)*hash is in [0,n]  
-    let hash = (n as f64) / (max-min); 
+{ 
+    if n == 0 { panic!("{} unexpected zero length",here!())};  
+    // hash is a constant s.t. (x-min)*hash is in [0,n) 
+    let hash = (n as f64 - 1e-10 ) / (max-min); 
     // we allocate one extra bucket so that the max values do not cause overflow with subscript n
-    let mut freqvec:Vec<Vec<usize>> = vec![Vec::new();n+1];
+    let mut freqvec:Vec<Vec<usize>> = vec![Vec::new();n];
     // group current index items into buckets by their associated s[] values
     for &xi in idx.iter().skip(i).take(n) { 
-        let sub:usize = (hash*(f64::from(s[xi])-min)).floor() as usize;
-        freqvec[sub].push(xi) }
-
+        freqvec[(hash*(f64::from(s[xi])-min)).floor() as usize].push(xi);
+    }
     // flatten the buckets into the original index list 
     let mut isub = i; 
-    for (vsub,v) in freqvec.iter().enumerate() { 
-        let vlen = v.len();
+    for v in freqvec.iter() { 
+        let vlen = v.len();     
         // print!("{} ",vlen);
         match vlen {
         0 => continue, // empty bucket
         1 => { idx[isub] = v[0]; isub += 1; }, // copy the item to the main index
         2 => { 
-            idx[isub] = v[0]; idx[isub+1] = v[1];
-            testswap(s,idx,isub,isub+1); 
-            isub += 2 
+            if s[v[1]] < s[v[0]] { idx[isub] = v[1]; idx[isub+1] = v[0];}
+            else { idx[isub] = v[0]; idx[isub+1] = v[1]; };  
+            isub += 2; 
         },
         3 => {
             idx[isub] = v[0]; idx[isub+1] = v[1]; idx[isub+2] = v[2];   
             testswap(s,idx,isub,isub+1);
             testswap(s,idx,isub+1,isub+2);
             testswap(s,idx,isub,isub+1);
-            isub += 3
+            isub += 3;
         },
-        _ => {
+        x if x == n => { // only this bucket, items are most likely all equal
+            let mx = minmax_indexed(s, idx, isub, vlen);
+            if mx.minindex < mx.maxindex { // recurse with the new range 
+                let mut hold = idx[i]; // swap minindex to start
+                idx[i] = idx[mx.minindex]; 
+                idx[mx.minindex] = hold;
+                hold = idx[i+n-1]; // swap maxindex to end
+                idx[i+n-1] = idx[mx.maxindex]; 
+                idx[mx.maxindex] = hold;
+                hashsortrec(s,idx,i+1,n-2,f64::from(mx.min),f64::from(mx.max)); 
+            };
+            return; // items are all equal, nothing else to sort
+        },
+        _ => { 
+            // first fill the index with the grouped items from v
+            let isubprev = isub;
+            for &item in v { idx[isub] = item; isub += 1; }; 
+            let mx = minmax_indexed(s, idx, isubprev, vlen);
+            if mx.minindex < mx.maxindex { // recurse with the new range 
+                let mut hold = idx[isubprev]; // swap minindex to start
+                idx[isubprev] = idx[mx.minindex]; 
+                idx[mx.minindex] = hold;
+                hold = idx[isub-1]; // swap maxindex to end
+                idx[isub-1] = idx[mx.maxindex]; 
+                idx[mx.maxindex] = hold;
+                hashsortrec(s,idx,isubprev+1,vlen-2,f64::from(mx.min),f64::from(mx.max)); 
+            };
+        } 
+        /*
+        _ => { 
             // first fill the index with the grouped items from v
             for &item in v { idx[isub] = item; isub += 1; }; 
-            let vsubf = vsub as f64;  
-            hashsortrec(s,idx,isub-vlen,vlen,vsubf/hash,(1.0+vsubf)/hash);
-        }
+            let vsubf = vsub as f64; 
+            // println!("hashsortrec {} {} {} {}",
+            //    isub-vlen,vlen,min+vsubf/hash,min+(vsubf+1.0)/hash);  
+            hashsortrec(s,idx,isub-vlen,vlen,min+(vsubf)/hash,min+(vsubf+1.0)/hash);
+        } 
+        */
         } 
     }
 }

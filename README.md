@@ -127,6 +127,11 @@ pub fn minmaxt<T>(v:&[T]) -> (T,T) where T:PartialOrd+Copy;
 /// Minimum, minimum's first index, maximum, maximum's first index
 pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy;
 
+/// Using only a subset of v, defined by its idx subslice between i,i+n.
+/// Returns min of v, its index's index, max of v, its index's index.
+pub fn minmax_indexed<T>(v:&[T], idx:&[usize], i:usize, n:usize) -> MinMax<T>
+where T: PartialOrd + Copy;
+
 /// Reverse a generic slice by reverse iteration.
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy;
 
@@ -215,9 +220,7 @@ pub fn hashsort<T>(s: &[T], min:f64, max:f64) -> Vec<usize>
 
 ## Release Notes (Latest First)
 
-**Version 1.1.2** - Added `.red()` method to `Printing`. Some tidying up of `tests.rs` and the docs.
-
-**Version 1.1.1** - `hashsort` improved.
+**Version 1.1.2** - Added `.red()` method to `Printing`. Some tidying up of `tests.rs` and the docs. `hashsort` improved.
 
 **Version 1.1.0** - Added superfast n-recursive `hashsort`. Suitable for multithreading (todo).
 
