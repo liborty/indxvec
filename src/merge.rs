@@ -50,23 +50,6 @@ where
     (x1, x2)
 }
 
-/// Minimum and maximum (T,T) of a slice &[T]
-/// found indirectly through its index from i to i+n
-pub fn minmax_indexed<T>(v:&[T], idx:&[usize], i:usize, n:usize) -> MinMax<T>
-where
-    T: PartialOrd + Copy,
-{
-    let mut min = v[idx[i]];
-    let mut max = min;
-    let mut minindex = i; // indices of indices of min, max 
-    let mut maxindex = minindex;
-    idx.iter().enumerate().skip(i+1).take(n-1).for_each(|(j,&ix)| {
-        if v[ix] < min { min = v[ix]; minindex = j; } 
-        else if v[ix] > max { max = v[ix]; maxindex = j; };
-    });
-    MinMax { min, minindex, max, maxindex }
-}
-
 /// Minimum, minimum's first index, maximum, maximum's first index
 pub fn minmax<T>(v: &[T]) -> MinMax<T>
 where
@@ -929,10 +912,9 @@ where T: PartialOrd + Copy {
 }
 
 /// N recursive non-destructive hash sort.
-/// Input data is not moved or mutated, only the index values are reshuffled.
-/// Returns a vector of indices to s from i to i+n, with initial values 0 to n,
-/// such that the indexed values are in ascending sort order (a sort index).
-/// Requires min,max, an estimated range of the data.
+/// Input data are read only. Output is sort index.
+/// Requires min,max, an estimated range of the data, that must enclose all
+/// its values. This is often known in advance or can be obtained with `minmaxt`.
 pub fn hashsort<T>(s: &[T], min:f64, max:f64) -> Vec<usize>
 where T: PartialOrd + Copy, f64:From<T> {
     if min >= max { panic!("{} data range must be min < max",here!()); };
@@ -960,6 +942,7 @@ fn hashsortrec<T>(s: &[T], idx: &mut[usize], i: usize, n: usize, min:f64, max:f6
 where T: PartialOrd+Copy, f64:From<T>
 {    
     if n == 0 { panic!("{} unexpected zero length",here!())}; 
+    if max == min { return };
     // hash is a constant s.t. (x-min)*hash is in [0,n]  
     let hash = (n as f64) / (max-min); 
     // we allocate one extra bucket so that the max values do not cause overflow with subscript n

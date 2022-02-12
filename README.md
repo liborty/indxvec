@@ -19,9 +19,9 @@ The facilities provided are:
 
 ## Usage
 
-#### Import into your source file(s) constants `GR,UN` for colour printing, struct `MinMax`, macro `here!()` and `tof64`  auxiliary function, if needed
+#### Import into your source file(s) constants `GR,RD,UN` for colour printing, struct `MinMax`, macro `here!()` and `tof64`  auxiliary function, as needed
 
-`use indxvec::{GR,UN,MinMax,here,tof64};`
+`use indxvec::{GR,RD,UN,MinMax,here,tof64};`
 
 #### Use traits `Indices` and/or `Printing`
 
@@ -40,7 +40,7 @@ These functions are  applicable to generic slices `&[T]`. Thus they will work on
 
 ### The following statement will import everything:
 
-`use indxvec::{GR,UN,MinMax,here,tof64,merge::*,Indices,Printing};`
+`use indxvec::{GR,RD,UN,MinMax,here,tof64,merge::*,Indices,Printing};`
 
 ## Testing
 
@@ -74,21 +74,36 @@ pub trait Indices {
 
 ## Trait Printing
 
-This trait is implemented for generic individual items `T`, for slices `&[T]` and for slices of vecs `&[Vec<T>]`
+This trait is implemented for generic individual items `T`, for slices `&[T]` and for slices of vecs `&[Vec<T>]`. Note that these types are unprintable in Rust, therefore you must  apply one of these methods, e.g.:  
+`println!("My pretty vec: {}", myvec.to_str());`
+
+The provided methods `.gr()`, `.red()`, and `.to_str()` (uncoloured), convert all these generic vector objects to printable strings. `.to_str()` is also useful for writing them to files, of course.
+
+It is also possible to import these constants: `use indxvec::{RD,GR,UN};` and then use them in any formatting strings directly, e.g.: `"{RD} my important output: {} {UN}"` will print everything so bracketed in red. Switching colours:  
+`println!("{GR} green text, {RD}red warning {}",myvec.gr());` 
+
+Note that all of these methods and interpolations set their own colour regardless of the previous settings.
+
+Interpolating `{UN}` resets the terminal to its default rendering. 
+`UN` is automatically appended at the end of strings produced by `.gr()` and`.red()`. Be careful to always close with one of these three, or all the following output will continue with the last selected colour rendering.
 
 ```Rust
-/// Trait to serialize slices of generic items (vectors) and slices of
-/// Vecs of generic items (matrices). Turns them all into printable strings.
+/// Trait to serialize slices of generic items &[T] (vectors)
+/// and slices of Vecs of generic items &[Vec<T>] (matrices).
+/// All are converted into printable strings.
 pub trait Printing<T> {
-    /// Method `gr()` to serialize and make the resulting string
-    /// bold green when printed.
+    /// Method to serialize and render the resulting string in bold green.
     /// This is the default implementation applicable to all types that
     /// trait `Printing` is implemented for
     fn gr(self) -> String  where  Self: Sized,    {
         format!("{GR}{}{UN}", self.to_str())
     }
+    /// Method to serialize and render the resulting string in bold red.
+    fn red(self) -> String  where  Self: Sized,    {
+        format!("{RD}{}{UN}", self.to_str())
+    }
     /// Method to serialize generic items, slices, and slices of Vecs.
-    /// Can be implemented on any other types.
+    /// Can be also implemented on any other types.
     fn to_str(self) -> String;
 }
 ```
@@ -109,13 +124,10 @@ pub fn mint<T>(v:&[T]) -> T where T:PartialOrd+Copy;
 /// Minimum and maximum (T,T) of a slice &[T]
 pub fn minmaxt<T>(v:&[T]) -> (T,T) where T:PartialOrd+Copy;
 
-/// Minimum and maximum (T,T) of a slice &[T] though its index idx from i to n
-pub fn minmax_indexed<T>(v:&[T], idx:&[usize], i:usize, n:usize) -> (T, T)
-
 /// Minimum, minimum's first index, maximum, maximum's first index
 pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy;
 
-// Reverse a generic slice by reverse iteration.
+/// Reverse a generic slice by reverse iteration.
 pub fn revs<T>(s: &[T]) -> Vec<T> where T: Copy;
 
 /// Removes repetitions from an explicitly ordered set.
@@ -197,12 +209,13 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy;
 /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy;
 
-/// N recursive non-destructive hash sort. 
-/// Requires min,max, an estimated range of the data.
+/// N recursive non-destructive hash sort. min,max, is the data range.
 pub fn hashsort<T>(s: &[T], min:f64, max:f64) -> Vec<usize>
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.2** - Added `.red()` method to `Printing`. Some tidying up of `tests.rs` and the docs.
 
 **Version 1.1.1** - `hashsort` improved.
 

@@ -4,6 +4,8 @@ pub mod merge;    // set manipulating functions
 
 /// When printed, turns the terminal foreground rendering to bold green
 pub const GR: &str = "\x1B[01;32m";
+/// When printed, turns the terminal foreground rendering to bold red
+pub const RD: &str = "\x1B[01;31m";
 /// Returns the terminal rendering to default
 pub const UN: &str = "\x1B[0m";
 
@@ -58,18 +60,22 @@ pub fn tof64<T>(s: &[T]) -> Vec<f64> where T: Copy, f64: From<T>, {
     s.iter().map(|&x| f64::from(x)).collect()
 }
 
-/// Trait to serialize slices of generic items (vectors) and slices of Vecs of generic items (matrices).
-/// Turns them all into printable strings.
+/// Trait to serialize slices of generic items &[T] (vectors)
+/// and slices of Vecs of generic items &[Vec<T>] (matrices).
+/// All are converted into printable strings.
 pub trait Printing<T> {
-    /// Method `gr()` to serialize and make the resulting string
-    /// bold green when printed.
+    /// Method to serialize and render the resulting string in bold green.
     /// This is the default implementation applicable to all types that
     /// trait `Printing` is implemented for
     fn gr(self) -> String  where  Self: Sized,    {
         format!("{GR}{}{UN}", self.to_str())
     }
+    /// Method to serialize and render the resulting string in bold red.
+    fn red(self) -> String  where  Self: Sized,    {
+        format!("{RD}{}{UN}", self.to_str())
+    }
     /// Method to serialize generic items, slices, and slices of Vecs.
-    /// Can be implemented on any other types.
+    /// Can be also implemented on any other types.
     fn to_str(self) -> String;
 }
 
