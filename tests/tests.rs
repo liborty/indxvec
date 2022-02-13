@@ -9,10 +9,10 @@ fn indxvec() {
     let min = 0.;
     let max = 255.;
     let midval:u8 = 128;
-    let mut seeds = set_xoshiro(987654321);
-    let v1 = ranvu8_xoshiro(&mut seeds,19);
+    set_seeds(987654321);
+    let v1 = ranvu8(19);
     println!("{GR}\nv1: {}", v1.red());  
-    let v2 = ranvu8_xoshiro(&mut seeds,19);
+    let v2 = ranvu8(19);
     println!("{GR}v2: {}{UN}", v2.to_str());    
     println!("minmax v1:       {}", minmax(&v1));
     println!("minmaxt v1:      {GR}{:?}{UN}", minmaxt(&v1)); 

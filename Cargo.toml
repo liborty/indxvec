@@ -21,4 +21,4 @@ include = [
 maintenance = { status = "actively-developed" }
 [lib]
 [dev-dependencies]
-ran = "^0.1"
+ran = "^0.2"
