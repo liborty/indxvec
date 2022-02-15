@@ -83,9 +83,9 @@ pub trait Printing<T> {
 pub trait Indices {
     /// Reverse an index slice by simple reverse iteration.
     fn revindex(self) -> Vec<usize>;
-    /// Invert an index.
+    /// Invert an index - turns a sort order into rank order and vice-versa
     fn invindex(self) -> Vec<usize>;
-    /// complement of the index - turns ranks from/to ascending/descending
+    /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
     fn unindex<T: Copy>(self, v: &[T], ascending: bool) -> Vec<T>;

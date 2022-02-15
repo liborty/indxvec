@@ -30,7 +30,7 @@ The facilities provided are:
 Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors.
 
 Trait `Printing` provides utility methods to stringify (serialise for printing) generic slices and slices of vecs.
-Optionally, it enables printing in bold green for adding emphasis (see `tests/tests.rs`).
+Optionally, it enables printing in bold green and red for adding emphasis (see `tests/tests.rs`).
 
 #### Use functions from `merge.rs`
 
@@ -57,9 +57,9 @@ The methods of this trait are implemented for slices of subscripts, i.e. they ta
 pub trait Indices {
     /// Reverse an index slice by simple reverse iteration.
     fn revindex(self) -> Vec<usize>;
-    /// Invert an index.
+    /// Invert an index - turns a sort order into rank order and vice-versa
     fn invindex(self) -> Vec<usize>;
-    /// Complement of an index - turns ranks from/to ascending/descending
+    /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of index in self. Or opposite order.
     fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;

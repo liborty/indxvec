@@ -9,7 +9,7 @@ homepage = "https://github.com/liborty/indxvec"
 repository = "https://github.com/liborty/indxvec"
 license = "Apache-2.0"
 keywords = ["merge-sort","set-operations","ranking-searching","printing-vectors","generic"]
-categories = ["mathematics","algorithms","data-structures","rust-patterns","simulation"]
+categories = ["algorithms","data-structures","mathematics","rust-patterns","simulation"]
 include = [
     "src/*.rs",
     "tests/*.rs",
