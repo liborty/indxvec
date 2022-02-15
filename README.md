@@ -115,6 +115,9 @@ The new `hashsort` really wins on longer lists. For lists of the order of one th
 ### Signatures of public functions in module `src/merge.rs`:
 
 ```Rust
+/// New trivial index for v in the existing order: 0..v.len()
+pub fn newindex(n:usize) -> Vec<usize>;
+
 /// Maximum value T of slice &[T]
 pub fn maxt<T>(v:&[T]) -> T where T:PartialOrd+Copy;
 
@@ -126,6 +129,10 @@ pub fn minmaxt<T>(v:&[T]) -> (T,T) where T:PartialOrd+Copy;
 
 /// Minimum, minimum's first index, maximum, maximum's first index
 pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy;
+
+/// Finds min and max of a subset of v, defined by its subslice between i,i+n.
+pub fn minmax_slice<T>(v:&[T], i:usize, n:usize) -> MinMax<T>
+where T: PartialOrd + Copy,
 
 /// Using only a subset of v, defined by its idx subslice between i,i+n.
 /// Returns min of v, its index's index, max of v, its index's index.
@@ -222,6 +229,8 @@ pub fn hashsort<T>(s: &mut[T], min:f64, max:f64)
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.4** - Minor change: `hashsort` min,max arguments type changed from T to  f64. This is more convenient for apriori known data range limits. Also to be the same as for `hashsort_indexed`. Added `newindex` and `minmax_slice` functions. Updated readme file.
 
 **Version 1.1.3** - `hashsort` renamed to `hashsort_indexed`, in keeping with the naming convention here. New plain `hashsort` added: it sorts &mut[T] in place, just like does the default Rust sort. Suitable for long explicit sorts.
 

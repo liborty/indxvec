@@ -20,7 +20,7 @@ fn indxvec() {
     let (lset,gset) = partition_indexed(&v1, midval);
     println!( "v1 indices partitioned by data value {midval}:\n{}\n{}", lset.gr(),gset.gr() );
     println!("Sorted by merge sort:\n{}", sortm(&v1, true).gr()); // sorted data but index lost
-    hashsort(&mut vm,0,255);
+    hashsort(&mut vm,0.,255.);
     println!("Sorted by hash sort:\n{}", vm.gr()); // new hashsort
     println!("Sorted via ranking:\n{}", rank(&v1, false).invindex().unindex(&v1, false).gr() );
     println!("Ranks:        {}", rank(&v1, true).gr()); // how to get ranks

@@ -74,23 +74,6 @@ where
     }
 }
 
-/// Using only a subset of v, defined by its idx subslice between i,i+n.
-/// Returns min of v, its index's index, max of v, its index's index.
-pub fn minmax_indexed<T>(v:&[T], idx:&[usize], i:usize, n:usize) -> MinMax<T>
-where
-    T: PartialOrd + Copy,
-{
-    let mut min = v[idx[i]];
-    let mut max = min;
-    let mut minix = 0; // indices of indices of min, max 
-    let mut maxix = minix;
-    for (ii,&ix) in idx.iter().enumerate().skip(i+1).take(n-1) {
-        if v[ix] < min { min = v[ix]; minix = ii; } 
-        else if v[ix] > max { max = v[ix]; maxix = ii; };
-    };
-    MinMax { min, minindex:minix, max, maxindex:maxix }
-}
-
 /// Finds min and max of a subset of v, defined by its subslice between i,i+n.
 /// Returns min of v, its index, max of v, its index.
 pub fn minmax_slice<T>(v:&[T], i:usize, n:usize) -> MinMax<T>
@@ -104,6 +87,24 @@ where
     for (j,&x) in v.iter().enumerate().skip(i+1).take(n-1) {
         if x < min { min = x; minix = j; } 
         else if x > max { max = x; maxix = j; };
+    };
+    MinMax { min, minindex:minix, max, maxindex:maxix }
+}
+
+
+/// Using only a subset of v, defined by its idx subslice between i,i+n.
+/// Returns min of v, its index's index, max of v, its index's index.
+pub fn minmax_indexed<T>(v:&[T], idx:&[usize], i:usize, n:usize) -> MinMax<T>
+where
+    T: PartialOrd + Copy,
+{
+    let mut min = v[idx[i]];
+    let mut max = min;
+    let mut minix = 0; // indices of indices of min, max 
+    let mut maxix = minix;
+    for (ii,&ix) in idx.iter().enumerate().skip(i+1).take(n-1) {
+        if v[ix] < min { min = v[ix]; minix = ii; } 
+        else if v[ix] > max { max = v[ix]; maxix = ii; };
     };
     MinMax { min, minindex:minix, max, maxindex:maxix }
 }
@@ -1044,7 +1045,7 @@ where T: PartialOrd { if s[i1] > s[i2] { s.swap(i1,i2) } }
 /// Sorts mutable first argument (slice) in place
 /// Requires [min,max], the data range, that must enclose all its values. 
 /// The range is often known in advance. If not, it can be obtained with `minmaxt`.
-pub fn hashsort<T>(s: &mut [T], min:T, max:T) 
+pub fn hashsort<T>(s: &mut [T], min:f64, max:f64) 
 where T: PartialOrd + Copy, f64:From<T> {
     if min >= max { panic!("{} data range must be min < max",here!()); };
     let n = s.len();
@@ -1056,7 +1057,7 @@ where T: PartialOrd + Copy, f64:From<T> {
             compswap(s,1,2);
             compswap(s,0,1)
         },
-        _ => { hashsortr(s,0,n,f64::from(min),f64::from(max)) }
+        _ => { hashsortr(s,0,n,min,max) }
     }   
 }
 
