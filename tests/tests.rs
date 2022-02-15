@@ -9,8 +9,9 @@ fn indxvec() {
     let min = 0.;
     let max = 255.;
     let midval:u8 = 128;
-    set_seeds(987654321);
+    set_seeds(9876543210);
     let v1 = ranvu8(19);
+    let mut vm = v1.clone();
     println!("{GR}\nv1: {}", v1.red());  
     let v2 = ranvu8(19);
     println!("{GR}v2: {}{UN}", v2.to_str());    
@@ -19,7 +20,8 @@ fn indxvec() {
     let (lset,gset) = partition_indexed(&v1, midval);
     println!( "v1 indices partitioned by data value {midval}:\n{}\n{}", lset.gr(),gset.gr() );
     println!("Sorted by merge sort:\n{}", sortm(&v1, true).gr()); // sorted data but index lost
-    println!("Sorted by hash sort:\n{}", hashsort(&v1,min,max).unindex(&v1, true).gr()); // new hashsort
+    hashsort(&mut vm,0,255);
+    println!("Sorted by hash sort:\n{}", vm.gr()); // new hashsort
     println!("Sorted via ranking:\n{}", rank(&v1, false).invindex().unindex(&v1, false).gr() );
     println!("Ranks:        {}", rank(&v1, true).gr()); // how to get ranks
     println!("Ranks:        {}", rank(&v1, true).complindex().complindex().gr() ); // symmetry
@@ -31,7 +33,7 @@ fn indxvec() {
     println!("Ranks desc:   {}", rank(&v1, true).complindex().gr()); // descending ranks, not the same as ranks reversed!!
     println!("Ranks desc:   {}", sortidx(&v1).invindex().complindex().gr()); // descending ranks, not the same as ranks reversed!!
     println!("Sort index:   {}", sortidx(&v1).gr()); // sortindex, can be unindexed at anytime
-    println!("Sort index:   {}", hashsort(&v1,min,max).gr()); 
+    println!("Sort index:   {}", hashsort_indexed(&v1,min,max).gr()); 
     println!("Sortix rev:   {}", sortidx(&v1).revindex().gr());
     println!("Sortix rev:   {}", rank(&v1, false).invindex().gr()); // descending sort index from desc ranks
     println!("Ranks to idx: {}", rank(&v1, true).invindex().gr()); // ascending sort index from ascending ranks
@@ -39,7 +41,7 @@ fn indxvec() {
     println!("Idx to ranks: {}", sortidx(&v1).invindex().gr());
     println!("Sortm naively reversed:\n{}", revs(&sortm(&v1, true)).gr()); // the above simply reversed
     println!("Sortm false:\n{}", sortm(&v1, false).gr()); // descending sort, index lost
-    println!("Hashsort unindex false:\n{}", hashsort(&v1,min,max).unindex(&v1, false).gr()); // more efficient reversal
+    println!("Hashsort unindex false:\n{}", hashsort_indexed(&v1,min,max).unindex(&v1, false).gr()); // more efficient reversal
     println!("Sortidx unindex false:\n{}", sortidx(&v1).unindex(&v1, false).gr()); // more efficient reversal
     println!("Revindex:\n{}", sortidx(&v1).revindex().unindex(&v1, true).gr()); // by reversing the sort index
     println!("Invert-compliment-invert:\n{}", sortidx(&v1).invindex().complindex().invindex().unindex(&v1, true).gr());
@@ -47,8 +49,8 @@ fn indxvec() {
     println!("Spearman corr v1,v2: {}",rank(&v1, true).ucorrelation(&rank(&v2, true)).gr()); //  1 for any Vec
     //println!("Spearman corr against reversed: {}",
     //    rank(&v1, true).ucorrelation(&rank(&v1, false)).gr()); // -1 for any Vec
-    let (vm, vi) = merge_indexed(&v1, &hashsort(&v1,min,max),
-        &v2, &hashsort(&v2,min,max)); // merge two vecs using their sort indices
+    let (vm, vi) = merge_indexed(&v1, &hashsort_indexed(&v1,min,max),
+        &v2, &hashsort_indexed(&v2,min,max)); // merge two vecs using their sort indices
     let sorted = vi.unindex(&vm, true);
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.gr());
     let sorteddesc = vi.unindex(&vm, false);

@@ -214,11 +214,16 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy;
 /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy;
 
-/// N recursive non-destructive hash sort. min,max, is the data range.
-pub fn hashsort<T>(s: &[T], min:f64, max:f64) -> Vec<usize>
+/// N recursive non-destructive hash sort: min,max, is the data range.
+pub fn hashsort_indexed<T>(s: &[T], min:f64, max:f64) -> Vec<usize>
+
+/// N recursive hash sort: min,max, is the data range. Explicitly sorts s in-place.
+pub fn hashsort<T>(s: &mut[T], min:f64, max:f64) 
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.3** - `hashsort` renamed to `hashsort_indexed`, in keeping with the naming convention here. New plain `hashsort` added: it sorts &mut[T] in place, just like does the default Rust sort. Suitable for long explicit sorts.
 
 **Version 1.1.2** - Added `.red()` method to `Printing`. Some tidying up of `tests.rs` and the docs. `hashsort` improved.
 
