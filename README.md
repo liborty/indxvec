@@ -110,7 +110,7 @@ pub trait Printing<T> {
 
 ## Functions 
 
-The new `hashsort` really wins on longer lists. For lists of the order of one thousand items it is about 15% faster that the standard Rust sort. At around ten thousand items it is already about 30% faster.
+The new `hashsort` really wins on longer Vecs. For about one thousand items upwards it is on average about 25% faster than the standard Rust sort.
 
 ### Signatures of public functions in module `src/merge.rs`:
 
