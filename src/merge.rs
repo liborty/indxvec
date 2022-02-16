@@ -1065,9 +1065,9 @@ fn hashsortr<T>(s:&mut [T], i:usize, n:usize, min:f64, max:f64)
 where T: PartialOrd+Copy, f64:From<T>
 { 
     if n == 0 { panic!("{} unexpected zero length",here!())};  
-    // hash is a constant s.t. (x-min)*hash is in [0,n) 
+    // hash is a constant s.t. (x-min)*hash is in [0,n)
+    // -1e-10 stops subscript quite reaching n and causing out of bounds error  
     let hash = (n as f64 - 1e-10 ) / (max-min); 
-    // we allocate one extra bucket so that the max values do not cause overflow with subscript n
     let mut freqvec:Vec<Vec<T>> = vec![Vec::new();n];
     // group current index items into buckets by their associated s[] values
     for &xi in s.iter().skip(i).take(n) { 
