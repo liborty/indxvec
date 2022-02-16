@@ -114,7 +114,7 @@ The new `hashsort` really wins on longer Vecs. For about one thousand items upwa
 
 ### Signatures of public functions in module `src/merge.rs`:
 
-```Rust
+```rust
 /// New trivial index for v in the existing order: 0..v.len()
 pub fn newindex(n:usize) -> Vec<usize>;
 
@@ -132,7 +132,7 @@ pub fn minmax<T>(v:&[T])  -> MinMax<T> where T: PartialOrd+Copy;
 
 /// Finds min and max of a subset of v, defined by its subslice between i,i+n.
 pub fn minmax_slice<T>(v:&[T], i:usize, n:usize) -> MinMax<T>
-where T: PartialOrd + Copy,
+where T: PartialOrd + Copy;
 
 /// Using only a subset of v, defined by its idx subslice between i,i+n.
 /// Returns min of v, its index's index, max of v, its index's index.
@@ -222,10 +222,10 @@ pub fn sortm<T>(s:&[T], ascending:bool) -> Vec<T> where T: PartialOrd+Copy;
 pub fn rank<T>(s:&[T], ascending:bool) -> Vec<usize> where T:PartialOrd+Copy;
 
 /// N recursive non-destructive hash sort: min,max, is the data range.
-pub fn hashsort_indexed<T>(s: &[T], min:f64, max:f64) -> Vec<usize>
+pub fn hashsort_indexed<T>(s: &[T], min:f64, max:f64) -> Vec<usize>;
 
 /// N recursive hash sort: min,max, is the data range. Explicitly sorts s in-place.
-pub fn hashsort<T>(s: &mut[T], min:f64, max:f64) 
+pub fn hashsort<T>(s: &mut[T], min:f64, max:f64); 
 ```
 
 ## Release Notes (Latest First)
