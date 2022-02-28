@@ -1,7 +1,7 @@
 use crate::Indices;
 use crate::{here, MinMax};
 use std::iter::FromIterator;
-use std::cmp::Ordering;
+//use std::cmp::Ordering;
 
 /// New trivial index for v in the existing order: 0..v.len()
 pub fn newindex(n:usize) -> Vec<usize> { Vec::from_iter(0..n) } 
@@ -735,11 +735,9 @@ where
     let mut eqset: Vec<usize> = Vec::with_capacity(n);
     let mut posset: Vec<usize> = Vec::with_capacity(n);
     for (i, &vi) in v.iter().enumerate() {
-        match ord(vi,pivot) {
-            Ordering::Less => negset.push(i),
-            Ordering::Equal => eqset.push(i),
-            Ordering::Greater => posset.push(i)
-        } 
+        if vi < pivot { negset.push(i) }
+        else if vi > pivot  { posset.push(i) }
+        else  { eqset.push(i) };  
     }; 
     (negset, eqset, posset)
 }

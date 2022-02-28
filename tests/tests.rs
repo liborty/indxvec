@@ -17,8 +17,9 @@ fn indxvec() {
     println!("{GR}v2: {}{UN}", v2.to_str());    
     println!("minmax v1:       {}", minmax(&v1));
     println!("minmaxt v1:      {GR}{:?}{UN}", minmaxt(&v1)); 
-    let (lset,gset) = partition_indexed(&v1, midval);
-    println!( "v1 indices partitioned by data value {midval}:\n{}\n{}", lset.gr(),gset.gr() );
+    let (lset,eqset,gset) = partition_indexed(&v1, midval);
+    println!( "v1 indices partitioned by data value {midval}:\n{}\n{}\n{}",
+        lset.gr(),eqset.gr(),gset.gr() );
     println!("Sorted by merge sort:\n{}", sortm(&v1, true).gr()); // sorted data but index lost
     hashsort(&mut vm,0.,255.);
     println!("Sorted by hash sort:\n{}", vm.gr()); // new hashsort
