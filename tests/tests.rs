@@ -9,7 +9,7 @@ fn indxvec() {
     let min = 0.;
     let max = 255.;
     let midval:u8 = 128;
-    set_seeds(9876543210);
+    set_seeds(987654321);
     let v1 = ranvu8(19);
     let mut vm = v1.clone();
     println!("{GR}\nv1: {}", v1.red());  
