@@ -1,6 +1,6 @@
 [package]
 name = "indxvec"
-version = "1.1.4"
+version = "1.1.5"
 authors = ["Libor Spacek"]
 edition = "2021"
 description = """Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."""
@@ -21,4 +21,4 @@ include = [
 maintenance = { status = "actively-developed" }
 [lib]
 [dev-dependencies]
-ran = "^0.2"
+ran = "^0.3"

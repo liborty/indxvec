@@ -193,8 +193,8 @@ pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>  
 where T: PartialOrd+Copy;
 
-/// Partition about pivot into two sets of indices
-pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize>)  
+/// Partition about pivot into three sets of indices (lt,eq,gt)
+pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)  
 where T: PartialOrd+Copy;
 
 /// Merges two ascending sorted generic vectors.
@@ -229,6 +229,8 @@ pub fn hashsort<T>(s: &mut[T], min:f64, max:f64);
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.5** - Updated dev dependency to ran = "^0.3". Changed `partition_indexed` to include equal set.
 
 **Version 1.1.4** - Minor change: `hashsort` min,max arguments type changed from T to  f64. This is more convenient for apriori known data range limits. Also to be the same as for `hashsort_indexed`. Added `newindex` and `minmax_slice` functions. Updated readme file.
 
