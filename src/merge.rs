@@ -725,6 +725,23 @@ where
     resvec
 }
 
+/// Partition with respect to a pivot into three sets
+pub fn partition<T>(v: &[T], pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
+where
+    T: PartialOrd + Copy,
+{
+    let n = v.len();
+    let mut negset: Vec<T> = Vec::with_capacity(n);
+    let mut eqset: Vec<T> = Vec::with_capacity(n);
+    let mut posset: Vec<T> = Vec::with_capacity(n);
+    for &item in v {
+        if item < pivot { negset.push(item) }
+        else if item > pivot  { posset.push(item) }
+        else  { eqset.push(item) };  
+    }; 
+    (negset, eqset, posset)
+}
+
 /// Partition by pivot gives three sets of indices.
 pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
 where

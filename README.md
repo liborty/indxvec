@@ -19,7 +19,7 @@ The facilities provided are:
 
 ## Usage
 
-#### Import into your source file(s) constants `GR,RD,UN` for colour printing, struct `MinMax`, macro `here!()` and `tof64`  auxiliary function, as needed
+### Import into your source file(s) constants `GR,RD,UN` for colour printing, struct `MinMax`, macro `here!()` and `tof64`  auxiliary function, as needed
 
 `use indxvec::{GR,RD,UN,MinMax,here,tof64};`
 
@@ -193,6 +193,10 @@ pub fn diff<T>(v1: &[T], v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
 pub fn diff_indexed<T>(v1: &[T], ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>  
 where T: PartialOrd+Copy;
 
+/// Partition with respect to a pivot into three sets
+pub fn partition<T>(v: &[T], pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
+where T: PartialOrd+Copy;
+
 /// Partition about pivot into three sets of indices (lt,eq,gt)
 pub fn partition_indexed<T>(v: &[T], pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)  
 where T: PartialOrd+Copy;
@@ -229,6 +233,8 @@ pub fn hashsort<T>(s: &mut[T], min:f64, max:f64);
 ```
 
 ## Release Notes (Latest First)
+
+**Version 1.1.6** - Added simple `partition` into three sets (lt,eq,gt).
 
 **Version 1.1.5** - Updated dev dependency to ran = "^0.3". Changed `partition_indexed` to include equal set. Tweaked printing layout.
 
