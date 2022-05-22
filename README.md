@@ -52,7 +52,7 @@ It is highly recommended to read and run `tests/tests.rs` to learn from examples
 
 The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results as appropriate:
 
-```Rust
+```rust
 /// Methods to manipulate indices of `Vec<usize>` type.
 pub trait Indices {
     /// Reverse an index slice by simple reverse iteration.
@@ -87,7 +87,7 @@ Note that all of these methods and interpolations set their own colour regardles
 Interpolating `{UN}` resets the terminal to its default rendering. 
 `UN` is automatically appended at the end of strings produced by `.gr()` and`.red()`. Be careful to always close with one of these three, or all the following output will continue with the last selected colour rendering.
 
-```Rust
+```rust
 /// Trait to serialize slices of generic items &[T] (vectors)
 /// and slices of Vecs of generic items &[Vec<T>] (matrices).
 /// All are converted into printable strings.
