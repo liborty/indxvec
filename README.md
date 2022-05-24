@@ -19,28 +19,36 @@ The facilities provided are:
 
 ## Usage
 
-### Import into your source file(s) constants `GR,RD,UN` for colour printing, struct `MinMax`, macro `here!()` and `tof64`  auxiliary function, as needed
+### Auxiliay functions and constants
 
-`use indxvec::{GR,RD,UN,MinMax,here,tof64};`
+```rust
+use indxvec::{GR,RD,UN,MinMax,here,tof64};
+```
 
-#### Use traits `Indices` and/or `Printing`
+### Traits `Indices` and/or `Printing`
 
-`use indxvec::{Indices,Printing};`
+```rust
+use indxvec::{Indices,Printing};
+```
 
 Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors.
 
 Trait `Printing` provides utility methods to stringify (serialise for printing) generic slices and slices of vecs.
 Optionally, it enables printing in bold green and red for adding emphasis (see `tests/tests.rs`).
 
-#### Use functions from `merge.rs`
+### Functions from `merge.rs`
 
-`use indxvec::{merge::*};`
+```rust
+use indxvec::{merge::*};
+```
 
 These functions are  applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
 
-### The following statement will import everything:
+### The following will import everything
 
-`use indxvec::{GR,RD,UN,MinMax,here,tof64,merge::*,Indices,Printing};`
+```rust
+use indxvec::{GR,RD,UN,MinMax,here,tof64,merge::*,Indices,Printing};
+```
 
 ## Testing
 
@@ -74,13 +82,15 @@ pub trait Indices {
 
 ## Trait Printing
 
-This trait is implemented for generic individual items `T`, for slices `&[T]` and for slices of vecs `&[Vec<T>]`. Note that these types are unprintable in Rust, therefore you must  apply one of these methods, e.g.:  
-`println!("My pretty vec: {}", myvec.to_str());`
+This trait is implemented for generic individual items `T`, for slices `&[T]` and for slices of vecs `&[Vec<T>]`. Note that these types are normally unprintable in Rust. 
+The methods of this trait `.gr()`, `.red()`, and `.to_str()` (uncoloured), convert all these generic vector objects to printable strings, where `.to_str()` is also useful for writing them to files, of course. For example:
 
-The provided methods `.gr()`, `.red()`, and `.to_str()` (uncoloured), convert all these generic vector objects to printable strings. `.to_str()` is also useful for writing them to files, of course.
+```rust 
+println!("My pretty vec: {}", myvec.to_str());
+```
 
 It is also possible to import these constants: `use indxvec::{RD,GR,UN};` and then use them in any formatting strings directly, e.g.: `"{RD} my important output: {} {UN}"` will print everything so bracketed in red. Switching colours:  
-`println!("{GR} green text, {RD}red warning {}",myvec.gr());` 
+`println!("{GR} green text, {RD}red warning {}",myvec.gr());`
 
 Note that all of these methods and interpolations set their own colour regardless of the previous settings.
 
@@ -108,9 +118,9 @@ pub trait Printing<T> {
 }
 ```
 
-## Functions 
+## Functions
 
-The new `hashsort` really wins on longer Vecs. For about one thousand items upwards it is on average about 25% faster than the standard Rust sort.
+Nota bene: `hashsort` really wins on longer Vecs. For about one thousand items upwards it is on average about 25% faster than the best Rust sort.
 
 ### Signatures of public functions in module `src/merge.rs`:
 
