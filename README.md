@@ -82,37 +82,44 @@ pub trait Indices {
 
 ## Trait Printing
 
-This trait is implemented for generic individual items `T`, for slices `&[T]` and for slices of vecs `&[Vec<T>]`. Note that these types are normally unprintable in Rust. 
-The methods of this trait `.gr()`, `.red()`, and `.to_str()` (uncoloured), convert all these generic vector objects to printable strings, where `.to_str()` is also useful for writing them to files, of course. For example:
+This trait is implemented for generic individual items `T`, for slices `&[T]` and for slices of vecs `&[Vec<T>]`. Note that these types are normally unprintable in Rust.
 
-```rust 
+The methods of this trait `.gr()`, `.red()`, `.blue()`, `.wvec(&mut f)` and `.to_str()` convert all these generic vector objects to printable strings. The last two are uncoloured and can be used to write to files; `wvec` also passes on io::Error(s) For example:
+
+```rust
 println!("My pretty vec: {}", myvec.to_str());
 ```
 
-It is also possible to import these constants: `use indxvec::{RD,GR,UN};` and then use them in any formatting strings directly, e.g.: `"{RD} my important output: {} {UN}"` will print everything so bracketed in red. Switching colours:  
-`println!("{GR} green text, {RD}red warning {}",myvec.gr());`
+It is also possible to import these constants: `use indxvec::{RD,GR,BL,UN};` and then use them in any formatting strings directly, e.g.: `"{RD} my important output: {} {UN}"` will print everything so bracketed in red. Switching colours:  
+`println!("{GR}green text, {RD}red warning, {BL}feeling blue{UN}");`
 
 Note that all of these methods and interpolations set their own colour regardless of the previous settings.
 
-Interpolating `{UN}` resets the terminal to its default rendering. 
-`UN` is automatically appended at the end of strings produced by `.gr()` and`.red()`. Be careful to always close with one of these three, or all the following output will continue with the last selected colour rendering.
+Interpolating `{UN}` resets the terminal to its default foreground rendering.
+`UN` is automatically appended at the end of strings produced by `.gr()`,`.red()` and `.green()` methods. Be careful to always close with one of these three, or `{UN}`, otherwise all the following output will continue with the last selected colour foreground rendering.
 
 ```rust
 /// Trait to serialize slices of generic items &[T] (vectors)
-/// and slices of Vecs of generic items &[Vec<T>] (matrices).
+/// and slices of Vecs &[Vec<T>] (matrices).
 /// All are converted into printable strings.
 pub trait Printing<T> {
     /// Method to serialize and render the resulting string in bold green.
     /// This is the default implementation applicable to all types that
     /// trait `Printing` is implemented for
-    fn gr(self) -> String  where  Self: Sized,    {
+    fn gr(self) -> String  where  Self: Sized {
         format!("{GR}{}{UN}", self.to_str())
     }
     /// Method to serialize and render the resulting string in bold red.
     fn red(self) -> String  where  Self: Sized,    {
         format!("{RD}{}{UN}", self.to_str())
     }
+    /// Method `write vector(s) to file f`
+    fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized { 
+        Ok(write!(*f,"{} ", self.to_str())?) 
+    }
+    
     /// Method to serialize generic items, slices, and slices of Vecs.
+    /// Implementation code is in printing.rs
     /// Can be also implemented on any other types.
     fn to_str(self) -> String;
 }
@@ -122,7 +129,7 @@ pub trait Printing<T> {
 
 Nota bene: `hashsort` really wins on longer Vecs. For about one thousand items upwards it is on average about 25% faster than the best Rust sort.
 
-### Signatures of public functions in module `src/merge.rs`:
+### Signatures of public functions in module `src/merge.rs`
 
 ```rust
 /// New trivial index for v in the existing order: 0..v.len()
@@ -244,6 +251,8 @@ pub fn hashsort<T>(s: &mut[T], min:f64, max:f64);
 
 ## Release Notes (Latest First)
 
+**Version 1.1.7** - Added method `wvec(self,&mut f)`. It writes vectors to file f and passes up errors. Added colour `blue()`. Added printing test. Prettier readme.md.
+
 **Version 1.1.6** - Added simple `partition` into three sets (lt,eq,gt).
 
 **Version 1.1.5** - Updated dev dependency to ran = "^0.3". Changed `partition_indexed` to include equal set. Tweaked printing layout.
@@ -275,23 +284,3 @@ pub fn hashsort<T>(s: &mut[T], min:f64, max:f64);
 **Version 1.0.1** - Some code style tidying up. Added function `binsearchdesc` for completeness and symmetry with `binsearch`.
 
 **Version 1.0.0** - `indxvec` has been stable for some time now, so it gets promoted to v1.0.0. There are some improvements to `README.md` to mark the occasion.
-
-**Version 0.2.12** - added utility function `printvv` to prettyprint vectors of vectors.
-
-**Version 0.2.11** - added some badges and improved `readme`.
-
-**Version 0.2.9** - added struct MinMax for returning values from function 'minmax' and displaying them. Removed function `wt` used previously for displaying them as tuples.
-
-**Version 0.2.6** - added `unindexf64` for convenience. Same as `unindex` but the output is always converted to `Vec<f64>`.
-
-**Version 0.2.5** - added `memsearchdesc_indexed` = binary search of a descending indexed set.
-
-**Version 0.2.4** - added helper function `wt` = write tuple. Added `memsearchdesc` = binary search of a descending set.
-
-**Version 0.2.3** - general tidying up and readme update.
-
-**Version 0.2.2** - replaced GV and GI with functions `wv` and `wi` respectively. Added `revindex` to `Indices` trait, so that it can be functionally chained with its other methods.
-
-**Version 0.2.1** - moved GI from `rstats` to here. Fixed `minmax`.
-
-**Version 0.2.0** - added set operations: `sansrepeat, member, memsearch, memsearch_indexed, unite, unite_indexed, intersect, intersect_indexed, diff, diff_indexed`.  They are also used, with type/struct  wrappers, by crate `sets`.

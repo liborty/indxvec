@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use indxvec::{merge::*, Indices, Printing, GR, RD, UN};
+use indxvec::{here,merge::*, Indices, Printing, GR, RD, UN};
 use ran::*;
 
 #[test]
@@ -70,4 +70,19 @@ fn indxvec() {
     println!("Intersect_indexed: {}",intersect_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
     println!("Diff_indexed: {}",diff_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
     println!("Sansrepeat:   {}\n", sansrepeat(&sorted).gr());
+}
+
+#[test]
+fn printing() {
+    let v1 = ranvu8(20); 
+    println!("\n{}",v1.red());
+    println!("\n{}",v1.gr());
+    println!("\n{}",v1.blue());
+    println!("\n{}\n",v1.to_str());
+    let mut f = std::fs::File::create("/dev/stdout")
+        .unwrap_or_else(|e| panic!("{} {} Failed to open stdout File. Works on Linux.",
+    here!(),e));
+    v1.wvec(&mut f)
+        .unwrap_or_else(|e| panic!("{} {} failed to write",here!(),e));
+    println!()
 }

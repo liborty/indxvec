@@ -1,5 +1,4 @@
 use crate::{GR,UN,Printing};
-
 use std::fmt::Write;
 
 impl<T> Printing<T> for T

@@ -2,10 +2,16 @@ pub mod indices;  // implementation for trait Indices
 pub mod printing; // implementations for trait Printing<T>
 pub mod merge;    // set manipulating functions
 
-/// When printed, turns the terminal foreground rendering to bold green
-pub const GR: &str = "\x1B[01;32m";
+use std::io;
+use std::io::Write;
+use std::fs::File;
+
 /// When printed, turns the terminal foreground rendering to bold red
 pub const RD: &str = "\x1B[01;31m";
+/// When printed, turns the terminal foreground rendering to bold green
+pub const GR: &str = "\x1B[01;32m";
+/// When printed, turns the terminal foreground rendering to bold blue
+pub const BL: &str = "\x1B[01;34m";
 /// Returns the terminal rendering to default
 pub const UN: &str = "\x1B[0m";
 
@@ -67,14 +73,23 @@ pub trait Printing<T> {
     /// Method to serialize and render the resulting string in bold green.
     /// This is the default implementation applicable to all types that
     /// trait `Printing` is implemented for
-    fn gr(self) -> String  where  Self: Sized,    {
+    fn gr(self) -> String  where  Self: Sized {
         format!("{GR}{}{UN}", self.to_str())
     }
     /// Method to serialize and render the resulting string in bold red.
     fn red(self) -> String  where  Self: Sized,    {
         format!("{RD}{}{UN}", self.to_str())
     }
+    /// Method to serialize and render the resulting string in bold blue.
+    fn blue(self) -> String  where  Self: Sized,    {
+            format!("{BL}{}{UN}", self.to_str())
+    }
+    /// Method `write vector(s) to file f`. Passes up errors
+    fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized { 
+        Ok(write!(*f,"{} ", self.to_str())?) 
+    }    
     /// Method to serialize generic items, slices, and slices of Vecs.
+    /// Implementation code is in printing.rs
     /// Can be also implemented on any other types.
     fn to_str(self) -> String;
 }
