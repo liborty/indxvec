@@ -66,32 +66,38 @@ pub trait Printing<T> {
     /// Methods to serialize and render the resulting string
     /// in bold ANSI terminal colours.
     fn rd(self) -> String where Self: Sized { 
-        format!("{RD}[{}]{UN}",self.to_str()) }
+        format!("{RD}{}{UN}",self.to_str()) }
     fn gr(self) -> String where Self: Sized { 
-        format!("{GR}[{}]{UN}",self.to_str()) }
+        format!("{GR}{}{UN}",self.to_str()) }
     fn yl(self) -> String where Self: Sized { 
-        format!("{YL}[{}]{UN}",self.to_str()) }    
+        format!("{YL}{}{UN}",self.to_str()) }    
     fn bl(self) -> String where Self: Sized { 
-        format!("{BL}[{}]{UN}",self.to_str()) }
+        format!("{BL}{}{UN}",self.to_str()) }
     fn mg(self) -> String where Self: Sized { 
-        format!("{MG}[{}]{UN}",self.to_str()) }
+        format!("{MG}{}{UN}",self.to_str()) }
     fn cy(self) -> String where Self: Sized { 
-        format!("{CY}[{}]{UN}",self.to_str()) }        
+        format!("{CY}{}{UN}",self.to_str()) }        
 
-    /// Method to write vector(s) to file f. Passes up io errors
+    /// Method to write vector(s) to file f (without brackets). 
+    /// Passes up io errors
     fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized { 
-        Ok(write!(*f,"{} ", self.to_str())?) 
+        Ok(write!(*f,"{} ", self.to_plainstr())?) 
     }
 
-    /// Method to print vector(s) to stdout.
+    /// Method to print vector(s) to stdout (without brackets).
     fn pvec(self) where Self: Sized { 
-        print!("{} ", self.to_str()) 
+        print!("{} ", self.to_plainstr()) 
     }
     
     /// Method to serialize generic items, slices, and slices of Vecs.
-    /// Implementation code is in printing.rs
-    /// Can be also implemented on any other types.
+    /// Adds square brackets around Vecs (prettier lists).
+    /// Implementation code is in `printing.rs`. 
     fn to_str(self) -> String;
+
+    /// Method to serialize generic items, slices, and slices of Vecs.
+    /// Implementation code is in `printing.rs`.
+    fn to_plainstr(self) -> String;
+
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.

@@ -48,7 +48,7 @@ fn indxvec() {
     println!("Revindex:\n{}", sortidx(&v1).revindex().unindex(&v1, true).gr()); // by reversing the sort index
     println!("Invert-compliment-invert:\n{}", sortidx(&v1).invindex().complindex().invindex().unindex(&v1, true).gr());
     println!("Rank-compliment-invert:\n{}", rank(&v1, true).complindex().invindex().unindex(&v1, true).gr()); // complindex reverses ranks
-    println!("Spearman corr v1,v2: {GR}{}{UN}",rank(&v1, true).ucorrelation(&rank(&v2,true))); //  1 for any Vec
+    println!("Spearman corr v1,v2: {}",rank(&v1, true).ucorrelation(&rank(&v2,true)).gr()); //  1 for any Vec
     //println!("Spearman corr against reversed: {}",
     //    rank(&v1, true).ucorrelation(&rank(&v1, false)).gr()); // -1 for any Vec
     let (vm, vi) = merge_indexed(&v1, &hashsort_indexed(&v1,min,max),
@@ -60,11 +60,11 @@ fn indxvec() {
     println!("Binsearch for {BL}{midval}{UN}, found before: {GR}{}{UN}",binsearch(&sorted,midval)); // binsearch
     println!("Binsearchdesc for {BL}{midval}{UN}, found before: {GR}{}{UN}",binsearchdesc(&sorteddesc,midval)); // binsearch
     println!("Memsearch for {BL}{midval}{UN}, found at: {}",
-        memsearch(&sorted,midval).map_or_else(||format!("{RD}None{UN}"),|x| x.gr()));
+        memsearch(&sorted,midval).map_or_else(||"None".rd(),|x| x.gr()));
     println!("Memsearch_indexed for {BL}{midval}{UN}, found at: {}",
-        memsearch_indexed(&vm, &vi,midval).map_or_else(||format!("{RD}None{UN}"),|x| x.gr()));
+        memsearch_indexed(&vm, &vi,midval).map_or_else(||"None".rd(),|x| x.gr()));
     println!("Memsearch_indexed (reversed index) for {BL}{midval}{UN}, found at: {}",
-        memsearchdesc_indexed(&vm, &vi.revindex(),midval).map_or_else(||format!("{RD}None{UN}"),|x| x.gr()));
+        memsearchdesc_indexed(&vm, &vi.revindex(),midval).map_or_else(||"None".rd(),|x| x.gr()));
     println!("Occurrences count of {BL}{midval}{UN}: {GR}{}{UN}",occurs(&sorted, midval));
     println!("Occurrences count of {BL}{midval}{UN}: {GR}{}{UN}",occurs_multiple(&sorted,&sorteddesc,midval));
     println!("Intersect_indexed: {}",intersect_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
@@ -82,10 +82,11 @@ fn printing() {
     println!("\n{}",v1.bl());
     println!("\n{}",v1.mg());
     println!("\n{}",v1.cy());
-    println!("\n{}\n",v1.to_str());
+    println!("\n{}",v1.to_str());
+    println!("\n{}\n",v1.to_plainstr());
     let mut f = std::fs::File::create("/dev/stdout")
-        .unwrap_or_else(|e| panic!("{} {} Failed to open stdout File. Works on Linux.",
-    here!(),e));
+        .unwrap_or_else(|e| 
+            panic!("{} {} Failed to open stdout File. Works on Linux.",here!(),e));
     v1.wvec(&mut f)
         .unwrap_or_else(|e| panic!("{} {} failed to write",here!(),e));
     println!()

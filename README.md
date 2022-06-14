@@ -84,38 +84,43 @@ pub trait Printing<T> {
     /// Methods to serialize and render the resulting string
     /// in bold ANSI terminal colours.
     fn rd(self) -> String where Self: Sized { 
-        format!("{RD}[{}]{UN}",self.to_str()) }
+        format!("{RD}{}{UN}",self.to_str()) }
     fn gr(self) -> String where Self: Sized { 
-        format!("{GR}[{}]{UN}",self.to_str()) }
+        format!("{GR}{}{UN}",self.to_str()) }
     fn yl(self) -> String where Self: Sized { 
-        format!("{YL}[{}]{UN}",self.to_str()) }    
+        format!("{YL}{}{UN}",self.to_str()) }    
     fn bl(self) -> String where Self: Sized { 
-        format!("{BL}[{}]{UN}",self.to_str()) }
+        format!("{BL}{}{UN}",self.to_str()) }
     fn mg(self) -> String where Self: Sized { 
-        format!("{MG}[{}]{UN}",self.to_str()) }
+        format!("{MG}{}{UN}",self.to_str()) }
     fn cy(self) -> String where Self: Sized { 
-        format!("{CY}[{}]{UN}",self.to_str()) }        
+        format!("{CY}{}{UN}",self.to_str()) }        
 
-    /// Method to write vector(s) to file f. Passes up io errors
+    /// Method to write vector(s) to file f (without brackets). 
+    /// Passes up io errors
     fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized { 
-        Ok(write!(*f,"{} ", self.to_str())?) 
+        Ok(write!(*f,"{} ", self.to_plainstr())?) 
     }
 
-    /// Method to print vector(s) to stdout.
+    /// Method to print vector(s) to stdout (without brackets).
     fn pvec(self) where Self: Sized { 
-        print!("{} ", self.to_str()) 
+        print!("{} ", self.to_plainstr()) 
     }
     
     /// Method to serialize generic items, slices, and slices of Vecs.
-    /// Implementation code is in printing.rs
-    /// Can be also implemented on any other types.
+    /// Adds square brackets around Vecs (prettier lists).
+    /// Implementation code is in `printing.rs`. 
     fn to_str(self) -> String;
+
+    /// Method to serialize generic items, slices, and slices of Vecs.
+    /// Implementation code is in `printing.rs`.
+    fn to_plainstr(self) -> String;
 }
 ```
 
 The methods of this trait are implemented for generic individual items `T`, for slices `&[T]` for slices of slices `&[&[T]]` and for slices of vecs `&[Vec<T>]`. Note that these types are normally unprintable in Rust (do not have `Display` implemented).
 
-The following methods of this trait: `.to_str()`, `.gr()`, `.rd()`, `.yl()` `.bl()`, `.mg()`, `.cy()` convert all these types to printable strings. The colouring methods just add the relevant colour encodings and pretty-printing to the plain output of `.to_str()`.
+The following methods of this trait: `.to_str()`, `.gr()`, `.rd()`, `.yl()` `.bl()`, `.mg()`, `.cy()` convert all these types to printable strings. The colouring methods just add the relevant colour encodings to the output of `.to_str()`.
 
 `fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized;`  
 is used to write plain space separated values (`.ssv`) output to files, possibly raising io::Error(s).
@@ -134,14 +139,15 @@ println!("{GR}green text, {RD}red warning, {BL}feeling blue{UN}");
 Note that all of these methods and interpolations set their own colour regardless of the previous settings. Interpolating `{UN}` resets the terminal to its default foreground rendering.
 `UN` is automatically appended at the end of strings produced by colouring methods `.gr()`, etc. Be careful to always close with one of these, or explicit `{UN}`, otherwise all the following output will continue with the last selected colour foreground rendering.
 
-String objects should not have `.to_str()` called on them, as it is not needed. Such application will not fail but since String is a Vec of characters, the colouring functions will add their pretty printing 'list' brackets around it, which is probably not wanted. Thus it is better to bracket existing Strings manually, for example:
+Example from `tests/tests.rs`:
 
 ```rust
 println!("Memsearch for {BL}{midval}{UN}, found at: {}",
     memsearch(&vm, &vi,midval)
-        .map_or_else(||format!("{RD}None{UN}"),|x| x.gr())
+        .map_or_else(||"None".rd(),|x| x.gr())
 );
 ```
+
 Here `memsearch` returns `Option: None`, when `midval` (printed in blue) is not found. None will be printed in red, while any found item will be green (without long-winded match statements).
 
 ## Functions in module `merge.rs`
@@ -276,7 +282,9 @@ pub fn hashsort<T>(s: &mut[T], min:f64, max:f64);
 
 ## Release Notes (Latest First)
 
-**Version 1.1.8** - Added method `pvec(self)` to Printing trait. It prints vecs to stdout. Completed all six ANSI terminal primary bold colours. Moved their constants to module `printing.rs`. Renamed `red()` to `rd()` for consistent two letter names. Updated and reorganised readme.
+**Version 1.1.9** - Added method `to_plainstr()` to `Printing` trait to ease writing plain format to files.
+
+**Version 1.1.8** - Added method `pvec(self)` to `Printing` trait. It prints vecs to stdout. Completed all six ANSI terminal primary bold colours. Moved their constants to module `printing.rs`. Renamed `red()` to `rd()` for consistent two letter names. Updated and reorganised readme.
 
 **Version 1.1.7** - Added method `wvec(self,&mut f)` to Printing. It writes vectors to file f and passes up errors. Added colour `bl()`. Added printing test. Prettier readme.md.
 
