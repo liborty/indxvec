@@ -282,6 +282,8 @@ pub fn hashsort<T>(s: &mut[T], min:f64, max:f64);
 
 ## Release Notes (Latest First)
 
+**Version 1.2.0** - Changed functions in module `merge.rs` to trait methods in two new traits: `Vecops` and `Mutsort`. Keeping the old methods for now for backwards compatibility.
+
 **Version 1.1.9** - Added method `to_plainstr()` to `Printing` trait to ease writing plain format to files.
 
 **Version 1.1.8** - Added method `pvec(self)` to `Printing` trait. It prints vecs to stdout. Completed all six ANSI terminal primary bold colours. Moved their constants to module `printing.rs`. Renamed `red()` to `rd()` for consistent two letter names. Updated and reorganised readme.

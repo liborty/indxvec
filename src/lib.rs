@@ -1,5 +1,6 @@
 pub mod indices;  // implementation for trait Indices
 pub mod printing; // implementations for trait Printing<T>
+pub mod vecops;
 pub mod merge;    // set manipulating functions
 
 use std::io;
@@ -61,33 +62,25 @@ where
 /// Trait to serialize slices of generic items &[T] (vectors)
 /// and slices of Vecs of generic items &[Vec<T>] (matrices).
 /// All are converted into printable strings and optionally coloured.
-pub trait Printing<T> {
+pub trait Printing<T> where Self: Sized {
 
     /// Methods to serialize and render the resulting string
     /// in bold ANSI terminal colours.
-    fn rd(self) -> String where Self: Sized { 
-        format!("{RD}{}{UN}",self.to_str()) }
-    fn gr(self) -> String where Self: Sized { 
-        format!("{GR}{}{UN}",self.to_str()) }
-    fn yl(self) -> String where Self: Sized { 
-        format!("{YL}{}{UN}",self.to_str()) }    
-    fn bl(self) -> String where Self: Sized { 
-        format!("{BL}{}{UN}",self.to_str()) }
-    fn mg(self) -> String where Self: Sized { 
-        format!("{MG}{}{UN}",self.to_str()) }
-    fn cy(self) -> String where Self: Sized { 
-        format!("{CY}{}{UN}",self.to_str()) }        
+    fn rd(self) -> String { format!("{RD}{}{UN}",self.to_str()) }
+    fn gr(self) -> String { format!("{GR}{}{UN}",self.to_str()) }
+    fn yl(self) -> String { format!("{YL}{}{UN}",self.to_str()) }    
+    fn bl(self) -> String { format!("{BL}{}{UN}",self.to_str()) }
+    fn mg(self) -> String { format!("{MG}{}{UN}",self.to_str()) }
+    fn cy(self) -> String { format!("{CY}{}{UN}",self.to_str()) }        
 
     /// Method to write vector(s) to file f (without brackets). 
     /// Passes up io errors
-    fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized { 
+    fn wvec(self,f:&mut File) -> Result<(), io::Error> { 
         Ok(write!(*f,"{} ", self.to_plainstr())?) 
     }
 
     /// Method to print vector(s) to stdout (without brackets).
-    fn pvec(self) where Self: Sized { 
-        print!("{} ", self.to_plainstr()) 
-    }
+    fn pvec(self)  { print!("{} ", self.to_plainstr()) }
     
     /// Method to serialize generic items, slices, and slices of Vecs.
     /// Adds square brackets around Vecs (prettier lists).
@@ -109,11 +102,73 @@ pub trait Indices {
     /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
-    fn unindex<T: Copy>(self, v: &[T], ascending: bool) -> Vec<T>;
+    fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T>
+        where T:Copy;
     /// Collects values from v, as f64s, in the order given by self index.
-    fn unindexf64<T: Copy>(self, v: &[T], ascending: bool) -> Vec<f64> where f64: From<T>;
+    fn unindexf64<T>(self, v: &[T], ascending: bool) -> Vec<f64> where T:Copy,f64: From<T>;
     /// Pearson's correlation coefficient of two slices, typically the ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
     /// Potentially useful clone-recast of &[usize] to Vec<f64>
     fn indx_to_f64(self) -> Vec<f64>;
+}
+
+/// Methods to manipulate Vecs
+pub trait Vecops<T> {
+    fn newindex(n:usize) -> Vec<usize> { Vec::from_iter(0..n) }
+
+    fn maxt(self) -> T where T: PartialOrd+Copy;
+    fn mint(self) -> T where T: PartialOrd+Copy;
+    fn minmaxt(self) -> (T, T) where T: PartialOrd+Copy;
+    fn minmax(self) -> MinMax<T> where T: PartialOrd+Copy;
+    fn minmax_slice(self,i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Copy;
+    fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
+        where T: PartialOrd+Copy;
+    fn revs(self) -> Vec<T> where T: Copy;
+    fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy;
+    fn member(self, m: T) -> Option<usize> where T: PartialEq+Copy;
+    fn memsearch(self, val: T) -> Option<usize> where T: PartialOrd;
+    fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd;
+    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> where T:PartialOrd;
+    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd;
+    fn binsearch(self, val: T) -> usize where T: PartialOrd;
+    fn binsearchdesc(self, val: T) -> usize where T: PartialOrd;
+    fn occurs(self, val:T) -> usize where T: PartialOrd;
+    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
+    fn unite(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
+        where T: PartialOrd+Copy;
+    fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
+        where T: PartialOrd+Copy;
+    fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
+        where T: PartialOrd+Copy;
+    fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
+        where T: PartialOrd+Copy;
+    fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
+        where T: PartialOrd+Copy;
+    fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
+        where T: PartialOrd+Copy;
+    fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
+        where T: PartialOrd+Copy;
+    fn mergesort(self, i: usize, n: usize) -> Vec<usize>
+        where T: PartialOrd+Copy;
+    fn sortidx(self) -> Vec<usize> where T:PartialOrd+Copy; 
+    fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy;
+    fn rank(self, ascending: bool) -> Vec<usize>
+        where T: PartialOrd+Copy;
+    fn testswap(self,  idx: &mut[usize], i1: usize, i2: usize)
+        where T:PartialOrd;
+    fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize> 
+        where T: PartialOrd+Copy, f64:From<T>;
+    fn hashsortrec(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
+        where T: PartialOrd+Copy, f64:From<T>;
+
+}
+pub trait Mutsort<T> {
+fn compswap(self, i1: usize, i2: usize) where T: PartialOrd;
+fn hashsort(self, min:f64, max:f64) where T: PartialOrd+Copy, f64:From<T>;
+fn hashsortr(self, i:usize, n:usize, min:f64, max:f64) 
+    where T: PartialOrd+Copy, f64:From<T>;
 }

@@ -1,4 +1,4 @@
-use crate::{Printing};
+use crate::Printing;
 use std::fmt::Write;
 
 /// When interpolated, makes following foreground rendering bold red
