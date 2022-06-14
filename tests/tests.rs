@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use indxvec::{here,merge::*, Indices, Printing, GR, RD, UN};
+use indxvec::{here, merge::*, printing::*, Indices, Printing };
 use ran::*;
 
 #[test]
@@ -12,9 +12,9 @@ fn indxvec() {
     set_seeds(987654321);
     let v1 = ranvu8(19);
     let mut vm = v1.clone();
-    println!("{GR}\nv1: {}", v1.red());  
+    println!("{GR}\nv1: {}", v1.bl());  
     let v2 = ranvu8(19);
-    println!("{GR}v2: {}{UN}", v2.to_str());    
+    println!("{GR}v2: {}", v2.bl());    
     println!("minmax v1:       {}", minmax(&v1));
     println!("minmaxt v1:      {GR}{:?}{UN}", minmaxt(&v1)); 
     let (lset,eqset,gset) = partition_indexed(&v1, midval);
@@ -48,7 +48,7 @@ fn indxvec() {
     println!("Revindex:\n{}", sortidx(&v1).revindex().unindex(&v1, true).gr()); // by reversing the sort index
     println!("Invert-compliment-invert:\n{}", sortidx(&v1).invindex().complindex().invindex().unindex(&v1, true).gr());
     println!("Rank-compliment-invert:\n{}", rank(&v1, true).complindex().invindex().unindex(&v1, true).gr()); // complindex reverses ranks
-    println!("Spearman corr v1,v2: {}",rank(&v1, true).ucorrelation(&rank(&v2, true)).gr()); //  1 for any Vec
+    println!("Spearman corr v1,v2: {GR}{}{UN}",rank(&v1, true).ucorrelation(&rank(&v2,true))); //  1 for any Vec
     //println!("Spearman corr against reversed: {}",
     //    rank(&v1, true).ucorrelation(&rank(&v1, false)).gr()); // -1 for any Vec
     let (vm, vi) = merge_indexed(&v1, &hashsort_indexed(&v1,min,max),
@@ -57,16 +57,16 @@ fn indxvec() {
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.gr());
     let sorteddesc = vi.unindex(&vm, false);
     println!("The above reversed:\n{}", sorteddesc.gr());
-    println!("Binsearch for {midval}, found before: {}",binsearch(&sorted,midval).gr()); // binsearch
-    println!("Binsearchdesc for {midval}, found before: {}",binsearchdesc(&sorteddesc,midval).gr()); // binsearch
-    println!("Memsearchdesc for {midval}, found at: {}",
-        memsearchdesc(&revs(&sorted),midval).map_or_else(|| "None".gr(), |x| x.gr()));
-    println!("Memsearch_indexed for {midval}, found at: {}",
-        memsearch_indexed(&vm, &vi,midval).map_or_else(|| "None".gr(), |x| x.gr()));
-    println!("Memsearch_indexed (reversed index) for {midval}, found at: {}",
-        memsearchdesc_indexed(&vm, &vi.revindex(),midval).map_or_else(|| "None".gr(), |x| x.gr()));
-    println!("Occurrences count of {midval}: {}",occurs(&sorted, midval).gr());
-    println!("Occurrences count of {midval}: {}",occurs_multiple(&sorted,&sorteddesc,midval).gr());
+    println!("Binsearch for {BL}{midval}{UN}, found before: {GR}{}{UN}",binsearch(&sorted,midval)); // binsearch
+    println!("Binsearchdesc for {BL}{midval}{UN}, found before: {GR}{}{UN}",binsearchdesc(&sorteddesc,midval)); // binsearch
+    println!("Memsearch for {BL}{midval}{UN}, found at: {}",
+        memsearch(&sorted,midval).map_or_else(||format!("{RD}None{UN}"),|x| x.gr()));
+    println!("Memsearch_indexed for {BL}{midval}{UN}, found at: {}",
+        memsearch_indexed(&vm, &vi,midval).map_or_else(||format!("{RD}None{UN}"),|x| x.gr()));
+    println!("Memsearch_indexed (reversed index) for {BL}{midval}{UN}, found at: {}",
+        memsearchdesc_indexed(&vm, &vi.revindex(),midval).map_or_else(||format!("{RD}None{UN}"),|x| x.gr()));
+    println!("Occurrences count of {BL}{midval}{UN}: {GR}{}{UN}",occurs(&sorted, midval));
+    println!("Occurrences count of {BL}{midval}{UN}: {GR}{}{UN}",occurs_multiple(&sorted,&sorteddesc,midval));
     println!("Intersect_indexed: {}",intersect_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
     println!("Diff_indexed: {}",diff_indexed(&vm, &vi, &v1, &sortidx(&v1)).gr());
     println!("Sansrepeat:   {}\n", sansrepeat(&sorted).gr());
@@ -74,10 +74,14 @@ fn indxvec() {
 
 #[test]
 fn printing() {
+    set_seeds(123456789);
     let v1 = ranvu8(20); 
-    println!("\n{}",v1.red());
+    println!("\n{}",v1.rd());
     println!("\n{}",v1.gr());
-    println!("\n{}",v1.blue());
+    println!("\n{}",v1.yl());
+    println!("\n{}",v1.bl());
+    println!("\n{}",v1.mg());
+    println!("\n{}",v1.cy());
     println!("\n{}\n",v1.to_str());
     let mut f = std::fs::File::create("/dev/stdout")
         .unwrap_or_else(|e| panic!("{} {} Failed to open stdout File. Works on Linux.",

@@ -5,15 +5,7 @@ pub mod merge;    // set manipulating functions
 use std::io;
 use std::io::Write;
 use std::fs::File;
-
-/// When printed, turns the terminal foreground rendering to bold red
-pub const RD: &str = "\x1B[01;31m";
-/// When printed, turns the terminal foreground rendering to bold green
-pub const GR: &str = "\x1B[01;32m";
-/// When printed, turns the terminal foreground rendering to bold blue
-pub const BL: &str = "\x1B[01;34m";
-/// Returns the terminal rendering to default
-pub const UN: &str = "\x1B[0m";
+use printing::*;
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 /// This string will be rendered in bold red on (linux) terminals, so as to easily find the
@@ -35,6 +27,12 @@ macro_rules! here {
     }};
 }
 
+/// Helper function to copy and cast entire &[T] to Vec<f64>.
+/// Like the standard .to_vec() method but also recasts to f64 end type
+pub fn tof64<T>(s: &[T]) -> Vec<f64> where T: Copy, f64: From<T>, {
+    s.iter().map(|&x| f64::from(x)).collect()
+}
+
 /// struct for minimum value, its index, maximum value, its index
 #[derive(Default)]
 pub struct MinMax<T> {
@@ -51,43 +49,45 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "min: {}, minindex {}, max: {}, maxindex: {}",
-            self.min.gr(),
-            self.minindex.gr(),
-            self.max.gr(),
-            self.maxindex.gr()
+            "min: {GR}{}{UN}, minindex: {YL}{}{UN}, max: {GR}{}{UN}, maxindex: {YL}{}{UN}",
+            self.min,
+            self.minindex,
+            self.max,
+            self.maxindex
         )
     }
 }
 
-/// Helper function to copy and cast entire &[T] to Vec<f64>.
-/// Like the standard .to_vec() method but also recasts to f64 end type
-pub fn tof64<T>(s: &[T]) -> Vec<f64> where T: Copy, f64: From<T>, {
-    s.iter().map(|&x| f64::from(x)).collect()
-}
-
 /// Trait to serialize slices of generic items &[T] (vectors)
 /// and slices of Vecs of generic items &[Vec<T>] (matrices).
-/// All are converted into printable strings.
+/// All are converted into printable strings and optionally coloured.
 pub trait Printing<T> {
-    /// Method to serialize and render the resulting string in bold green.
-    /// This is the default implementation applicable to all types that
-    /// trait `Printing` is implemented for
-    fn gr(self) -> String  where  Self: Sized {
-        format!("{GR}{}{UN}", self.to_str())
-    }
-    /// Method to serialize and render the resulting string in bold red.
-    fn red(self) -> String  where  Self: Sized,    {
-        format!("{RD}{}{UN}", self.to_str())
-    }
-    /// Method to serialize and render the resulting string in bold blue.
-    fn blue(self) -> String  where  Self: Sized,    {
-            format!("{BL}{}{UN}", self.to_str())
-    }
-    /// Method `write vector(s) to file f`. Passes up errors
+
+    /// Methods to serialize and render the resulting string
+    /// in bold ANSI terminal colours.
+    fn rd(self) -> String where Self: Sized { 
+        format!("{RD}[{}]{UN}",self.to_str()) }
+    fn gr(self) -> String where Self: Sized { 
+        format!("{GR}[{}]{UN}",self.to_str()) }
+    fn yl(self) -> String where Self: Sized { 
+        format!("{YL}[{}]{UN}",self.to_str()) }    
+    fn bl(self) -> String where Self: Sized { 
+        format!("{BL}[{}]{UN}",self.to_str()) }
+    fn mg(self) -> String where Self: Sized { 
+        format!("{MG}[{}]{UN}",self.to_str()) }
+    fn cy(self) -> String where Self: Sized { 
+        format!("{CY}[{}]{UN}",self.to_str()) }        
+
+    /// Method to write vector(s) to file f. Passes up io errors
     fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized { 
         Ok(write!(*f,"{} ", self.to_str())?) 
-    }    
+    }
+
+    /// Method to print vector(s) to stdout.
+    fn pvec(self) where Self: Sized { 
+        print!("{} ", self.to_str()) 
+    }
+    
     /// Method to serialize generic items, slices, and slices of Vecs.
     /// Implementation code is in printing.rs
     /// Can be also implemented on any other types.

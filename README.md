@@ -7,58 +7,47 @@
 
 ## Description
 
+The following will import everything:
+
+```rust
+use indxvec::{MinMax,here,tof64,printing::*,merge::*,Indices,Printing};
+```
+
 This crate is lightweight and has no dependencies.
 
 The facilities provided are:
 
 * ranking, sorting, merging, searching, indexing, selecting, partitioning
-* general operations on/with indices
+* general operations on vectors and their indices
 * set operations
-* printing of generic slices and slices of vectors
-* macro for easy error reporting
-
-## Usage
-
-### Auxiliay functions and constants
-
-```rust
-use indxvec::{GR,RD,UN,MinMax,here,tof64};
-```
-
-### Traits `Indices` and/or `Printing`
-
-```rust
-use indxvec::{Indices,Printing};
-```
-
-Trait `Indices` is implemented on type `&[usize]`, i.e. slices of subscripts to slices and vectors.
-
-Trait `Printing` provides utility methods to stringify (serialise for printing) generic slices and slices of vecs.
-Optionally, it enables printing in bold green and red for adding emphasis (see `tests/tests.rs`).
-
-### Functions from `merge.rs`
-
-```rust
-use indxvec::{merge::*};
-```
-
-These functions are  applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
-
-### The following will import everything
-
-```rust
-use indxvec::{GR,RD,UN,MinMax,here,tof64,merge::*,Indices,Printing};
-```
-
-## Testing
+* serialising generic slices and slices of vectors to Strings: `to_str()`
+* printing generic slices and slices of vectors: `pvec()`
+* writing generic slices and slices of vectors to files: `wvec(&mut f)`
+* coloured ANSI terminal output (mainly for testing)
+* macro `here!()` for more informative errors reporting
 
 It is highly recommended to read and run `tests/tests.rs` to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
 
-`cargo test --release -- --test-threads=1 --nocapture --color always`
+```bash
+cargo test --release -- --test-threads=1 --nocapture --color always
+```
 
-## Trait Indices
+## Struct and helper functions
 
-The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results as appropriate:
+```rust
+use indxvec::{MinMax,here,tof64};
+```
+Struct `Minmax` holds minimum and maximum values of a Vec and their indices.  
+`here!()` is a macro for more informative error reports.  
+`pub fn tof64<T>(s: &[T]) -> Vec<f64>...` converts generic Vecs end types to f64s.
+
+## Trait `Indices`
+
+```rust
+use indxvec::{Indices};
+```
+
+The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>`, or other results as appropriate.
 
 ```rust
 /// Methods to manipulate indices of `Vec<usize>` type.
@@ -67,12 +56,13 @@ pub trait Indices {
     fn revindex(self) -> Vec<usize>;
     /// Invert an index - turns a sort order into rank order and vice-versa
     fn invindex(self) -> Vec<usize>;
-    /// complement of an index - reverses the ranking order
+    /// Complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of index in self. Or opposite order.
     fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
     /// Collects values from v, as f64s, in the order given by self index.    
-    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> Vec<f64> where f64:From<T>;
+    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> Vec<f64> 
+        where f64:From<T>;
     /// Pearson's correlation coefficient of two slices, typically ranks.  
     fn ucorrelation(self, v: &[usize]) -> f64;
     /// Potentially useful clone-recast of &[usize] to Vec<f64>
@@ -80,42 +70,40 @@ pub trait Indices {
 }
 ```
 
-## Trait Printing
-
-This trait is implemented for generic individual items `T`, for slices `&[T]` and for slices of vecs `&[Vec<T>]`. Note that these types are normally unprintable in Rust.
-
-The methods of this trait `.gr()`, `.red()`, `.blue()`, `.wvec(&mut f)` and `.to_str()` convert all these generic vector objects to printable strings. The last two are uncoloured and can be used to write to files; `wvec` also passes on io::Error(s) For example:
+## Trait `Printing`
 
 ```rust
-println!("My pretty vec: {}", myvec.to_str());
+use indxvec::Printing;    // the trait methods
 ```
 
-It is also possible to import these constants: `use indxvec::{RD,GR,BL,UN};` and then use them in any formatting strings directly, e.g.: `"{RD} my important output: {} {UN}"` will print everything so bracketed in red. Switching colours:  
-`println!("{GR}green text, {RD}red warning, {BL}feeling blue{UN}");`
-
-Note that all of these methods and interpolations set their own colour regardless of the previous settings.
-
-Interpolating `{UN}` resets the terminal to its default foreground rendering.
-`UN` is automatically appended at the end of strings produced by `.gr()`,`.red()` and `.green()` methods. Be careful to always close with one of these three, or `{UN}`, otherwise all the following output will continue with the last selected colour foreground rendering.
+This trait provides utility methods to stringify (serialise) generic slices and slices of vecs. Also, methods for writing or printing them. Optionally, it enables printing them in bold ANSI terminal colours for adding emphasis. See `tests/tests.rs` for examples of usage.
 
 ```rust
-/// Trait to serialize slices of generic items &[T] (vectors)
-/// and slices of Vecs &[Vec<T>] (matrices).
-/// All are converted into printable strings.
 pub trait Printing<T> {
-    /// Method to serialize and render the resulting string in bold green.
-    /// This is the default implementation applicable to all types that
-    /// trait `Printing` is implemented for
-    fn gr(self) -> String  where  Self: Sized {
-        format!("{GR}{}{UN}", self.to_str())
-    }
-    /// Method to serialize and render the resulting string in bold red.
-    fn red(self) -> String  where  Self: Sized,    {
-        format!("{RD}{}{UN}", self.to_str())
-    }
-    /// Method `write vector(s) to file f`
+
+    /// Methods to serialize and render the resulting string
+    /// in bold ANSI terminal colours.
+    fn rd(self) -> String where Self: Sized { 
+        format!("{RD}[{}]{UN}",self.to_str()) }
+    fn gr(self) -> String where Self: Sized { 
+        format!("{GR}[{}]{UN}",self.to_str()) }
+    fn yl(self) -> String where Self: Sized { 
+        format!("{YL}[{}]{UN}",self.to_str()) }    
+    fn bl(self) -> String where Self: Sized { 
+        format!("{BL}[{}]{UN}",self.to_str()) }
+    fn mg(self) -> String where Self: Sized { 
+        format!("{MG}[{}]{UN}",self.to_str()) }
+    fn cy(self) -> String where Self: Sized { 
+        format!("{CY}[{}]{UN}",self.to_str()) }        
+
+    /// Method to write vector(s) to file f. Passes up io errors
     fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized { 
         Ok(write!(*f,"{} ", self.to_str())?) 
+    }
+
+    /// Method to print vector(s) to stdout.
+    fn pvec(self) where Self: Sized { 
+        print!("{} ", self.to_str()) 
     }
     
     /// Method to serialize generic items, slices, and slices of Vecs.
@@ -125,9 +113,46 @@ pub trait Printing<T> {
 }
 ```
 
-## Functions
+The methods of this trait are implemented for generic individual items `T`, for slices `&[T]` for slices of slices `&[&[T]]` and for slices of vecs `&[Vec<T>]`. Note that these types are normally unprintable in Rust (do not have `Display` implemented).
 
-Nota bene: `hashsort` really wins on longer Vecs. For about one thousand items upwards it is on average about 25% faster than the best Rust sort.
+The following methods of this trait: `.to_str()`, `.gr()`, `.rd()`, `.yl()` `.bl()`, `.mg()`, `.cy()` convert all these types to printable strings. The colouring methods just add the relevant colour encodings and pretty-printing to the plain output of `.to_str()`.
+
+`fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized;`  
+is used to write plain space separated values (`.ssv`) output to files, possibly raising io::Error(s).
+
+`fn pvec(self) where Self: Sized;`  
+prints to stdout.
+
+For finer control of the colouring, import the colour constants from module `printing` and then use them in any formatting strings manually. For example,
+switching colours:
+
+```rust  
+use indxvec::printing::*; // ANSI colours constants
+println!("{GR}green text, {RD}red warning, {BL}feeling blue{UN}");
+```
+
+Note that all of these methods and interpolations set their own colour regardless of the previous settings. Interpolating `{UN}` resets the terminal to its default foreground rendering.
+`UN` is automatically appended at the end of strings produced by colouring methods `.gr()`, etc. Be careful to always close with one of these, or explicit `{UN}`, otherwise all the following output will continue with the last selected colour foreground rendering.
+
+String objects should not have `.to_str()` called on them, as it is not needed. Such application will not fail but since String is a Vec of characters, the colouring functions will add their pretty printing 'list' brackets around it, which is probably not wanted. Thus it is better to bracket existing Strings manually, for example:
+
+```rust
+println!("Memsearch for {BL}{midval}{UN}, found at: {}",
+    memsearch(&vm, &vi,midval)
+        .map_or_else(||format!("{RD}None{UN}"),|x| x.gr())
+);
+```
+Here `memsearch` returns `Option: None`, when `midval` (printed in blue) is not found. None will be printed in red, while any found item will be green (without long-winded match statements).
+
+## Functions in module `merge.rs`
+
+```rust
+use indxvec::{merge::*};
+```
+
+These functions are mostly applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
+
+Nota bene: `hashsort` really wins on longer Vecs. For about one thousand items upwards, it is on average about 25% faster than the best Rust Quicksort.
 
 ### Signatures of public functions in module `src/merge.rs`
 
@@ -251,7 +276,9 @@ pub fn hashsort<T>(s: &mut[T], min:f64, max:f64);
 
 ## Release Notes (Latest First)
 
-**Version 1.1.7** - Added method `wvec(self,&mut f)`. It writes vectors to file f and passes up errors. Added colour `blue()`. Added printing test. Prettier readme.md.
+**Version 1.1.8** - Added method `pvec(self)` to Printing trait. It prints vecs to stdout. Completed all six ANSI terminal primary bold colours. Moved their constants to module `printing.rs`. Renamed `red()` to `rd()` for consistent two letter names. Updated and reorganised readme.
+
+**Version 1.1.7** - Added method `wvec(self,&mut f)` to Printing. It writes vectors to file f and passes up errors. Added colour `bl()`. Added printing test. Prettier readme.md.
 
 **Version 1.1.6** - Added simple `partition` into three sets (lt,eq,gt).
 
