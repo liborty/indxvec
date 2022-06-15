@@ -1,6 +1,7 @@
 pub mod indices;  // implementation for trait Indices
 pub mod printing; // implementations for trait Printing<T>
 pub mod vecops;
+pub mod mutsort;
 pub mod merge;    // set manipulating functions
 
 use std::io;
