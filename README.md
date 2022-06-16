@@ -70,6 +70,19 @@ pub trait Indices {
 }
 ```
 
+## Trait Vecops
+
+```rust
+use indxvec::{Vecops};
+```
+
+The methods od this trait are applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
+
+
+
+Nota bene: `hashsort` really wins on longer Vecs. For about one thousand items upwards, it is on average about 25% faster than the best Rust Quicksort.
+
+
 ## Trait `Printing`
 
 ```rust
@@ -150,15 +163,8 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}",
 
 Here `memsearch` returns `Option: None`, when `midval` (printed in blue) is not found. None will be printed in red, while any found item will be green (without long-winded match statements).
 
-## Functions in module `merge.rs`
 
-```rust
-use indxvec::{merge::*};
-```
 
-These functions are mostly applicable to generic slices `&[T]`. Thus they will work on Rust primitive end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
-
-Nota bene: `hashsort` really wins on longer Vecs. For about one thousand items upwards, it is on average about 25% faster than the best Rust Quicksort.
 
 ### Signatures of public functions in module `src/merge.rs`
 
@@ -282,7 +288,9 @@ pub fn hashsort<T>(s: &mut[T], min:f64, max:f64);
 
 ## Release Notes (Latest First)
 
-**Version 1.2.0** - Changed functions in module `merge.rs` to trait methods in two new traits: `Vecops` and `Mutsort`. Applying trait methods is more idiomatic and easier to read when chained. Narrowed down some trait constraints. Kept the old methods for now for backwards compatibility but they will be removed soon to save space.
+**Version 1.2.1** - Removed the functions module `merge.rs`.
+
+**Version 1.2.0** - Changed functions in module `merge.rs` to trait methods in two new traits: `Vecops` and `Mutsort`. Applying trait methods is more idiomatic and easier to read when chained. Narrowed down some trait constraints. Kept the old functions for now for backwards compatibility but they will be removed soon to save space.
 
 **Version 1.1.9** - Added method `to_plainstr()` to `Printing` trait to ease writing plain format to files.
 

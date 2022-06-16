@@ -1,4 +1,4 @@
-use crate::{here, MinMax,Indices,Vecops};
+use crate::{here, MinMax,Indices,Vecops,Mutsort};
 use std::iter::FromIterator;
 
 impl<T> Vecops<T> for &[T] {
@@ -839,100 +839,93 @@ fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy {
     rankvec
 }
 
-/// swap any two index items, if they are out of ascending order
-fn testswap(self,  idx: &mut[usize], i1: usize, i2: usize) where T:PartialOrd { 
-    if self[idx[i1]] > self[idx[i2]] { idx.swap(i1, i2) } 
+/// swap any two index items, if their data items (self) are not in ascending order
+fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) where T:PartialOrd { 
+    if self[idx[i0]] > self[idx[i1]] { idx.swap(i0, i1) } 
 }
+
+/// sort three index items if their self items are out of ascending order
+fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd { 
+        self.isorttwo(idx,i0,i1);
+        self.isorttwo(idx,i1,i2);   
+        self.isorttwo(idx,i0,i1);    
+    }
 
 /// N recursive non-destructive hash sort.
 /// Input data are read only. Output is sort index.
 /// Requires min,max, the data range, that must enclose all its values. 
-/// The range is often known. If not, it can be obtained with `minmaxt`.
+/// The range is often known. If not, it can be obtained with `minmaxt()`.
 fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize> 
-    where T: PartialOrd+Copy, f64:From<T> {
+    where T: PartialOrd+Copy, f64:From<T> { 
     if min >= max { panic!("{} data range must be min < max",here!()); };
     let n = self.len();
-    match n {
-        0 => panic!("{} zero size vector",here!()),
-        1 => return vec![0],
-        2 => if self[0] > self[1] { return vec![1,0] } else { return vec![0,1] },
-        3 => {
-            let mut idx = Vec::from_iter(0..3); // mutable index
-            self.testswap(&mut idx,0,1);
-            self.testswap(&mut idx,1,2);
-            self.testswap(&mut idx,0,1);
-            idx 
-        },
-        _ => {
-            let mut idx = Self::newindex(self.len()); // initial mutable index
-            self.hashsortrec(&mut idx,0,n,min,max); // sorts idx
-            idx
-        }
-    }   
-}
+    // create a mutable index for the result
+    let mut idx = Vec::from_iter(0..n); 
+    self.hashsortslice(&mut idx,0,n,min,max); // sorts idx
+    idx 
+}   
 
-fn hashsortrec(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
+fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
     where T: PartialOrd+Copy, f64:From<T> { 
-    if n == 0 { panic!("{} unexpected zero length",here!())};  
-    // hash is a constant s.t. (x-min)*hash is in [0,n) 
-    let hash = (n as f64 - 1e-10 ) / (max-min); 
-    // we allocate one extra bucket so that the max values do not cause overflow with subscript n
-    let mut freqvec:Vec<Vec<usize>> = vec![Vec::new();n];
+    // Recursion termination conditions
+    match n {
+        0 => { return; }, // nothing to do
+        1 => { idx[i] = i; return; }, // enter one item, no sorting
+        2 => { self.isorttwo(idx, i, i+1); return; },
+        3 => { self.isortthree(idx, i,i+1,i+2); return; },
+        _ => () 
+    };
+  
+    // hash is a constant s.t. (x-min)*hash is in [0,n] 
+    let hash = (n as f64) / (max-min);  
+    let mut buckets:Vec<Vec<usize>> = vec![Vec::new();n];
     // group current index items into buckets by their associated self[] values
-    for &xi in idx.iter().skip(i).take(n) { 
-        freqvec[(hash*(f64::from(self[xi])-min)).floor() as usize].push(xi);
+    for &xi in idx.iter().skip(i).take(n) {  
+        let mut hashsub = (hash*(f64::from(self[xi])-min)).floor() as usize; 
+        if hashsub == n { hashsub -=1 }; // reduce subscripts to [0,n-1] 
+        buckets[hashsub].push(xi);
     }
-    // flatten the buckets into the original index list 
+    // sort the buckets into the index list 
     let mut isub = i; 
-    for v in freqvec.iter() { 
-        let vlen = v.len();     
-        // print!("{} ",vlen);
-        match vlen {
+    for bucket in buckets.iter() { 
+        let blen = bucket.len(); 
+        // println!("hashsortslice bucket start: {} items: {}",isub,blen);   
+        match blen {
         0 => continue, // empty bucket
-        1 => { idx[isub] = v[0]; isub += 1; }, // copy the item to the main index
+        1 => { idx[isub] = bucket[0]; isub += 1; }, // copy the item to the main index
         2 => { 
-            if self[v[1]] < self[v[0]] { idx[isub] = v[1]; idx[isub+1] = v[0];}
-            else { idx[isub] = v[0]; idx[isub+1] = v[1]; };  
+            idx[isub] = bucket[0]; idx[isub+1] = bucket[1];
+            self.isorttwo(idx, isub, isub+1);
             isub += 2; 
         },
         3 => {
-            idx[isub] = v[0]; idx[isub+1] = v[1]; idx[isub+2] = v[2];   
-            self.testswap(idx,isub,isub+1);
-            self.testswap(idx,isub+1,isub+2);
-            self.testswap(idx,isub,isub+1);
+            idx[isub] = bucket[0]; idx[isub+1] = bucket[1]; idx[isub+2] = bucket[2];   
+            self.isortthree(idx,isub,isub+1,isub+2); 
             isub += 3;
         },
         x if x == n => { 
             // this bucket alone is populated, 
             // items in it are most likely all equal
-            let mx = self.minmax_indexed(idx, isub, vlen);
-            if mx.minindex < mx.maxindex { // recurse with the new range 
-                let mut hold = idx[i]; // swap minindex to the front
-                idx[i] = idx[mx.minindex]; 
-                idx[mx.minindex] = hold;
-                hold = idx[i+n-1]; // swap maxindex to the end
-                idx[i+n-1] = idx[mx.maxindex]; 
-                idx[mx.maxindex] = hold;
+            let mx = self.minmax_indexed(idx, isub, blen);
+            if mx.min < mx.max { // recurse with the new range 
+                idx.mutsorttwo(isub,mx.minindex); // swap minindex to the front 
+                idx.mutsorttwo(mx.maxindex,isub); // swap maxindex to the end 
                 // recurse to sort the rest
-                self.hashsortrec(idx,i+1,n-2,f64::from(mx.min),f64::from(mx.max)); 
+                self.hashsortslice(idx,i+1,n-2,f64::from(mx.min),f64::from(mx.max)); 
             };
             return; // all items were equal, or are now sorted
         },
         _ => { 
             // first fill the index with the grouped items from v
             let isubprev = isub;
-            for &item in v { idx[isub] = item; isub += 1; }; 
-            let mx = self.minmax_indexed( idx, isubprev, vlen);
-            if mx.minindex < mx.maxindex { // else are all equal 
-                let mut hold = idx[isubprev]; // swap minindex to the front
-                idx[isubprev] = idx[mx.minindex]; 
-                idx[mx.minindex] = hold;
-                hold = idx[isub-1]; // swap maxindex to the end
-                idx[isub-1] = idx[mx.maxindex]; 
-                idx[mx.maxindex] = hold;
+            for &item in bucket { idx[isub] = item; isub += 1; }; 
+            let mx = self.minmax_indexed( idx, isubprev, blen);
+            if mx.minindex < mx.maxindex { // else are all equal
+                idx.mutsorttwo(isubprev,mx.minindex); // swap minindex to the front 
+                idx.mutsorttwo(mx.maxindex,isub-1); // swap maxindex to the end  
                 // recurse to sort the rest
-                self.hashsortrec(idx,isubprev+1,vlen-2,f64::from(mx.min),f64::from(mx.max)); 
-                }; // these items were equal or are now sorted
+                self.hashsortslice(idx,isubprev+1,blen-2,f64::from(mx.min),f64::from(mx.max)); 
+                };
             } 
         }
     }

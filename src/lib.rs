@@ -2,7 +2,7 @@ pub mod indices;  // implementation for trait Indices
 pub mod printing; // implementations for trait Printing<T>
 pub mod vecops;
 pub mod mutsort;
-pub mod merge;    // set manipulating functions
+// pub mod merge;    // set manipulating functions
 
 use std::io;
 use std::io::Write;
@@ -21,10 +21,7 @@ macro_rules! here {
         }
         let name = type_name_of(f);
         format!(
-            "\n\x1B[01;31m{}:{} {}\x1B[0m",
-            file!(),
-            line!(),
-            &name[..name.len() - 3]
+            "\n{}:{} {}",file!(),line!(), &name[..name.len() - 3]
         )
     }};
 }
@@ -96,6 +93,9 @@ pub trait Printing<T> where Self: Sized {
 
 /// Methods to manipulate indices of `Vec<usize>` type.
 pub trait Indices {
+
+    fn newindex(n:usize) -> Vec<usize> { Vec::from_iter(0..n) }
+
     /// Reverse an index slice by simple reverse iteration.
     fn revindex(self) -> Vec<usize>;
     /// Invert an index - turns a sort order into rank order and vice-versa
@@ -115,7 +115,6 @@ pub trait Indices {
 
 /// Methods to manipulate Vecs
 pub trait Vecops<T> {
-    fn newindex(n:usize) -> Vec<usize> { Vec::from_iter(0..n) }
 
     fn maxt(self) -> T where T: PartialOrd+Copy;
     fn mint(self) -> T where T: PartialOrd+Copy;
@@ -157,19 +156,20 @@ pub trait Vecops<T> {
         where T: PartialOrd+Copy;
     fn sortidx(self) -> Vec<usize> where T:PartialOrd+Copy; 
     fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy;
-    fn rank(self, ascending: bool) -> Vec<usize>
-        where T: PartialOrd+Copy;
-    fn testswap(self,  idx: &mut[usize], i1: usize, i2: usize)
-        where T:PartialOrd;
+    fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
+    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) where T:PartialOrd;
+    /// sort three index items if their self items are out of ascending order
+    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
     fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize> 
         where T: PartialOrd+Copy, f64:From<T>;
-    fn hashsortrec(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
+    fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
         where T: PartialOrd+Copy, f64:From<T>;
 
 }
 pub trait Mutsort<T> {
-fn compswap(self, i1: usize, i2: usize) where T: PartialOrd;
-fn hashsort(self, min:f64, max:f64) where T: PartialOrd+Copy, f64:From<T>;
-fn hashsortr(self, i:usize, n:usize, min:f64, max:f64) 
+fn mutsorttwo(self, i0: usize, i1:usize) where T: PartialOrd;
+fn mutsortthree(self, i0: usize, i1:usize, i2:usize) where T: PartialOrd;
+fn muthashsort(self, min:f64, max:f64) where T: PartialOrd+Copy, f64:From<T>;
+fn muthashsortslice(self, i:usize, n:usize, min:f64, max:f64) 
     where T: PartialOrd+Copy, f64:From<T>;
 }
