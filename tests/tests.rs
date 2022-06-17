@@ -51,8 +51,9 @@ fn indxvec() {
     println!("Spearman corr v1,v2: {}", v1.rank(true).ucorrelation(&v2.rank(true)).gr()); //  1 for any Vec
     //println!("Spearman corr against reversed: {}",
     //    rank(&v1, true).ucorrelation(&rank(&v1, false)).gr()); // -1 for any Vec
-    let (vm, vi) = v1.merge_indexed( &v1.hashsort_indexed(min,max), 
-        &v2, &v2.hashsort_indexed(min,max)); // merge two vecs using their sort indices
+    let (vm, vi) = v1.merge_indexed( 
+            &v1.hashsort_indexed(min,max), 
+        &v2,&v2.hashsort_indexed(min,max)); // merge two vecs using their sort indices
     let sorted = vi.unindex(&vm, true);
     println!("v1 and v2 hashsorted, merged and unindexed:\n{}", sorted.gr());
     let sorteddesc = vi.unindex(&vm, false);
@@ -75,7 +76,11 @@ fn indxvec() {
 #[test]
 fn printing() {
     set_seeds(123456789);
-    let v1 = ranvu8(20); 
+    let mut v1 = ranvu8(20);
+    // more focussed data range for hashsort but not strictly necessary
+    // let(min,max) = v1.minmaxt();
+    // v1.muthashsort(min as f64, max as f64); 
+    v1.muthashsort(0., 255.); 
     println!("\n{}",v1.rd());
     println!("\n{}",v1.gr());
     println!("\n{}",v1.yl());
@@ -83,11 +88,11 @@ fn printing() {
     println!("\n{}",v1.mg());
     println!("\n{}",v1.cy());
     println!("\n{}",v1.to_str());
-    println!("\n{}\n",v1.to_plainstr());
+    println!("\n{}\n",v1.to_plainstr()); // no brackets
     let mut f = std::fs::File::create("/dev/stdout")
         .unwrap_or_else(|e| 
             panic!("{} {} Failed to open stdout File. Works on Linux.",here!(),e));
     v1.wvec(&mut f)
         .unwrap_or_else(|e| panic!("{} {} failed to write",here!(),e));
-    println!()
+    println!() // blank line to mark the end of the test
 }
