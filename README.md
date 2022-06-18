@@ -77,10 +77,96 @@ pub trait Indices {
 use indxvec::{Vecops};
 ```
 
-The methods of this trait are applicable to generic slices `&[T]`. Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, mostly just `PartialOrd` and/or `Copy`, are  implemented for `T`.
+The methods of this trait are applicable to generic slices `&[T]`. Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Copy`, are  implemented for `T`.
 
 ```rust
-
+/// Methods to manipulate Vecs
+pub trait Vecops<T> {
+    /// Maximum value in self
+    fn maxt(self) -> T where T: PartialOrd+Copy;
+    /// Minimum value in self
+    fn mint(self) -> T where T: PartialOrd+Copy;
+    /// Minimum and maximum values in self
+    fn minmaxt(self) -> (T, T) where T: PartialOrd+Copy;
+    /// Returns MinMax{min, minindex, max, maxindex}
+    fn minmax(self) -> MinMax<T> where T: PartialOrd+Copy;
+    /// MinMax of n items starting at subscript i
+    fn minmax_slice(self,i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Copy;
+    /// MinMax of a subset of self, defined by its idx subslice between i,i+n.
+    fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
+        where T: PartialOrd+Copy;
+    /// Reversed copy of self
+    fn revs(self) -> Vec<T> where T: Copy;
+    /// Repeated items removed
+    fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy;
+    /// Some(subscript) of the first occurence of m, or None
+    fn member(self, m: T) -> Option<usize> where T: PartialEq+Copy;
+    /// Binary search for the subscript of the first occurence of val
+    fn memsearch(self, val: T) -> Option<usize> where T: PartialOrd;
+    /// Binary search for the subscript of the last occurence of val
+    fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd;
+    /// Binary search for val via ascending sort index i
+    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> where T:PartialOrd;
+    /// Backwards binary search for val via descending sort index i
+    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd;
+    /// Binary search of an explicitly sorted list in ascending order.
+    /// Returns an index of the first item that is greater than val.
+    /// When none are greater, returns s.len()
+    fn binsearch(self, val: T) -> usize where T: PartialOrd;
+    /// Binary search of an explicitly sorted list in descending order.
+    /// Returns an index of the first item that is smaller than val.
+    /// When none are smaller, returns s.len() 
+    fn binsearchdesc(self, val: T) -> usize where T: PartialOrd;
+    /// Counts occurrences of val by simple linear search of an unordered set
+    fn occurs(self, val:T) -> usize where T: PartialOrd;
+    /// Efficiently counts number of occurences from ascending and descending sorts
+    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
+    /// Unites (concatenates) two unsorted sets. For union of sorted sets, use `merge`
+    fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
+    /// Intersects two ascending explicitly sorted generic vectors.
+    fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    /// Intersects two ascending index sorted vectors.
+    fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
+        where T: PartialOrd+Copy;
+    /// Removes items of sorted v2 from sorted self.
+    fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    /// Removes items of v2 from self using their sort indices.
+    fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
+        where T: PartialOrd+Copy;
+    /// Divides an unordered set into three: items smaller than pivot, equal, and greater
+    fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
+        where T: PartialOrd+Copy;
+    /// Divides an unordered set into three by the pivot. The results are subscripts to self   
+    fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
+        where T: PartialOrd+Copy;
+    /// Merges (unites) two sorted sets, result is also sorted    
+    fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    /// Merges (unites) two sets, using their sort indices, giving also the resulting sort index
+    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
+        where T: PartialOrd+Copy;
+    /// Used by `merge_indexed`
+    fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
+        where T: PartialOrd+Copy;
+    /// Utility used by sortidx
+    fn mergesort(self, i: usize, n: usize) -> Vec<usize>
+        where T: PartialOrd+Copy;
+    /// Stable Merge sort main method, giving sort index
+    fn sortidx(self) -> Vec<usize> where T:PartialOrd+Copy;
+    /// Stable Merge sort, explicitly sorted result obtained via sortidx 
+    fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy;
+    /// Rank index obtained via sortidx
+    fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
+    /// Utility, swaps any two items into ascending order
+    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd;
+    /// Utility, sorts any three items into ascending order
+    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
+    /// Stable Hash sort
+    fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize> 
+        where T: PartialOrd+Copy, f64:From<T>;
+    /// Utility used by hashsort_indexed
+    fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
+        where T: PartialOrd+Copy, f64:From<T>;
+}
 ```
 
 ## Trait Mutsort
@@ -192,9 +278,9 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 * Sort Index - obtained by stable sort `sort_indexed` (merge sort) or `hashsort_indexed`. The original data is immutable (unchanged). The sort index produced is a list of subscripts to the data, such that the first subscript identifies the smallest item in the data list, and so on (in ascending order). Suitable for bulky data that are not easily moved. Also, it can be easily reversed, changing between ascending/descending orders without resorting or reversing the (bulky) original data. It answers the question: what data item occupies a given sort position?
 
-* Rank Index - list in the original data order, giving the sort positions (ranks) of the data items. It answers the question: what is the sort position of a given data item? Sort Index and Rank Index are inverses of each other.
+* Rank Index - list in the original data order, giving the sort positions (ranks) of the data items. It answers the question: what is the sort position of a given data item? Sort Index and Rank Index are inverse to each other.
 
-* Unindex (method). Given a sort index and some data, returns the data in the order defined by the sort index. Can be used to sort lots of data vectors according to some common key.
+* Unindex (method). Given a sort index and some data, returns the data in the order defined by the sort index. Can be used to efficiently reorder lots of data vectors in the same way.
 
 ## Release Notes (Latest First)
 
