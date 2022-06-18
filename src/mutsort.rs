@@ -3,15 +3,15 @@ use crate::{here,Mutsort,Vecops};
 impl<T> Mutsort<T> for &mut[T] {
 
    /// sort two slice items if they are out of ascending order
-    fn mutsorttwo(self, i0: usize, i1:usize) where T: PartialOrd { 
-        if self[i0] > self[i1] { self.swap(i0,i1); };
+    fn mutsorttwo(self, i0: usize, i1:usize) -> bool where T: PartialOrd { 
+        if self[i0] > self[i1] { self.swap(i0,i1); true }
+        else { false }
     }
 
     /// sort three slice items if they are out of ascending order
     fn mutsortthree(self, i0: usize, i1:usize, i2:usize) where T: PartialOrd { 
         self.mutsorttwo(i0,i1);
-        self.mutsorttwo(i1,i2);   
-        self.mutsorttwo(i0,i1);    
+        if self.mutsorttwo(i1,i2) { self.mutsorttwo(i0,i1); };    
     }
         
     /// N recursive hash sort.
@@ -22,7 +22,9 @@ impl<T> Mutsort<T> for &mut[T] {
         if min >= max { panic!("{} data range must be min < max",here!()); }; 
         self.muthashsortslice(0,self.len(),min,max);
     }
-    
+
+    /// Does the work for `muthashsort`
+    ///     
     fn muthashsortslice(self, i:usize, n:usize, min:f64, max:f64) 
         where T: PartialOrd+Copy, f64:From<T> { 
         // Recursion termination conditions
@@ -78,7 +80,7 @@ impl<T> Mutsort<T> for &mut[T] {
                     return; // all items in this single bucket were equal, or are now sorted
                 },
                 _ => { 
-                    // fill the index with the grouped but as yet unsorted items from v
+                    // copy to self the grouped but as yet unsorted items from bucket
                     let isubprev = isub;
                     for &item in bucket { self[isub] = item; isub += 1; }; 
                     // isub-1 now points at the last copied item

@@ -1,4 +1,4 @@
-use crate::{here, MinMax,Indices,Vecops,Mutsort};
+use crate::{here, MinMax,Indices,Vecops};
 use std::iter::FromIterator;
 
 impl<T> Vecops<T> for &[T] {
@@ -399,64 +399,31 @@ fn occurs(self, val:T) -> usize where T: PartialOrd {
 /// # Example:
 /// ```
 /// use crate::indxvec::Indices;
-/// use indxvec::merge::{sortidx,occurs_multiple};
-/// let s = [3.141,3.14159,3.14159,3.142];
-/// let sindx = sortidx(&s); // only one sorting
+/// use indxvec::Vecops;
+/// let s = [1.,2.,3.14159,3.14159,4.,5.,6.];
+/// let sindx = s.sortidx(); // only one sorting
 /// let sasc = sindx.unindex(&s,true);   // explicit ascending
 /// let sdesc = sindx.unindex(&s,false); // explicit descending
-/// assert_eq!(occurs_multiple(&sasc,&sdesc,3.14159),2);
+/// assert_eq!(sasc.occurs_multiple(&sdesc,3.14159),2);
 /// ```
 fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy {
-    let ascindex = self.binsearch(val);
-    if ascindex == 0 { return 0; }; // val not found
-    let descindex = sdesc.binsearchdesc(val);
-    if descindex == 0 {
+    let ascsub = self.binsearch(val);
+    if ascsub == 0 { return 0; }; // val not found
+    let descsub = sdesc.binsearchdesc(val);
+    if descsub == 0 {
         eprintln!("{} The two sorts are not of the same list?", here!());
     };
-    ascindex + descindex - self.len()
+    ascsub + descsub - self.len()
 }
 
-/// Unites two ascending explicitly sorted generic vectors,
-/// by classical selection and copying of their head items into the result.
-/// This is the union of two ordered sets.
-fn unite(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
-    let l1 = self.len();
-    let l2 = v2.len();
-    let mut resvec: Vec<T> = Vec::new();
-    let mut i1 = 0;
-    let mut i2 = 0;
-
-    loop {
-        if i1 == l1 {
-            // v1 is now processed
-            v2.iter().skip(i2).for_each(|&v| resvec.push(v)); // copy out the rest of v2
-            break; // and terminate
-        }
-        if i2 == l2 {
-            // v2 is now processed
-            self.iter().skip(i1).for_each(|&v| resvec.push(v)); // copy out the rest of v1
-            break; // and terminate
-        }
-        if self[i1] < v2[i2] {
-            resvec.push(self[i1]);
-            i1 += 1;
-            continue;
-        };
-        if self[i1] > v2[i2] {
-            resvec.push(v2[i2]);
-            i2 += 1;
-            continue;
-        };
-        // here they are equal, so consume one, skip the other
-        resvec.push(self[i1]);
-        i1 += 1;
-        i2 += 1
-    }
-    resvec
+/// Unites (joins) two unsorted sets. For union of sorted sets, use `merge`
+fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone {
+    [self, v].concat()
 }
 
+/*
 /// Unites two ascending index-sorted generic vectors.
-/// This is the union of two index ordered sets.
+/// This is the union of two index sorted sets.
 /// Returns a single explicitly ordered set.
 fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
 where T: PartialOrd+Copy {
@@ -498,6 +465,7 @@ where T: PartialOrd+Copy {
     }
     resvec
 }
+*/
 
 /// Intersects two ascending explicitly sorted generic vectors.
 fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
@@ -662,7 +630,7 @@ fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
     (negset, eqset, posset)
 }
 
-/// Merges two ascending sorted generic vectors,
+/// Merges two explicitly ascending sorted generic vectors,
 /// by classical selection and copying of their head items into the result.
 /// Consider using merge_indexed instead, especially for non-primitive end types T.
 fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
@@ -840,15 +808,16 @@ fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy {
 }
 
 /// swap any two index items, if their data items (self) are not in ascending order
-fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) where T:PartialOrd { 
-    if self[idx[i0]] > self[idx[i1]] { idx.swap(i0, i1) } 
+fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd { 
+    if self[idx[i0]] > self[idx[i1]] { idx.swap(i0,i1); true }
+    else { false }
 }
 
 /// sort three index items if their self items are out of ascending order
 fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd { 
         self.isorttwo(idx,i0,i1);
-        self.isorttwo(idx,i1,i2);   
-        self.isorttwo(idx,i0,i1);    
+        if self.isorttwo(idx,i1,i2) 
+            { self.isorttwo(idx,i0,i1); };   
     }
 
 /// N recursive non-destructive hash sort.
@@ -908,21 +877,21 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64)
             // items in it are most likely all equal
             let mx = self.minmax_indexed(idx, isub, blen);
             if mx.min < mx.max { // recurse with the new range 
-                idx.mutsorttwo(isub,mx.minindex); // swap minindex to the front 
-                idx.mutsorttwo(mx.maxindex,isub); // swap maxindex to the end 
+                self.isorttwo(idx,isub,mx.minindex); // swap minindex to the front 
+                self.isorttwo(idx,mx.maxindex,isub+n-1); // swap maxindex to the end 
                 // recurse to sort the rest
-                self.hashsortslice(idx,i+1,n-2,f64::from(mx.min),f64::from(mx.max)); 
+                self.hashsortslice(idx,i+1,blen-2,f64::from(mx.min),f64::from(mx.max)); 
             };
             return; // all items were equal, or are now sorted
         },
         _ => { 
-            // first fill the index with the grouped items from v
+            // copy to the index the grouped unsorted items from bucket
             let isubprev = isub;
             for &item in bucket { idx[isub] = item; isub += 1; }; 
             let mx = self.minmax_indexed( idx, isubprev, blen);
-            if mx.minindex < mx.maxindex { // else are all equal
-                idx.mutsorttwo(isubprev,mx.minindex); // swap minindex to the front 
-                idx.mutsorttwo(mx.maxindex,isub-1); // swap maxindex to the end  
+            if mx.min < mx.max { // else are all equal
+                self.isorttwo(idx,isubprev,mx.minindex); // swap minindex to the front 
+                self.isorttwo(idx,mx.maxindex,isub-1); // swap maxindex to the end  
                 // recurse to sort the rest
                 self.hashsortslice(idx,isubprev+1,blen-2,f64::from(mx.min),f64::from(mx.max)); 
                 };

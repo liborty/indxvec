@@ -194,17 +194,17 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 * Rank Index - list in the original data order, giving the sort positions (ranks) of the data items. It answers the question: what is the sort position of a given data item? Sort Index and Rank Index are inverses of each other.
 
-* Unindex operation. Given a sort index and the data, look up the data items and collect them into an explicitly sorted form.
+* Unindex (method). Given a sort index and some data, returns the data in the order defined by the sort index. Can be used to sort lots of data vectors according to some common key.
 
 ## Release Notes (Latest First)
 
-**Version 1.2.1** - Removed the functions module `merge.rs`, it has been replaced by traits `Vecops` and `Mutsort`. Added some comments in muthashsort and elsewhere.
+**Version 1.2.1** - Removed the functions module `merge.rs`, it has been replaced by traits `Vecops` and `Mutsort`. Improved hashsorts. Added some more comments. Added short glossary.
 
 **Version 1.2.0** - Changed functions in module `merge.rs` to trait methods in two new traits: `Vecops` and `Mutsort`. Applying trait methods is more idiomatic and easier to read when chained. Narrowed down some trait constraints. Kept the old functions for now for backwards compatibility but they will be removed in the next version to save space.
 
 **Version 1.1.9** - Added method `to_plainstr()` to `Printing` trait to ease writing plain format to files.
 
-**Version 1.1.8** - Added method `pvec(self)` to `Printing` trait. It prints vecs to stdout. Completed all six ANSI terminal primary bold colours. Moved their constants to module `printing.rs`. Renamed `red()` to `rd()` for consistent two letter names. Updated and reorganised readme.
+**Version 1.1.8** - Added method `pvec(self)` to `Printing` trait. It prints `Vec`s to `stdout`. Completed all six ANSI terminal primary bold colours. Moved their constants to module `printing.rs`. Renamed `red()` to `rd()` for consistent two letter names. Updated and reorganised readme.
 
 **Version 1.1.7** - Added method `wvec(self,&mut f)` to Printing. It writes vectors to file f and passes up errors. Added colour `bl()`. Added printing test. Prettier readme.md.
 

@@ -150,23 +150,20 @@ pub trait Vecops<T> {
     /// Returns an index of the first item that is smaller than val.
     /// When none are smaller, returns s.len() 
     fn binsearchdesc(self, val: T) -> usize where T: PartialOrd;
-    /// Counts occurrences of val by simple linear search of any unordered set
+    /// Counts occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
-    /// Efficiently counts numerous occurences from ascending and descending lists
+    /// Efficiently counts number of occurences from ascending and descending sorts
     fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
-    /// Merges two explicitly sorted lists
-    fn unite(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
-    /// Merges two index sorted lists
-    fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Copy;
+    /// Unites (concatenates) two unsorted sets. For union of sorted sets, use `merge`
+    fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
     /// Intersects two ascending explicitly sorted generic vectors.
     fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
     /// Intersects two ascending index sorted vectors.
     fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
         where T: PartialOrd+Copy;
-    /// Two sorted vectors, removes items of the second from the first.
+    /// Removes items of sorted v2 from sorted self.
     fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
-    /// Two index sorted vectors, removes items of the second from the first.
+    /// Removes items of v2 from self using their sort indices.
     fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
         where T: PartialOrd+Copy;
     /// Divides an unordered set into three: items smaller than pivot, equal, and greater
@@ -175,29 +172,38 @@ pub trait Vecops<T> {
     /// Divides an unordered set into three by the pivot. The results are subscripts to self   
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
         where T: PartialOrd+Copy;
-    
+    /// Merges (unites) two sorted sets, result is also sorted    
     fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    /// Merges (unites) two sets, using their sort indices, giving also the resulting sort index
     fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
         where T: PartialOrd+Copy;
+    /// Used by `merge_indexed`
     fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
         where T: PartialOrd+Copy;
+    /// Utility used by sortidx
     fn mergesort(self, i: usize, n: usize) -> Vec<usize>
         where T: PartialOrd+Copy;
-    fn sortidx(self) -> Vec<usize> where T:PartialOrd+Copy; 
+    /// Stable Merge sort main method, giving sort index
+    fn sortidx(self) -> Vec<usize> where T:PartialOrd+Copy;
+    /// Stable Merge sort, explicitly sorted result obtained via sortidx 
     fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy;
+    /// Rank index obtained via sortidx
     fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
-    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) where T:PartialOrd;
-    /// sort three index items if their self items are out of ascending order
+    /// Utility, swaps any two items into ascending order
+    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd;
+    /// Utility, sorts any three items into ascending order
     fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
+    /// Stable Hash sort
     fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize> 
         where T: PartialOrd+Copy, f64:From<T>;
+    /// Utility used by hashsort_indexed
     fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
         where T: PartialOrd+Copy, f64:From<T>;
 }
 
 pub trait Mutsort<T> {
 /// utility that mutably swaps two indexed items into ascending order
-fn mutsorttwo(self, i0:usize, i1:usize) where T: PartialOrd;
+fn mutsorttwo(self, i0:usize, i1:usize) -> bool where T: PartialOrd;
 /// utility that mutably bubble sorts three indexed items into ascending order
 fn mutsortthree(self, i0:usize, i1:usize, i2:usize) where T: PartialOrd;
 /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
