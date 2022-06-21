@@ -55,21 +55,21 @@ fn indxvec() {
     println!("Spearm. corr self 1: {}", v1ranks.ucorrelation(&v1ranks).gr()); // 1 for any Vec
     let (vm, vi) = v1.merge_indexed( // merge two vecs using their sort indices
         &v1.hashsort_indexed(min,max), &v2,&v2.hashsort_indexed(min,max)); 
-    //    &v1.sortidx(), &v2, &v2.sortidx());
+        //  or, equivalently, using merge sort:  &v1.sortidx(), &v2, &v2.sortidx());
     let sorted = vi.unindex(&vm, true);
     println!("v1 and v2 hashsorted, merged and unindexed:\n{}", sorted.gr());
+    println!("Binsearch for {BL}{midval}{UN}, fits before: {GR}{}{UN}",sorted.binsearch(midval)); // binsearch
+    println!("Memsearch for {BL}{}{UN}, found at: {}",18,
+        sorted.memsearch(18).map_or_else(||"None".rd(),|x| x.gr()));
+    println!("Memsearch_indexed for {BL}{}{UN}, found at: {}",18,
+        vm.memsearch_indexed(&vi,18).map_or_else(||"None".rd(),|x| x.gr()));
     let sorteddesc = vi.unindex(&vm, false);
     println!("The above reversed:\n{}", sorteddesc.gr());
-    println!("Binsearch for {BL}{midval}{UN}, found before: {GR}{}{UN}",sorted.binsearch(midval)); // binsearch
-    println!("Binsearchdesc for {BL}{midval}{UN}, found before: {GR}{}{UN}",sorteddesc.binsearchdesc(midval)); // binsearch
-    println!("Memsearch for {BL}{midval}{UN}, found at: {}",
-        sorted.memsearch(midval).map_or_else(||"None".rd(),|x| x.gr()));
-    println!("Memsearch_indexed for {BL}{midval}{UN}, found at: {}",
-        vm.memsearch_indexed(&vi,midval).map_or_else(||"None".rd(),|x| x.gr()));
-    println!("Memsearch_indexed (reversed index) for {BL}{midval}{UN}, found at: {}",
-        vm.memsearchdesc_indexed(&vi.revindex(),midval).map_or_else(||"None".rd(),|x| x.gr()));
+    println!("Binsearchdesc for {BL}{midval}{UN}, fits before: {GR}{}{UN}",sorteddesc.binsearchdesc(midval)); // binsearch
+    println!("Memsearch_indexed for {BL}{}{UN}, found at: {}",18,
+        vm.memsearchdesc_indexed(&vi.revindex(),18).map_or_else(||"None".rd(),|x| x.gr()));
     println!("Occurrences count of {BL}{midval}{UN}: {GR}{}{UN}",sorted.occurs(midval));
-    println!("Occurrences count of {BL}{midval}{UN}: {GR}{}{UN}",sorted.occurs_multiple(&sorteddesc,midval));
+    println!("Occurrences count of {BL}{}{UN}: {GR}{}{UN}",96,sorted.occurs_multiple(&sorteddesc,96));
     println!("Intersect_indexed:\n{}", vm.intersect_indexed(&vi, &v1, &v1.sortidx()).gr());
     println!("Diff_indexed:\n{}", vm.diff_indexed(&vi, &v1, &v1.sortidx()).gr());
     println!("Sansrepeat:\n{}\n", sorted.sansrepeat().gr());
