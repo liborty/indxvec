@@ -35,6 +35,7 @@ fn indxvec() {
     println!("Ranks desc:   {}", v1.rank(false).gr()); // descending ranks are not the same as ranks reversed!!
     println!("Ranks desc:   {}", v1ranks.complindex().gr()); // to make ranks descending, use complindex() instead
     println!("Ranks desc:   {}", v1.sortidx().invindex().complindex().gr()); // descending ranks from sortindex
+    println!("Ranks desc:   {}", v1.sortidx().revindex().invindex().gr()); // descending ranks from descending sort
     println!("Sort index:   {}", v1.sortidx().gr()); // sortindex, can be unindexed at anytime
     println!("Hashsort_inx: {}", v1.hashsort_indexed(min,max).gr());    
     println!("Sortix rev:   {}", v1.sortidx().revindex().gr());

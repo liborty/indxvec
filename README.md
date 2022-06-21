@@ -13,7 +13,7 @@ use indxvec::{MinMax,here,tof64,printing::*,Indices,Vecops,Mutsort,Printing};
 
 ## Description
 
-This crate is lightweight and it has no dependencies. The methods of all four traits can be functionally chained together to achieve numerous manipulations of vectors in compact form.
+This crate is lightweight and has no dependencies. The methods of all four traits can be functionally chained together to achieve numerous manipulations of vectors and their indices in compact form.
 
 The facilities provided are:
 
@@ -48,7 +48,7 @@ use indxvec::{MinMax,here,tof64};
 use indxvec::{Indices};
 ```
 
-The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>` or `Vec<f64>`, or other results, as appropriate.
+The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>` or `Vec<f64>`, or other results, as appropriate. Please see the Glossary below for descriptions of the indices and operations on them.
 
 ```rust
 /// Methods to manipulate indices of `Vec<usize>` type.
@@ -77,7 +77,7 @@ pub trait Indices {
 use indxvec::{Vecops};
 ```
 
-The methods of this trait are applicable to generic slices `&[T]`. Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Copy`, are  implemented for `T`.
+The methods of this trait are applicable to generic slices `&[T]` (the data). Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Copy`, are  implemented for `T`.
 
 ```rust
 /// Methods to manipulate Vecs
@@ -106,9 +106,11 @@ pub trait Vecops<T> {
     /// Binary search for the subscript of the last occurence of val
     fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd;
     /// Binary search for val via ascending sort index i
-    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> where T:PartialOrd;
+    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize>
+        where T:PartialOrd;
     /// Backwards binary search for val via descending sort index i
-    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd;
+    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize>
+        where T: PartialOrd;
     /// Binary search of an explicitly sorted list in ascending order.
     /// Returns an index of the first item that is greater than val.
     /// When none are greater, returns s.len()
@@ -120,7 +122,8 @@ pub trait Vecops<T> {
     /// Counts occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
     /// Efficiently counts number of occurences from ascending and descending sorts
-    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
+    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize
+        where T: PartialOrd+Copy;
     /// Unites (concatenates) two unsorted sets. For union of sorted sets, use `merge`
     fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
     /// Intersects two ascending explicitly sorted generic vectors.
@@ -133,17 +136,20 @@ pub trait Vecops<T> {
     /// Removes items of v2 from self using their sort indices.
     fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
         where T: PartialOrd+Copy;
-    /// Divides an unordered set into three: items smaller than pivot, equal, and greater
+    /// Divides an unordered set into three: 
+    /// items smaller than pivot, equal, and greater
     fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
         where T: PartialOrd+Copy;
-    /// Divides an unordered set into three by the pivot. The results are subscripts to self   
+    /// Divides an unordered set into three by the pivot.
+    /// The results are subscripts to self   
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
         where T: PartialOrd+Copy;
     /// Merges (unites) two sorted sets, result is also sorted    
     fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
-    /// Merges (unites) two sets, using their sort indices, giving also the resulting sort index
-    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
-        where T: PartialOrd+Copy;
+    /// Merges (unites) two sets, using their sort indices,
+    /// giving also the resulting sort index
+    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) ->
+        (Vec<T>, Vec<usize>) where T: PartialOrd+Copy;
     /// Used by `merge_indexed`
     fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
         where T: PartialOrd+Copy;
@@ -157,9 +163,11 @@ pub trait Vecops<T> {
     /// Rank index obtained via sortidx
     fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
     /// Utility, swaps any two items into ascending order
-    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd;
+    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool
+        where T:PartialOrd;
     /// Utility, sorts any three items into ascending order
-    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
+    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize)
+        where T: PartialOrd; 
     /// Stable Hash sort
     fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize> 
         where T: PartialOrd+Copy, f64:From<T>;
@@ -276,11 +284,17 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 ## Glossary
 
-* Sort Index - obtained by stable sort `sort_indexed` (merge sort) or `hashsort_indexed`. The original data is immutable (unchanged). The sort index produced is a list of subscripts to the data, such that the first subscript identifies the smallest item in the data list, and so on (in ascending order). Suitable for bulky data that are not easily moved. Also, it can be easily reversed, changing between ascending/descending orders without resorting or reversing the (bulky) original data. It answers the question: what data item occupies a given sort position?
+* **Sort Index** - is obtained by stable merge sort `sort_indexed`  or by `hashsort_indexed`. The original data is immutable (unchanged). The sort index produced is a list of subscripts to the data, such that the first subscript identifies the smallest item in the data, and so on (in ascending order). Suitable for bulky data that are not easily moved. It answers the question: what data item occupies a given sort position?
 
-* Rank Index - list in the original data order, giving the sort positions (ranks) of the data items. It answers the question: what is the sort position of a given data item? Sort Index and Rank Index are inverse to each other.
+* **Reversing an index** - Sort Index can be reversed, by standard reversal operation `revindex()`. This has the effect of changing between ascending/descending sort orders without re-sorting or reversing the (possibly bulky) actual data. 
 
-* Unindex (method). Given a sort index and some data, returns the data in the order defined by the sort index. Can be used to efficiently reorder lots of data vectors in the same way.
+* **Rank Index** - corresponds to the given data order, listing the sort positions (ranks) for the data items, e.g.the third entry in the rank index gives the rank of the third data item. Some statistical measures require ranks of data. It answers the question: what is the sort position of a given data item?
+
+* **Inverting an index** - Sort Index and Rank Index are mutually inverse. Thus they can be easily switched by `invindex()`. This is usually the best way to obtain a Rank Index. They will both be equal to `0..n` for data that is already in order.
+
+* **Complement of an index** - beware that the standard reversal will not convert directly between ascending and descending ranks.  For this purpose, it is necessary to use `complindex()`. Alternatively, to apply `invindex()` to a descending sort index.
+
+* **Unindexing** - given a sort index and some data, `unindex()` will reorder the data into the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1..data_n`, not explicitly joined together in some bulky Struct elements. The sort index obtained by `keys.sort_indexed()` can then be efficiently applied to sort all the data vectors.
 
 ## Release Notes (Latest First)
 
