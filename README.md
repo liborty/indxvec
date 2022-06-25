@@ -286,7 +286,7 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 * **Sort Index** - is obtained by stable merge sort `sort_indexed`  or by `hashsort_indexed`. The original data is immutable (unchanged). The sort index produced is a list of subscripts to the data, such that the first subscript identifies the smallest item in the data, and so on (in ascending order). Suitable for bulky data that are not easily moved. It answers the question: what data item occupies a given sort position?
 
-* **Reversing an index** - Sort Index can be reversed, by standard reversal operation `revindex()`. This has the effect of changing between ascending/descending sort orders without re-sorting or reversing the (possibly bulky) actual data. 
+* **Reversing an index** - Sort Index can be reversed, by standard reversal operation `revindex()`. This has the effect of changing between ascending/descending sort orders without re-sorting or reversing the (possibly bulky) actual data.
 
 * **Rank Index** - corresponds to the given data order, listing the sort positions (ranks) for the data items, e.g.the third entry in the rank index gives the rank of the third data item. Some statistical measures require ranks of data. It answers the question: what is the sort position of a given data item?
 
@@ -320,7 +320,7 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 **Version 1.1.2** - Added `.red()` method to `Printing`. Some tidying up of `tests.rs` and the docs. `hashsort` improved.
 
-**Version 1.1.0** - Added superfast n-recursive `hashsort`. Suitable for multithreading (todo).
+**Version 1.1.0** - Added superfast n-recursive `hashsort`. Suitable for multithreading (to do).
 
 **Version 1.0.9** - Minor changes to testing.rs to better test `ran`.
 

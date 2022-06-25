@@ -1,6 +1,17 @@
-pub mod indices;  // implementation for trait Indices
-pub mod printing; // implementations for trait Printing<T>
+#![warn(missing_docs)]
+//! Statistics, Vector Algebra, 
+//! Characterising Multidimensional Data, Machine Learning,
+//! Data Analysis
+
+/// Implementation of trait Indices for `&[usize]`
+pub mod indices; 
+/// Utilities for serializing, writing and printing (optionally in colours)
+/// generic vectors.
+pub mod printing;
+/// Implementation of trait Vecops for `&[T]` 
 pub mod vecops;
+/// Implementation of trait Mutsort for `&mut[T]`.
+/// Mutable hashsort.
 pub mod mutsort;
 // pub mod merge;    // set manipulating functions
 
@@ -35,11 +46,16 @@ pub fn tof64<T>(s: &[T]) -> Vec<f64> where T: Copy, f64: From<T>, {
 /// struct for minimum value, its index, maximum value, its index
 #[derive(Default)]
 pub struct MinMax<T> {
+    /// Minimum value
     pub min: T,
+    /// Subscript (index) of the minimum
     pub minindex: usize,
+    /// Maximum value
     pub max: T,
+    /// Subscript (index) of the maximum
     pub maxindex: usize,
 }
+
 /// Display implementation for MinMax struct
 impl<T> std::fmt::Display for MinMax<T>
 where
@@ -60,15 +76,21 @@ where
 /// Trait to serialize slices of generic items &[T] (vectors)
 /// and slices of Vecs of generic items &[Vec<T>] (matrices).
 /// All are converted into printable strings and optionally coloured.
+/// Also, methods to serialize and render the resulting string
+/// in bold ANSI terminal colours.
 pub trait Printing<T> where Self: Sized {
 
-    /// Methods to serialize and render the resulting string
-    /// in bold ANSI terminal colours.
+    /// Printable in red
     fn rd(self) -> String { format!("{RD}{}{UN}",self.to_str()) }
+    /// Printable in green
     fn gr(self) -> String { format!("{GR}{}{UN}",self.to_str()) }
-    fn yl(self) -> String { format!("{YL}{}{UN}",self.to_str()) }    
+    /// Printable in blue    
     fn bl(self) -> String { format!("{BL}{}{UN}",self.to_str()) }
+    /// Printable in yellow
+    fn yl(self) -> String { format!("{YL}{}{UN}",self.to_str()) }
+    /// Printable in magenta
     fn mg(self) -> String { format!("{MG}{}{UN}",self.to_str()) }
+    /// Printable in cyan
     fn cy(self) -> String { format!("{CY}{}{UN}",self.to_str()) }        
 
     /// Method to write vector(s) to file f (without brackets). 
@@ -94,8 +116,8 @@ pub trait Printing<T> where Self: Sized {
 /// Methods to manipulate indices of `Vec<usize>` type.
 pub trait Indices {
 
+    /// Create a trivial index that embodies the current order
     fn newindex(n:usize) -> Vec<usize> { Vec::from_iter(0..n) }
-
     /// Reverse an index slice by simple reverse iteration.
     fn revindex(self) -> Vec<usize>;
     /// Invert an index - turns a sort order into rank order and vice-versa
@@ -113,7 +135,7 @@ pub trait Indices {
     fn indx_to_f64(self) -> Vec<f64>;
 }
 
-/// Methods to manipulate Vecs
+/// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<T> {
     /// Maximum value in self
     fn maxt(self) -> T where T: PartialOrd+Copy;
@@ -201,13 +223,17 @@ pub trait Vecops<T> {
         where T: PartialOrd+Copy, f64:From<T>;
 }
 
+/// Mutable Hash Sort of `&mut[T]`
 pub trait Mutsort<T> {
 /// utility that mutably swaps two indexed items into ascending order
-fn mutsorttwo(self, i0:usize, i1:usize) -> bool where T: PartialOrd;
+fn mutsorttwo(self, i0:usize, i1:usize) -> bool
+    where T: PartialOrd;
 /// utility that mutably bubble sorts three indexed items into ascending order
-fn mutsortthree(self, i0:usize, i1:usize, i2:usize) where T: PartialOrd;
+fn mutsortthree(self, i0:usize, i1:usize, i2:usize)
+    where T: PartialOrd;
 /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
-fn muthashsort(self, min:f64, max:f64) where T: PartialOrd+Copy, f64:From<T>;
+fn muthashsort(self, min:f64, max:f64)
+    where T: PartialOrd+Copy, f64:From<T>;
 /// Sorts n items from i in self. Used by muthashsort.
 fn muthashsortslice(self, i:usize, n:usize, min:f64, max:f64) 
     where T: PartialOrd+Copy, f64:From<T>;
