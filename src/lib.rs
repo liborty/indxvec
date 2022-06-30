@@ -21,8 +21,6 @@ use std::fs::File;
 use printing::*;
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
-/// This string will be rendered in bold red on (linux) terminals, so as to easily find the
-/// first real error in voluminous confusing traces of avalanching Rust errors.
 #[macro_export]
 macro_rules! here {
     () => {{
