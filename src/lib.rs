@@ -158,18 +158,26 @@ pub trait Vecops<T> {
     fn memsearch(self, val: T) -> Option<usize> where T: PartialOrd;
     /// Binary search for the subscript of the last occurence of val
     fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd;
-    /// Binary search for val via ascending sort index i
+    /// Binary search for val via ascending sort index i, 
+    /// returns subscript of val
     fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> where T:PartialOrd;
-    /// Backwards binary search for val via descending sort index i
+    /// Backwards binary search for val via descending sort index i,
+    /// returns subscript of val 
     fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd;
     /// Binary search of an explicitly sorted list in ascending order.
-    /// Returns an index of the first item that is greater than val.
+    /// Returns subscript of the first item that is greater than val.
     /// When none are greater, returns s.len()
     fn binsearch(self, val: T) -> usize where T: PartialOrd;
     /// Binary search of an explicitly sorted list in descending order.
-    /// Returns an index of the first item that is smaller than val.
+    /// Returns subscript of the first item that is smaller than val.
     /// When none are smaller, returns s.len() 
     fn binsearchdesc(self, val: T) -> usize where T: PartialOrd;
+    /// Binary search of an index sorted list in ascending order.
+    /// Returns subscript of the first item that is greater than val.
+    fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
+    /// Binary search of an index sorted list in descending order.
+    /// Returns subscript of the first item that is smaller than val (in descending order). 
+    fn binsearchdesc_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
     /// Counts occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
     /// Efficiently counts number of occurences from ascending and descending sorts

@@ -59,15 +59,24 @@ fn indxvec() {
     let sorted = vi.unindex(&vm, true);
     println!("v1 and v2 hashsorted, merged and unindexed:\n{}", sorted.gr());
     println!("Binsearch for {BL}{midval}{UN}, fits before: {GR}{}{UN}",sorted.binsearch(midval)); // binsearch
+    println!("Binsearch_indexed for {BL}{midval}{UN}, fits before: {GR}{}{UN}",
+        vm.binsearch_indexed(&vi,midval)); // binsearch_indexed
     println!("Memsearch for {BL}{}{UN}, found at: {}",18,
         sorted.memsearch(18).map_or_else(||"None".rd(),|x| x.gr()));
     println!("Memsearch_indexed for {BL}{}{UN}, found at: {}",18,
         vm.memsearch_indexed(&vi,18).map_or_else(||"None".rd(),|x| x.gr()));
     let sorteddesc = vi.unindex(&vm, false);
     println!("The above reversed:\n{}", sorteddesc.gr());
-    println!("Binsearchdesc for {BL}{midval}{UN}, fits before: {GR}{}{UN}",sorteddesc.binsearchdesc(midval)); // binsearch
-    println!("Memsearch_indexed for {BL}{}{UN}, found at: {}",18,
-        vm.memsearchdesc_indexed(&vi.revindex(),18).map_or_else(||"None".rd(),|x| x.gr()));
+    println!("Binsearchdesc for {BL}{midval}{UN}, fits before: {GR}{}{UN}",
+        sorteddesc.binsearchdesc(midval)); // binsearchdesc
+    println!("Binsearchdesc_indexed for {BL}{midval}{UN}, fits before: {GR}{}{UN}",
+        vm.binsearchdesc_indexed(&vi.revindex(),midval)); // binsearch_indexed
+    println!("Memsearchdesc for {BL}{}{UN}, found at: {}",18,
+        sorteddesc.memsearchdesc(18).map_or_else(||"None".rd(),|x| x.gr()));    
+    println!("Memsearchdesc_indexed for {BL}{}{UN}, found at: {}",18,
+        vm.memsearchdesc_indexed(&vi.revindex(),18).map_or_else(||"None".rd(),|x| x.gr()));        
+
+
     println!("Occurrences count of {BL}{midval}{UN}: {GR}{}{UN}",sorted.occurs(midval));
     println!("Occurrences count of {BL}{}{UN}: {GR}{}{UN}",96,sorted.occurs_multiple(&sorteddesc,96));
     println!("Intersect_indexed:\n{}", vm.intersect_indexed(&vi, &v1, &v1.sortidx()).gr());

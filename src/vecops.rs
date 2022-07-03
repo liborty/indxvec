@@ -339,7 +339,7 @@ fn binsearch(self, val: T) -> usize where T: PartialOrd {
 }
 
 /// Binary search of an explicitly sorted list in descending order.
-/// Returns an index of the first item that is smaller than val.
+/// Returns an index of the first item that is smaller than val in descending order.
 /// When none are smaller, returns s.len() (invalid index but logical).
 /// The complement index (the result subtracted from s.len()), gives
 /// the first item in ascending order that is not smaller than val.
@@ -369,6 +369,84 @@ fn binsearchdesc(self, val: T) -> usize where T: PartialOrd {
         let mid = lo + gap / 2;
         //mid item is less than val, reduce the high index to it
         if self[mid] < val {
+            hi = mid;
+            continue;
+        };
+        // else raise the low index to mid; jumps also over any multiple equal values.
+        lo = mid;
+    }
+}
+
+/// Binary search of an index sorted list in ascending order.
+/// Returns an index of the first item that is greater than val.
+/// When none are greater, returns s.len() (invalid index but logical).
+/// The complement index (the result subtracted from s.len()), gives
+/// the first item in descending order that is not greater than val.
+/// Note that both complements of binsearch and binsearchdesc,
+/// in their respective opposite orderings, refer to the same preceding item
+/// iff there exists precisely one item equal to val.
+/// However, there can be more than one such items or none.
+/// Example use: looking up cummulative probability density functions.
+fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd {
+    let n = self.len();
+    if n == 0 {
+        panic!("{} empty vec of data!", here!())
+    };
+    let mut hi = n - 1; // valid index of the last item
+    if val < self[i[0]] {
+        return 0_usize;
+    }; // the first item already exceeds val
+    if val >= self[i[hi]] {
+        return n;
+    }; // no items exceed val
+    let mut lo = 0_usize; // initial index of the low limit
+    loop {
+        let gap = hi - lo;
+        if gap <= 1 {
+            return hi;
+        };
+        let mid = lo + gap / 2;
+        // mid item is greater than val, reduce the high index to it
+        if val < self[i[mid]] {
+            hi = mid;
+            continue;
+        };
+        // else raise the low index to mid; jumps also over any multiple equal values.
+        lo = mid;
+    }
+}
+
+/// Binary search of an index sorted list in descending order.
+/// Returns an index of the first item that is smaller than val (in descending order). 
+/// When none are smaller, returns s.len() (invalid index but logical).
+/// The complement index (the result subtracted from s.len()), gives
+/// the first item in ascending order that is not smaller than val.
+/// Note that both complements of binsearch and binsearchdesc,
+/// in their respective opposite orderings, refer to the same preceding item
+/// iff there exists precisely one item equal to val.
+/// However, there can be more than one such items or none.
+/// Example use: looking up cummulative probability density functions.
+fn binsearchdesc_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd {
+    let n = self.len();
+    if n == 0 {
+        panic!("{} empty vec of data!", here!())
+    };
+    let mut hi = n - 1; // valid index of the last item
+    if val > self[i[0]]  {
+        return 0_usize;
+    }; // the first item is already less than val
+    if val <= self[i[hi]] {
+        return n;
+    }; // no item is less than val
+    let mut lo = 0_usize; // initial index of the low limit
+    loop {
+        let gap = hi - lo;
+        if gap <= 1 {
+            return hi;
+        };
+        let mid = lo + gap / 2;
+        //mid item is less than val, reduce the high index to it
+        if self[i[mid]] < val {
             hi = mid;
             continue;
         };

@@ -298,6 +298,8 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 ## Release Notes (Latest First)
 
+**Version 1.2.3** - Added `binsearch_indexed` and `binsearchdesc_indexed` and their tests,  for symmetry with `memsearch` versions which only search for members, whereas `binsearch` finds order position for a non-member.
+
 **Version 1.2.2** - Minor test clarification. Expanded the glossary.
 
 **Version 1.2.1** - Removed the functions module `merge.rs`, it has been replaced by traits `Vecops` and `Mutsort`. Improved hashsorts. Added some more comments. Added short glossary.
