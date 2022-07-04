@@ -53,31 +53,40 @@ fn indxvec() {
     println!("Rank-compliment-invert-unindex:\n{}", v1.rank(true).complindex().invindex().unindex(&v1, true).gr()); // complindex reverses ranks
     println!("Spearman corr v1,v2: {}", v1ranks.ucorrelation(&v2.rank(true)).gr()); //  1 for any Vec
     println!("Spearm. corr self 1: {}", v1ranks.ucorrelation(&v1ranks).gr()); // 1 for any Vec
+
     let (vm, vi) = v1.merge_indexed( // merge two vecs using their sort indices
         &v1.hashsort_indexed(min,max), &v2,&v2.hashsort_indexed(min,max)); 
-        //  or, equivalently, using merge sort:  &v1.sortidx(), &v2, &v2.sortidx());
+        //  or, equivalently, using merge sort:  &v1.sortidx(), &v2, &v2.sortidx());   
+    println!("\nv1 and v2 appended:\n{}",vm.yl()); 
     let sorted = vi.unindex(&vm, true);
-    println!("v1 and v2 hashsorted, merged and unindexed:\n{}", sorted.gr());
-    println!("Binsearch for {BL}{midval}{UN}, fits before: {GR}{}{UN}",sorted.binsearch(midval)); // binsearch
-    println!("Binsearch_indexed for {BL}{midval}{UN}, fits before: {GR}{}{UN}",
+    println!("v1 and v2 hashsorted, merged and unindexed:\n{}", sorted.mg());
+
+    println!("Binsearch for {BL}{midval}{UN}, fits in sort position before: {GR}{}{UN}",
+        sorted.binsearch(midval)); // binsearch
+    println!("Binsearch_indexed for {BL}{midval}{UN}, fits in sort position before: {GR}{}{UN}",
         vm.binsearch_indexed(&vi,midval)); // binsearch_indexed
-    println!("Memsearch for {BL}{}{UN}, found at: {}",18,
-        sorted.memsearch(18).map_or_else(||"None".rd(),|x| x.gr()));
-    println!("Memsearch_indexed for {BL}{}{UN}, found at: {}",18,
-        vm.memsearch_indexed(&vi,18).map_or_else(||"None".rd(),|x| x.gr()));
+    println!("Nearest greater item from {BL}{midval}{UN} is: {GR}{}{UN}",
+        vm[vi[vm.binsearch_indexed(&vi,midval)]]);
+    println!("Memsearch for {BL}{midval}{UN}, is in unsorted at: {}",
+        sorted.memsearch(midval).map_or_else(||"None".rd(),|x| vi[x].gr()));
+    println!("Memsearch_indexed for {BL}241{UN}, is in unsorted at: {}",
+        vm.memsearch_indexed(&vi,241).map_or_else(||"None".rd(),|x| vi[x].gr()));
     let sorteddesc = vi.unindex(&vm, false);
-    println!("The above reversed:\n{}", sorteddesc.gr());
-    println!("Binsearchdesc for {BL}{midval}{UN}, fits before: {GR}{}{UN}",
+    let virev = vi.revindex();
+
+    println!("\nThe above unindexed into descending order:\n{}", sorteddesc.mg());
+    println!("Binsearchdesc for {BL}{midval}{UN}, fits in descending before: {GR}{}{UN}",
         sorteddesc.binsearchdesc(midval)); // binsearchdesc
-    println!("Binsearchdesc_indexed for {BL}{midval}{UN}, fits before: {GR}{}{UN}",
-        vm.binsearchdesc_indexed(&vi.revindex(),midval)); // binsearch_indexed
-    println!("Memsearchdesc for {BL}{}{UN}, found at: {}",18,
-        sorteddesc.memsearchdesc(18).map_or_else(||"None".rd(),|x| x.gr()));    
-    println!("Memsearchdesc_indexed for {BL}{}{UN}, found at: {}",18,
-        vm.memsearchdesc_indexed(&vi.revindex(),18).map_or_else(||"None".rd(),|x| x.gr()));        
+    println!("Binsearchdesc_indexed for {BL}{midval}{UN}, fits in descending before: {GR}{}{UN}",
+        vm.binsearchdesc_indexed(&virev,midval)); // binsearch_indexed
+    println!("Nearest smaller item from {BL}{midval}{UN} is: {GR}{}{UN}",
+        vm[virev[vm.binsearchdesc_indexed(&virev,midval)]]);
+    println!("Memsearchdesc for {BL}241{UN}, found in descending at: {}",
+        sorteddesc.memsearchdesc(241).map_or_else(||"None".rd(),|x| x.gr()));    
+    println!("Memsearchdesc_indexed for {BL}241{UN}, found in descending at: {}",
+        vm.memsearchdesc_indexed(&virev,241).map_or_else(||"None".rd(),|x| x.gr()));   
 
-
-    println!("Occurrences count of {BL}{midval}{UN}: {GR}{}{UN}",sorted.occurs(midval));
+    println!("\nOccurrences count of {BL}{midval}{UN}: {GR}{}{UN}",sorted.occurs(midval));
     println!("Occurrences count of {BL}{}{UN}: {GR}{}{UN}",96,sorted.occurs_multiple(&sorteddesc,96));
     println!("Intersect_indexed:\n{}", vm.intersect_indexed(&vi, &v1, &v1.sortidx()).gr());
     println!("Diff_indexed:\n{}", vm.diff_indexed(&vi, &v1, &v1.sortidx()).gr());

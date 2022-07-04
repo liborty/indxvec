@@ -158,7 +158,7 @@ fn memsearch(self, val: T) -> Option<usize> where T: PartialOrd {
 /// Returns `Some(index)` of any item that is
 /// neither smaller nor greater than val.
 /// When none are found, returns `None`.
-/// Example use: membership of an descending ordered set.
+/// Example use: membership of a descending ordered set.
 fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd {
     let n = self.len();
     if n == 0 {
@@ -203,8 +203,10 @@ fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd {
 }
 
 /// Binary search of an indexed list (in ascending order).
-/// Returns `Some(index)` of any item that is
-/// neither smaller nor greater than val.
+/// Just like `memsearch` but uses sort index instead of explicitly sorted list. 
+/// Returns `Some(index)` into the sort order, of any item that is
+/// neither smaller nor greater than val. 
+/// Its position in the original unsorted data is: i[index].
 /// When none are found, returns `None`.
 /// Example use: membership of an indexed ordered set.
 fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> 
@@ -252,10 +254,11 @@ fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize>
 }
 
 /// Binary search of an indexed list (in descending order).
-/// Returns `Some(index)` of any item that is
-/// neither smaller nor greater than val.
+/// Just like `memsearchdesc` but uses descending sort index instead of explicitly sorted list. 
+/// Returns `Some(index)` (in desc. order) of any item that is neither smaller nor greater than val.
+/// Its position in the original unsorted data is: i[index].
+/// To find the member position in the original unsorted data, simply use i[index].
 /// When none are found, returns `None`.
-/// Example use: membership of an indexed descending set.
 fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd {
     let n = self.len();
     if n == 0 {
@@ -307,8 +310,9 @@ fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: Pa
 /// Note that both complements of binsearch and binsearchdesc,
 /// in their respective opposite orderings, refer to the same preceding item
 /// iff there exists precisely one item equal to val.
-/// However, there can be more than one such items or none.
-/// Example use: looking up cummulative probability density functions.
+/// However, there can be more than one such items, or none.
+/// Example use: rapidly looking up particular values of monotonic 
+/// (e.g. cummulative probability density) functions.
 fn binsearch(self, val: T) -> usize where T: PartialOrd {
     let n = self.len();
     if n == 0 {
@@ -378,8 +382,10 @@ fn binsearchdesc(self, val: T) -> usize where T: PartialOrd {
 }
 
 /// Binary search of an index sorted list in ascending order.
-/// Returns an index of the first item that is greater than val.
+/// Returns a sort index of the first item that is greater than val.
 /// When none are greater, returns s.len() (invalid index but logical).
+/// Its position in the original unsorted data is: i[index].
+/// Its value in the original unsorted data is: self[i[index]].
 /// The complement index (the result subtracted from s.len()), gives
 /// the first item in descending order that is not greater than val.
 /// Note that both complements of binsearch and binsearchdesc,
@@ -419,6 +425,8 @@ fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd {
 /// Binary search of an index sorted list in descending order.
 /// Returns an index of the first item that is smaller than val (in descending order). 
 /// When none are smaller, returns s.len() (invalid index but logical).
+/// To find its position in the original unsorted data, use i[index].
+/// To find its value in the original unsorted data, use self[i[index]].
 /// The complement index (the result subtracted from s.len()), gives
 /// the first item in ascending order that is not smaller than val.
 /// Note that both complements of binsearch and binsearchdesc,

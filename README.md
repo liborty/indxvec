@@ -298,7 +298,9 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 ## Release Notes (Latest First)
 
-**Version 1.2.3** - Added `binsearch_indexed` and `binsearchdesc_indexed` and their tests,  for symmetry with `memsearch` versions which only search for members, whereas `binsearch` finds order position for a non-member.
+**Version 1.2.4** - Clarified some comments and `indxvec` test in `tests/tests.rs`.
+
+**Version 1.2.3** - Added `binsearch_indexed` and `binsearchdesc_indexed` and their tests,  for symmetry with `memsearch` versions which only search for members, whereas `binsearch` finds order positions for non-members, too.
 
 **Version 1.2.2** - Minor test clarification. Expanded the glossary.
 
