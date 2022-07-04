@@ -80,7 +80,7 @@ use indxvec::{Vecops};
 The methods of this trait are applicable to generic slices `&[T]` (the data). Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Copy`, are  implemented for `T`.
 
 ```rust
-/// Methods to manipulate Vecs
+/// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<T> {
     /// Maximum value in self
     fn maxt(self) -> T where T: PartialOrd+Copy;
@@ -105,25 +105,30 @@ pub trait Vecops<T> {
     fn memsearch(self, val: T) -> Option<usize> where T: PartialOrd;
     /// Binary search for the subscript of the last occurence of val
     fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd;
-    /// Binary search for val via ascending sort index i
-    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize>
-        where T:PartialOrd;
-    /// Backwards binary search for val via descending sort index i
-    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize>
-        where T: PartialOrd;
+    /// Binary search for val via ascending sort index i, 
+    /// returns subscript of val
+    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> where T:PartialOrd;
+    /// Backwards binary search for val via descending sort index i,
+    /// returns subscript of val 
+    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd;
     /// Binary search of an explicitly sorted list in ascending order.
-    /// Returns an index of the first item that is greater than val.
+    /// Returns subscript of the first item that is greater than val.
     /// When none are greater, returns s.len()
     fn binsearch(self, val: T) -> usize where T: PartialOrd;
     /// Binary search of an explicitly sorted list in descending order.
-    /// Returns an index of the first item that is smaller than val.
+    /// Returns subscript of the first item that is smaller than val.
     /// When none are smaller, returns s.len() 
     fn binsearchdesc(self, val: T) -> usize where T: PartialOrd;
+    /// Binary search of an index sorted list in ascending order.
+    /// Returns subscript of the first item that is greater than val.
+    fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
+    /// Binary search of an index sorted list in descending order.
+    /// Returns subscript of the first item that is smaller than val (in descending order). 
+    fn binsearchdesc_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
     /// Counts occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
     /// Efficiently counts number of occurences from ascending and descending sorts
-    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize
-        where T: PartialOrd+Copy;
+    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
     /// Unites (concatenates) two unsorted sets. For union of sorted sets, use `merge`
     fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
     /// Intersects two ascending explicitly sorted generic vectors.
@@ -136,20 +141,17 @@ pub trait Vecops<T> {
     /// Removes items of v2 from self using their sort indices.
     fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
         where T: PartialOrd+Copy;
-    /// Divides an unordered set into three: 
-    /// items smaller than pivot, equal, and greater
+    /// Divides an unordered set into three: items smaller than pivot, equal, and greater
     fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
         where T: PartialOrd+Copy;
-    /// Divides an unordered set into three by the pivot.
-    /// The results are subscripts to self   
+    /// Divides an unordered set into three by the pivot. The results are subscripts to self   
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
         where T: PartialOrd+Copy;
     /// Merges (unites) two sorted sets, result is also sorted    
     fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
-    /// Merges (unites) two sets, using their sort indices,
-    /// giving also the resulting sort index
-    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) ->
-        (Vec<T>, Vec<usize>) where T: PartialOrd+Copy;
+    /// Merges (unites) two sets, using their sort indices, giving also the resulting sort index
+    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
+        where T: PartialOrd+Copy;
     /// Used by `merge_indexed`
     fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
         where T: PartialOrd+Copy;
@@ -163,11 +165,9 @@ pub trait Vecops<T> {
     /// Rank index obtained via sortidx
     fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
     /// Utility, swaps any two items into ascending order
-    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool
-        where T:PartialOrd;
+    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd;
     /// Utility, sorts any three items into ascending order
-    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize)
-        where T: PartialOrd; 
+    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
     /// Stable Hash sort
     fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize> 
         where T: PartialOrd+Copy, f64:From<T>;
@@ -325,23 +325,3 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 **Version 1.1.2** - Added `.red()` method to `Printing`. Some tidying up of `tests.rs` and the docs. `hashsort` improved.
 
 **Version 1.1.0** - Added superfast n-recursive `hashsort`. Suitable for multithreading (to do).
-
-**Version 1.0.9** - Minor changes to testing.rs to better test `ran`.
-
-**Version 1.0.8** - Dependencies reorganization to minimise the footprint. The random numbers generation has now been moved to its own new crate `ran` and added here just as a development dependency where it rightfully belongs.
-
-**Version 1.0.7** - Renamed function `occurs` to `occurs_multiple` and added a simple linear count of item occurrences: `occurs`.
-
-**Version 1.0.6** - Some cosmetic changes to the code, readme and tests, no change of functionality.
-
-**Version 1.0.5** - Added `partition_indexed` for partitioning into two sets of indices about a pivot. Moved all random number generating functions into new module `random.rs` (import changed to: `random::*`). Moved the implementations of Printing trait to new module `printing.rs` (this has no effect on users).
-
-**Version 1.0.4** - here!() now highlights the (first) error in bold red. Added fast random number generation functions `ranf64, ranv64, ranvu8, ranvvf64, rannvvu8`.
-
-**Version 1.0.3** - Added utilities functions `maxt, mint, minmaxt`. Rationalised the functions for printing generic slices and slices of vectors. They are now turned into two chainable methods in trait `Printing`: `.to_str()` and `.gr()`. The latter also serialises slices to strings but additionally makes them bold green.
-
-**Version 1.0.2** - Added function `occurs` that efficiently counts occurrences of specified items in a set with repetitions.
-
-**Version 1.0.1** - Some code style tidying up. Added function `binsearchdesc` for completeness and symmetry with `binsearch`.
-
-**Version 1.0.0** - `indxvec` has been stable for some time now, so it gets promoted to v1.0.0. There are some improvements to `README.md` to mark the occasion.
