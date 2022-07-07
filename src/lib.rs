@@ -116,8 +116,6 @@ pub trait Indices {
 
     /// Create a trivial index that embodies the current order
     fn newindex(n:usize) -> Vec<usize> { Vec::from_iter(0..n) }
-    /// Reverse an index slice by simple reverse iteration.
-    fn revindex(self) -> Vec<usize>;
     /// Invert an index - turns a sort order into rank order and vice-versa
     fn invindex(self) -> Vec<usize>;
     /// complement of an index - reverses the ranking order
@@ -135,6 +133,7 @@ pub trait Indices {
 
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<T> {
+
     /// Maximum value in self
     fn maxt(self) -> T where T: PartialOrd+Copy;
     /// Minimum value in self
@@ -231,6 +230,8 @@ pub trait Vecops<T> {
 
 /// Mutable Hash Sort of `&mut[T]`
 pub trait Mutsort<T> {
+/// mutable reversal
+fn mutrevs(self);
 /// utility that mutably swaps two indexed items into ascending order
 fn mutsorttwo(self, i0:usize, i1:usize) -> bool
     where T: PartialOrd;

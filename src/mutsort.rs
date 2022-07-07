@@ -2,6 +2,12 @@ use crate::{here,Mutsort,Vecops};
 
 impl<T> Mutsort<T> for &mut[T] {
 
+
+    fn mutrevs(self) {
+        let n = self.len();
+        for i in 0..n/2 { self.swap(i,n-i-1) }
+    }
+
    /// sort two slice items if they are out of ascending order
     fn mutsorttwo(self, i0: usize, i1:usize) -> bool where T: PartialOrd { 
         if self[i0] > self[i1] { self.swap(i0,i1); true }
@@ -23,8 +29,7 @@ impl<T> Mutsort<T> for &mut[T] {
         self.muthashsortslice(0,self.len(),min,max);
     }
 
-    /// Does the work for `muthashsort`
-    ///     
+    /// Does the work for `muthashsort` 
     fn muthashsortslice(self, i:usize, n:usize, min:f64, max:f64) 
         where T: PartialOrd+Copy, f64:From<T> { 
         // Recursion termination conditions
@@ -55,7 +60,7 @@ impl<T> Mutsort<T> for &mut[T] {
             // println!("muthashsortslice bucket start: {} items: {}",isub,blen);  
             match blen {
                 0 => continue, // empty bucket
-                1 => { self[isub] = bucket[0]; isub += 1; }, // copy the item to the main index
+                1 => { self[isub] = bucket[0]; isub += 1; }, // copy the item to the sorted nut self
                 2 => { 
                     self[isub] = bucket[0]; self[isub+1] = bucket[1];
                     self.mutsorttwo(isub,isub+1);            

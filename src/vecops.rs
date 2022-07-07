@@ -928,9 +928,8 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64)
         1 => { idx[i] = i; return; }, // enter one item, no sorting
         2 => { self.isorttwo(idx, i, i+1); return; },
         3 => { self.isortthree(idx, i,i+1,i+2); return; },
-        _ => () 
-    };
-  
+        _ => () // carry on below
+    };  
     // hash is a constant s.t. (x-min)*hash is in [0,n] 
     let hash = (n as f64) / (max-min);  
     let mut buckets:Vec<Vec<usize>> = vec![Vec::new();n];

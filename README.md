@@ -189,12 +189,17 @@ This trait contains `muthashsort`, which overwrites `self` with sorted data. Whe
 
 ```rust
 pub trait Mutsort<T> {
-/// utility to mutably swap two indexed items into ascending order
-fn mutsorttwo(self, i0:usize, i1:usize) where T: PartialOrd;
-/// utility to mutably bubble sort three indexed items into ascending order
-fn mutsortthree(self, i0:usize, i1:usize, i2:usize) where T: PartialOrd;
-/// Possibly the fastest sort for long lists. Wraps `muthashsortslice`.
-fn muthashsort(self, min:f64, max:f64) where T: PartialOrd+Copy, f64:From<T>;
+/// mutable reversal
+fn mutrevs(self);
+/// utility that mutably swaps two indexed items into ascending order
+fn mutsorttwo(self, i0:usize, i1:usize) -> bool
+    where T: PartialOrd;
+/// utility that mutably bubble sorts three indexed items into ascending order
+fn mutsortthree(self, i0:usize, i1:usize, i2:usize)
+    where T: PartialOrd;
+/// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
+fn muthashsort(self, min:f64, max:f64)
+    where T: PartialOrd+Copy, f64:From<T>;
 /// Sorts n items from i in self. Used by muthashsort.
 fn muthashsortslice(self, i:usize, n:usize, min:f64, max:f64) 
     where T: PartialOrd+Copy, f64:From<T>;
@@ -284,19 +289,21 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 ## Glossary
 
-* **Sort Index** - is obtained by stable merge sort `sort_indexed`  or by `hashsort_indexed`. The original data is immutable (unchanged). The sort index produced is a list of subscripts to the data, such that the first subscript identifies the smallest item in the data, and so on (in ascending order). Suitable for bulky data that are not easily moved. It answers the question: what data item occupies a given sort position?
+* **Sort Index** - is obtained by stable merge sort `sort_indexed`  or by `hashsort_indexed`. The original data is immutable (unchanged). The sort index produced is a list of subscripts to the data, such that the first subscript identifies the smallest item in the data, and so on (in ascending order). Suitable for bulky data that are not easily moved. It answers the question: 'what data item occupies a given sort position?'.
 
-* **Reversing an index** - Sort Index can be reversed, by standard reversal operation `revindex()`. This has the effect of changing between ascending/descending sort orders without re-sorting or reversing the (possibly bulky) actual data.
+* **Reversing an index** - sort index can be reversed by generic reversal operation `revs()`, or `mutrevs()`. This has the effect of changing between ascending/descending sort orders without re-sorting or even reversing the (possibly bulky) actual data.
 
-* **Rank Index** - corresponds to the given data order, listing the sort positions (ranks) for the data items, e.g.the third entry in the rank index gives the rank of the third data item. Some statistical measures require ranks of data. It answers the question: what is the sort position of a given data item?
+* **Rank Index** - corresponds to the given data order, listing the sort positions (ranks) for the data items, e.g.the third entry in the rank index gives the rank of the third data item. Some statistical measures require ranks of data. It answers the question: 'what is the sort position of a given data item?'.
 
-* **Inverting an index** - Sort Index and Rank Index are mutually inverse. Thus they can be easily switched by `invindex()`. This is usually the best way to obtain a Rank Index. They will both be equal to `0..n` for data that is already in order.
+* **Inverting an index** - sort index and rank index are mutually inverse. Thus they can be easily switched by `invindex()`. This is usually the easiest way to obtain a rank index. They will both be equal to `0..n` for data that is already in ascending order.
 
-* **Complement of an index** - beware that the standard reversal will not convert directly between ascending and descending ranks.  For this purpose, it is necessary to use `complindex()`. Alternatively, to apply `invindex()` to a descending sort index.
+* **Complement of an index** - beware that the standard reversal will not convert directly between ascending and descending ranks. This purpose is served by `complindex()`. Alternatively, descending ranks can be reconstructed by applying `invindex()` to a descending sort index.
 
-* **Unindexing** - given a sort index and some data, `unindex()` will reorder the data into the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1..data_n`, not explicitly joined together in some bulky Struct elements. The sort index obtained by `keys.sort_indexed()` can then be efficiently applied to sort all the data vectors.
+* **Unindexing** - given a sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1..data_n`, not explicitly joined together in some bulky Struct elements. The sort index obtained by: `let indx = keys.sort_indexed()` can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n)`.
 
 ## Release Notes (Latest First)
+
+**Version 1.2.5** - Removed `revindex()` as its effect was a duplication of generic `revs()`. Added mutable version `mutrevs()`.
 
 **Version 1.2.4** - Clarified some comments and `indxvec` test in `tests/tests.rs`.
 

@@ -2,12 +2,6 @@ use crate::Indices;
 
 impl Indices for &[usize] {
 
-    /// Reverse an index slice by simple reverse iteration.
-    /// Creates a new Vec<usize>. Its naive use for descending sort etc. 
-    /// Is probably to be avoided for efficiency reasons. 
-    fn revindex(self) -> Vec<usize> { 
-        self.iter().rev().copied().collect::<Vec<usize>>() }
-
     /// Inverts an index, eg. from sort index to ranks. 
     /// This is a symmetric operation: any even number of applications 
     /// gives the original index, odd number gives the inverted form.
@@ -40,7 +34,8 @@ impl Indices for &[usize] {
 
     /// Complement of an index  (is symmetric) - 
     /// .complindex() toggles rank index between ascending/descending.
-    /// `.complindex().invindex()` = .invindex().revindex() 
+    /// To toggle sort index between ascending/descending, use the general reversal `revs`: 
+    /// `ranks.complindex().invindex()` = ranks.invindex().revs() 
     fn complindex(self) -> Vec<usize> {
         let n = self.len();
         let mut index:Vec<usize> = vec![0;n];

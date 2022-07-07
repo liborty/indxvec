@@ -29,16 +29,16 @@ fn indxvec() {
     println!("Ranks:        {}", v1ranks.gr()); // how to get ranks
     println!("Ranks:        {}", v1ranks.complindex().complindex().gr() ); // symmetry
     println!("Ranks:        {}", v1.sortidx().invindex().gr()); // simplest ranks from sortindex
-    println!("Ranks rev:    {}", v1ranks.revindex().gr()); // revindex() reverses any index
+    println!("Ranks rev:    {}", v1ranks.revs().gr()); // revindex() reverses any index
     println!("Ranks rev:    {}", v1.sortidx().complindex().invindex().gr()); // via sortidx()  and complindex()
-    println!("Ranks rev:    {}", v1.sortidx().invindex().revindex().gr()); // via revindex()
+    println!("Ranks rev:    {}", v1.sortidx().invindex().revs().gr()); // via revindex()
     println!("Ranks desc:   {}", v1.rank(false).gr()); // descending ranks are not the same as ranks reversed!!
     println!("Ranks desc:   {}", v1ranks.complindex().gr()); // to make ranks descending, use complindex() instead
     println!("Ranks desc:   {}", v1.sortidx().invindex().complindex().gr()); // descending ranks from sortindex
-    println!("Ranks desc:   {}", v1.sortidx().revindex().invindex().gr()); // descending ranks from descending sort
+    println!("Ranks desc:   {}", v1.sortidx().revs().invindex().gr()); // descending ranks from descending sort
     println!("Sort index:   {}", v1.sortidx().gr()); // sortindex, can be unindexed at anytime
     println!("Hashsort_inx: {}", v1.hashsort_indexed(min,max).gr());    
-    println!("Sortix rev:   {}", v1.sortidx().revindex().gr());
+    println!("Sortix rev:   {}", v1.sortidx().revs().gr());
     println!("Sortix rev:   {}", v1ranksd.invindex().gr()); // descending sort index from desc ranks
     println!("Sortix rev:   {}", v1ranks.complindex().invindex().gr()); // descending sort index from desc ranks    
     println!("Ranks to idx: {}", v1ranks.invindex().gr()); // ascending sort index from ascending ranks
@@ -48,7 +48,7 @@ fn indxvec() {
     println!("Sortm false:\n{}", v1.sortm(false).gr()); // descending sort, index lost
     println!("Hashsort unindex false:\n{}", v1.hashsort_indexed(min,max).unindex(&v1,false).gr()); // more efficient reversal
     println!("Sortidx unindex false:\n{}", v1.sortidx().unindex(&v1, false).gr()); // more efficient reversal
-    println!("Revindex:\n{}", v1.sortidx().revindex().unindex(&v1, true).gr()); // by reversing the sort index
+    println!("Revindex:\n{}", v1.sortidx().revs().unindex(&v1, true).gr()); // by reversing the sort index
     println!("Sortindx-invert-compliment-invert-unindex:\n{}", v1.sortidx().invindex().complindex().invindex().unindex(&v1, true).gr());
     println!("Rank-compliment-invert-unindex:\n{}", v1.rank(true).complindex().invindex().unindex(&v1, true).gr()); // complindex reverses ranks
     println!("Spearman corr v1,v2: {}", v1ranks.ucorrelation(&v2.rank(true)).gr()); //  1 for any Vec
@@ -71,9 +71,9 @@ fn indxvec() {
         sorted.memsearch(midval).map_or_else(||"None".rd(),|x| vi[x].gr()));
     println!("Memsearch_indexed for {BL}241{UN}, is in unsorted at: {}",
         vm.memsearch_indexed(&vi,241).map_or_else(||"None".rd(),|x| vi[x].gr()));
-    let sorteddesc = vi.unindex(&vm, false);
-    let virev = vi.revindex();
-
+    let sorteddesc = vi.unindex(&vm, false);    
+    let mut virev = vi.clone();
+    virev.mutrevs();
     println!("\nThe above unindexed into descending order:\n{}", sorteddesc.mg());
     println!("Binsearchdesc for {BL}{midval}{UN}, fits in descending before: {GR}{}{UN}",
         sorteddesc.binsearchdesc(midval)); // binsearchdesc
