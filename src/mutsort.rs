@@ -2,7 +2,6 @@ use crate::{here,Mutsort,Vecops};
 
 impl<T> Mutsort<T> for &mut[T] {
 
-
     fn mutrevs(self) {
         let n = self.len();
         for i in 0..n/2 { self.swap(i,n-i-1) }

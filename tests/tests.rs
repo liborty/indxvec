@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use indxvec::{ here, printing::*, Indices, Printing, Vecops, Mutsort };
+use indxvec::{ here, printing::*, Indices, Printing, Vecops, Mutsort};
 use ran::*;
 
 #[test]
@@ -57,8 +57,9 @@ fn indxvec() {
     let (vm, vi) = v1.merge_indexed( // merge two vecs using their sort indices
         &v1.hashsort_indexed(min,max), &v2,&v2.hashsort_indexed(min,max)); 
         //  or, equivalently, using merge sort:  &v1.sortidx(), &v2, &v2.sortidx());   
-    println!("\nv1 and v2 appended:\n{}",vm.yl()); 
-    let sorted = vi.unindex(&vm, true);
+    println!("\nv1 and v2 appended:\n{}",vm.yl());
+
+    let mut sorted = vi.unindex(&vm, true);
     println!("v1 and v2 hashsorted, merged and unindexed:\n{}", sorted.mg());
 
     println!("Binsearch for {BL}{midval}{UN}, fits in sort position before: {GR}{}{UN}",
@@ -90,7 +91,8 @@ fn indxvec() {
     println!("Occurrences count of {BL}{}{UN}: {GR}{}{UN}",96,sorted.occurs_multiple(&sorteddesc,96));
     println!("Intersect_indexed:\n{}", vm.intersect_indexed(&vi, &v1, &v1.sortidx()).gr());
     println!("Diff_indexed:\n{}", vm.diff_indexed(&vi, &v1, &v1.sortidx()).gr());
-    println!("Sansrepeat:\n{}\n", sorted.sansrepeat().gr());
+    sorted.dedup();
+    println!("Dedup:\n{}\n",sorted.gr());
 }
 
 #[test]

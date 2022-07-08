@@ -86,16 +86,13 @@ fn revs(self) -> Vec<T> where T: Copy {
 }
 
 /// Removes repetitions from an explicitly ordered set.
-fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy {
+fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy { 
     if self.len() < 2 { return self.to_vec(); };
     let mut r: Vec<T> = Vec::new();
     let mut last: T = self[0];
     r.push(last);
     self.iter().skip(1).for_each(|&si| {
-        if si != last {
-            last = si;
-            r.push(si)
-        }
+        if si != last { last = si; r.push(si) }
     });
     r
 }
