@@ -51,7 +51,7 @@ impl<T> Mutops<T> for &mut[T] {
         // group data items into buckets, subscripted by the data hash values
         for &xi in self.iter().skip(i).take(n) {
             let mut hashsub = (hash*(f64::from(xi)-fmin)).floor() as usize; 
-            if hashsub == n { hashsub -= 1; }; 
+            if hashsub == n { hashsub -= 1; };
             buckets[hashsub].push(xi);  
         };
 

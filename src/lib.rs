@@ -232,7 +232,36 @@ pub trait Vecops<T> {
     fn sorth(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy,f64:From<T>;
 }
 
-/// Mutable Hash Sort of `&mut[T]`
+/// Defines end-types other than numeric types and their methods of conversions to f64.
+/// Needed by hashsort to hash on their numerical key values.
+pub enum EndType<'a,T> {
+    /// &str encapsulation
+    Str(&'a str),
+    /// all numerical primitive types
+    Num(T)
+}
+
+impl<'a,T> std::convert::From<EndType<'a,T>> for f64 where f64:From<T> {
+    fn from(s:EndType<'_,T>) -> f64 {
+        match s {
+        // &str -> f64 'conversion'
+        // when the capacity of f64 is filled, 
+        // the least significant bytes will get truncated
+        // but this is ok for hash sort
+        EndType::Str(st) => { 
+            if st.is_empty() { return 0_f64 };
+            let bytes = st.as_bytes();
+            let mut res = bytes[0] as f64;
+            for &byte in bytes.iter().skip(1) {
+                res = 256.*res + byte as f64;
+            };
+            res
+        },
+        EndType::Num(n) => f64::from(n) }
+    } 
+}
+
+/// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
 /// mutable reversal, general utility
 fn mutrevs(self);

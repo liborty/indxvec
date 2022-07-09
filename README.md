@@ -8,7 +8,7 @@
 ## The following will import everything
 
 ```rust
-use indxvec::{MinMax,here,tof64,printing::*,Indices,Vecops,Mutops,Printing};
+use indxvec::{MinMax,EndType,here,tof64,printing::*,Indices,Vecops,Mutops,Printing};
 ```
 
 ## Description
@@ -319,6 +319,8 @@ use indxvec::{MinMax,here,tof64};
 * `pub fn tof64<T>(s: &[T]) -> Vec<f64>...` utility that converts generic (numeric) Vecs to `Vec<f64>`.
 
 ## Release Notes (Latest First)
+
+**Version 1.2.7** - Introduced general conversion of non-numeric end types, specifically &str, to their approximate f64 values. This is so that hashsort can compute its keys and sort them. Widening the applicability of hashsort.
 
 **Version 1.2.6** - Renamed trait `Mutsort` to `Mutops`.  Renamed some `Vecops` methods for naming consistency. Made hashsort easier to use by removing the data range. Added `sorth`, equivalent to `sortm`, using hashsort instead of mergesort. Added a test.
 
