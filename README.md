@@ -5,10 +5,10 @@
 [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec)
 [<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec)
 
-### The following will import everything
+## The following will import everything
 
 ```rust
-use indxvec::{MinMax,here,tof64,printing::*,Indices,Vecops,Mutsort,Printing};
+use indxvec::{MinMax,here,tof64,printing::*,Indices,Vecops,Mutops,Printing};
 ```
 
 ## Description
@@ -77,11 +77,12 @@ pub trait Indices {
 use indxvec::{Vecops};
 ```
 
-The methods of this trait are applicable to generic slices `&[T]` (the data). Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Copy`, are  implemented for `T`.
+The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Copy`, are  implemented for `T`.
 
 ```rust
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<T> {
+
     /// Maximum value in self
     fn maxt(self) -> T where T: PartialOrd+Copy;
     /// Minimum value in self
@@ -107,10 +108,12 @@ pub trait Vecops<T> {
     fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd;
     /// Binary search for val via ascending sort index i, 
     /// returns subscript of val
-    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> where T:PartialOrd;
+    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> 
+        where T:PartialOrd;
     /// Backwards binary search for val via descending sort index i,
     /// returns subscript of val 
-    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd;
+    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> 
+        where T: PartialOrd;
     /// Binary search of an explicitly sorted list in ascending order.
     /// Returns subscript of the first item that is greater than val.
     /// When none are greater, returns s.len()
@@ -123,14 +126,20 @@ pub trait Vecops<T> {
     /// Returns subscript of the first item that is greater than val.
     fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
     /// Binary search of an index sorted list in descending order.
-    /// Returns subscript of the first item that is smaller than val (in descending order). 
+    /// Returns subscript of the first item that is smaller than val 
+    /// (in descending order). 
     fn binsearchdesc_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
     /// Counts occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
     /// Efficiently counts number of occurences from ascending and descending sorts
-    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
-    /// Unites (concatenates) two unsorted sets. For union of sorted sets, use `merge`
+    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize 
+        where T: PartialOrd+Copy;
+    /// Unites (concatenates) two unsorted slices. 
+    /// For union of sorted slices, use `merge`
     fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
+    /// Unites two ascending index-sorted slices.
+    fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
+        where T: PartialOrd+Copy; 
     /// Intersects two ascending explicitly sorted generic vectors.
     fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
     /// Intersects two ascending index sorted vectors.
@@ -141,46 +150,54 @@ pub trait Vecops<T> {
     /// Removes items of v2 from self using their sort indices.
     fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
         where T: PartialOrd+Copy;
-    /// Divides an unordered set into three: items smaller than pivot, equal, and greater
+    /// Divides an unordered set into three:
+    /// items smaller than pivot, equal, and greater
     fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
         where T: PartialOrd+Copy;
-    /// Divides an unordered set into three by the pivot. The results are subscripts to self   
+    /// Divides an unordered set into three by the pivot. 
+    /// The results are subscripts to self.   
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
         where T: PartialOrd+Copy;
     /// Merges (unites) two sorted sets, result is also sorted    
     fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
-    /// Merges (unites) two sets, using their sort indices, giving also the resulting sort index
-    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
+    /// Merges (unites) two sets, using their sort indices,
+    /// giving also the resulting sort index.
+    fn merge_indexed(self,idx1:&[usize],v2:&[T],idx2:&[usize])->(Vec<T>,Vec<usize>)
         where T: PartialOrd+Copy;
     /// Used by `merge_indexed`
     fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
         where T: PartialOrd+Copy;
-    /// Utility used by sortidx
-    fn mergesort(self, i: usize, n: usize) -> Vec<usize>
-        where T: PartialOrd+Copy;
     /// Stable Merge sort main method, giving sort index
-    fn sortidx(self) -> Vec<usize> where T:PartialOrd+Copy;
-    /// Stable Merge sort, explicitly sorted result obtained via sortidx 
+    fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Copy;
+    /// Utility used by mergesort_indexed
+    fn mergesortslice(self, i: usize, n: usize) -> Vec<usize>
+        where T: PartialOrd+Copy;
+    /// Stable Merge sort, explicitly sorted result obtained via mergesort_indexed 
     fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy;
-    /// Rank index obtained via sortidx
+    /// Rank index obtained via mergesort_indexed
     fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
     /// Utility, swaps any two items into ascending order
-    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd;
+    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool 
+        where T:PartialOrd;
     /// Utility, sorts any three items into ascending order
-    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
+    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) 
+        where T: PartialOrd; 
     /// Stable Hash sort
-    fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize> 
+    fn hashsort_indexed(self) -> Vec<usize> 
         where T: PartialOrd+Copy, f64:From<T>;
     /// Utility used by hashsort_indexed
-    fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
+    fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
         where T: PartialOrd+Copy, f64:From<T>;
+    /// Immutable hash sort. Returns new sorted data vector (ascending or descending)
+    fn sorth(self, ascending: bool) -> Vec<T> 
+        where T: PartialOrd+Copy,f64:From<T>;
 }
 ```
 
-## Trait Mutsort
+## Trait Mutops
 
 ```rust
-use indxvec::{Mutsort};
+use indxvec::{Mutops};
 ```
 
 This trait contains `muthashsort`, which overwrites `self` with sorted data. When we do not need to keep the original order, this is the most efficient way to sort.
@@ -188,7 +205,7 @@ This trait contains `muthashsort`, which overwrites `self` with sorted data. Whe
 **Nota bene:** `muthashsort` really wins on longer Vecs. For about one thousand items upwards, it is on average about 25%-30% faster than the default Rust (Quicksort) `sort_unstable`.
 
 ```rust
-pub trait Mutsort<T> {
+pub trait Mutsops<T> {
 /// mutable reversal
 fn mutrevs(self);
 /// utility that mutably swaps two indexed items into ascending order
@@ -285,7 +302,7 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 );
 ```
 
-`memsearch` returns `Option(None)`, when `midval` is not found in `vm`. Here, `None` will be printed in red, while any found item will be in green. This is also an example of how to process `Option`s without long-winded `match` statements.
+`memsearch` returns `Option(None)`, when `midval` is not found in `vm`. Here, `None` will be printed in red, while any found item will be printed in green. This is also an example of how to process `Option`s without the long-winded `match` statements.
 
 ## Glossary
 
@@ -302,6 +319,8 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 * **Unindexing** - given a sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1..data_n`, not explicitly joined together in some bulky Struct elements. The sort index obtained by: `let indx = keys.sort_indexed()` can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n)`.
 
 ## Release Notes (Latest First)
+
+**Version 1.2.6** - Renamed trait `Mutsort` to `Mutops`.  Renamed some `Vecops` methods for naming consistency. Made hashsort easier to use by removing the data range. Added `sorth`, equivalent to `sortm`, using hashsort instead of mergesort. Added a test.
 
 **Version 1.2.5** - Removed `revindex()` as its effect was a duplication of generic `revs()`. Added mutable version `mutrevs()`.
 

@@ -484,7 +484,7 @@ fn occurs(self, val:T) -> usize where T: PartialOrd {
 /// use crate::indxvec::Indices;
 /// use indxvec::Vecops;
 /// let s = [1.,2.,3.14159,3.14159,4.,5.,6.];
-/// let sindx = s.sortidx(); // only one sorting
+/// let sindx = s.mergesort_indexed(); // only one sorting
 /// let sasc = sindx.unindex(&s,true);   // explicit ascending
 /// let sdesc = sindx.unindex(&s,false); // explicit descending
 /// assert_eq!(sasc.occurs_multiple(&sdesc,3.14159),2);
@@ -504,12 +504,11 @@ fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone {
     [self, v].concat()
 }
 
-/*
 /// Unites two ascending index-sorted generic vectors.
 /// This is the union of two index sorted sets.
 /// Returns a single explicitly ordered set.
 fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-where T: PartialOrd+Copy {
+    where T: PartialOrd+Copy {
     let l1 = self.len();
     let l2 = v2.len();
     let mut resvec: Vec<T> = Vec::new();
@@ -548,7 +547,6 @@ where T: PartialOrd+Copy {
     }
     resvec
 }
-*/
 
 /// Intersects two ascending explicitly sorted generic vectors.
 fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
@@ -830,7 +828,7 @@ fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
 /// Returns a vector of indices to s from i to i+n,
 /// such that the indexed values are in ascending sort order (a sort index).
 /// Only the index values are being moved.
-fn mergesort(self, i: usize, n: usize) -> Vec<usize>
+fn mergesortslice(self, i: usize, n: usize) -> Vec<usize>
     where T: PartialOrd+Copy {
     if n == 1 {
         let res = vec![i];
@@ -846,24 +844,25 @@ fn mergesort(self, i: usize, n: usize) -> Vec<usize>
     }
     let n1 = n / 2; // the first part (the parts do not have to be the same)
     let n2 = n - n1; // the remaining second part
-    let sv1 = self.mergesort(i, n1); // recursively sort the first half
-    let sv2 = self.mergesort(i + n1, n2); // recursively sort the second half
+    let sv1 = self.mergesortslice(i, n1); // recursively sort the first half
+    let sv2 = self.mergesortslice(i + n1, n2); // recursively sort the second half
     // Now merge the two sorted indices into one and return it
     self.merge_indices(&sv1, &sv2)
 }
 
-/// A wrapper for mergesort, to obtain the sort index
-/// of the (whole) input vector. Simpler than sortm.
-fn sortidx(self) -> Vec<usize> where T:PartialOrd+Copy {
-    self.mergesort(0, self.len())
+/// The main mergesort
+/// Wraps mergesortslice, to obtain the whole sort index
+fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Copy {
+    self.mergesortslice(0, self.len())
 }
 
-/// Immutable sort. Returns new sorted vector (ascending or descending).
-/// Is a wrapper for mergesort. Passes the boolean flag 'ascending' onto 'unindex'.
-/// Mergesort by itself always produces only an ascending index.
+/// Immutable merge sort. Returns new sorted data vector (ascending or descending).
+/// Wraps mergesortslice. 
+/// Mergesortslice and mergesort_indexed produce only an ascending index.
+/// Sortm will produce descending data order with ascending == false.
 fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy {
     self
-        .mergesort(0, self.len())
+        .mergesortslice(0, self.len())
         .unindex(self, ascending)
 }
 
@@ -875,7 +874,7 @@ fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy {
 /// They are easily converted by `.invindex()` (for: invert index).
 fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy {
     let n = self.len();
-    let sortindex = self.mergesort(0, n);
+    let sortindex = self.mergesortslice(0, n);
     let mut rankvec: Vec<usize> = vec![0; n];
     if ascending {
         for (i, &sortpos) in sortindex.iter().enumerate() {
@@ -907,9 +906,9 @@ fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: Pa
 /// Input data are read only. Output is sort index.
 /// Requires min,max, the data range, that must enclose all its values. 
 /// The range is often known. If not, it can be obtained with `minmaxt()`.
-fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize> 
+fn hashsort_indexed(self) -> Vec<usize> 
     where T: PartialOrd+Copy, f64:From<T> { 
-    if min >= max { panic!("{} data range must be min < max",here!()); };
+    let (min,max) = self.minmaxt(); 
     let n = self.len();
     // create a mutable index for the result
     let mut idx = Vec::from_iter(0..n); 
@@ -917,7 +916,7 @@ fn hashsort_indexed(self, min:f64, max:f64) -> Vec<usize>
     idx 
 }   
 
-fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64) 
+fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
     where T: PartialOrd+Copy, f64:From<T> { 
     // Recursion termination conditions
     match n {
@@ -926,13 +925,15 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64)
         2 => { self.isorttwo(idx, i, i+1); return; },
         3 => { self.isortthree(idx, i,i+1,i+2); return; },
         _ => () // carry on below
-    };  
+    }; 
+    let fmin = f64::from(min);
+    let fmax = f64::from(max); 
     // hash is a constant s.t. (x-min)*hash is in [0,n] 
-    let hash = (n as f64) / (max-min);  
+    let hash = (n as f64) / (fmax-fmin);  
     let mut buckets:Vec<Vec<usize>> = vec![Vec::new();n];
     // group current index items into buckets by their associated self[] values
     for &xi in idx.iter().skip(i).take(n) {  
-        let mut hashsub = (hash*(f64::from(self[xi])-min)).floor() as usize; 
+        let mut hashsub = (hash*(f64::from(self[xi])-fmin)).floor() as usize; 
         if hashsub == n { hashsub -=1 }; // reduce subscripts to [0,n-1] 
         buckets[hashsub].push(xi);
     }
@@ -962,7 +963,7 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64)
                 self.isorttwo(idx,isub,mx.minindex); // swap minindex to the front 
                 self.isorttwo(idx,mx.maxindex,isub+n-1); // swap maxindex to the end 
                 // recurse to sort the rest
-                self.hashsortslice(idx,i+1,blen-2,f64::from(mx.min),f64::from(mx.max)); 
+                self.hashsortslice(idx,i+1,blen-2,mx.min,mx.max); 
             };
             return; // all items were equal, or are now sorted
         },
@@ -975,11 +976,22 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:f64, max:f64)
                 self.isorttwo(idx,isubprev,mx.minindex); // swap minindex to the front 
                 self.isorttwo(idx,mx.maxindex,isub-1); // swap maxindex to the end  
                 // recurse to sort the rest
-                self.hashsortslice(idx,isubprev+1,blen-2,f64::from(mx.min),f64::from(mx.max)); 
+                self.hashsortslice(idx,isubprev+1,blen-2,mx.min,mx.max); 
                 };
             } 
         }
     }
+}
+
+/// Immutable hash sort. Returns new sorted data vector (ascending or descending).
+/// Wraps mergesortslice. 
+/// Mergesortslice and mergesort_indexed produce only an ascending index.
+/// Sortm will produce descending data order with ascending == false.
+fn sorth(self, ascending: bool) -> Vec<T> 
+    where T: PartialOrd+Copy, f64:From<T>  {
+    self
+        .hashsort_indexed()
+        .unindex(self, ascending)
 }
 
 }

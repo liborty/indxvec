@@ -1,7 +1,8 @@
-use crate::{here,Mutsort,Vecops};
+use crate::{Mutops,Vecops};
 
-impl<T> Mutsort<T> for &mut[T] {
+impl<T> Mutops<T> for &mut[T] {
 
+    /// Destructive reversal by swapping
     fn mutrevs(self) {
         let n = self.len();
         for i in 0..n/2 { self.swap(i,n-i-1) }
@@ -20,16 +21,17 @@ impl<T> Mutsort<T> for &mut[T] {
     }
         
     /// N recursive hash sort.
-    /// Sorts mutable first argument (slice) in place
-    /// Requires [min,max], the data range, that must enclose all its values. 
-    /// The range is often known in advance. If not, it can be obtained with `minmaxt()`.
-    fn muthashsort(self, min:f64, max:f64) where T: PartialOrd+Copy, f64:From<T> {
-        if min >= max { panic!("{} data range must be min < max",here!()); }; 
+    /// Sorts mutable first argument in place
+    fn muthashsort(self) where T: PartialOrd+Copy, f64:From<T> {
+        let (min,max) = self.minmaxt();
         self.muthashsortslice(0,self.len(),min,max);
     }
 
     /// Does the work for `muthashsort` 
-    fn muthashsortslice(self, i:usize, n:usize, min:f64, max:f64) 
+    /// Requires [min,max], the data range, that must enclose all its values. 
+    /// If the range is known in advance, use this in preference to `muthashsort`
+    /// to save finding it
+    fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
         where T: PartialOrd+Copy, f64:From<T> { 
         // Recursion termination conditions
         match n {
@@ -37,15 +39,18 @@ impl<T> Mutsort<T> for &mut[T] {
             2 => { self.mutsorttwo(i,i+1); return; },
             3 => { self.mutsortthree(i,i+1,i+2); return; },
             _ => ()
-            };  
+            };
+        // convert limits to f64 for accurate hash calculations            
+        let fmax = f64::from(max);
+        let fmin = f64::from(min);
         // hash is a precomputed factor, s.t. ((x-min)*hash).floor() subscripts will be in [0,n]
         // this is then reduced to [0,n-1] 
-        let hash = n as f64 / (max-min); 
+        let hash = n as f64 / (fmax-fmin); 
         let mut buckets:Vec<Vec<T>> = vec![Vec::new();n];
 
         // group data items into buckets, subscripted by the data hash values
         for &xi in self.iter().skip(i).take(n) {
-            let mut hashsub = (hash*(f64::from(xi)-min)).floor() as usize; 
+            let mut hashsub = (hash*(f64::from(xi)-fmin)).floor() as usize; 
             if hashsub == n { hashsub -= 1; }; 
             buckets[hashsub].push(xi);  
         };
@@ -79,7 +84,7 @@ impl<T> Mutsort<T> for &mut[T] {
                         self.mutsorttwo(isub,mx.minindex); // swap min to the front
                         self.mutsorttwo(mx.maxindex,isub+n-1); // and swap max to the end
                         // recurse to sort the rest, within the new reduced range
-                        self.muthashsortslice(isub+1,blen-2,f64::from(mx.min),f64::from(mx.max)); 
+                        self.muthashsortslice(isub+1,blen-2,mx.min,mx.max); 
                     }; 
                     return; // all items in this single bucket were equal, or are now sorted
                 },
@@ -93,7 +98,7 @@ impl<T> Mutsort<T> for &mut[T] {
                         self.mutsorttwo(isubprev,mx.minindex); // swap min to the front
                         self.mutsorttwo(mx.maxindex,isub-1); // and swap max to the end
                         // recurse to sort the rest in between, with reduced data range
-                        self.muthashsortslice(isubprev+1,blen-2,f64::from(mx.min),f64::from(mx.max)); 
+                        self.muthashsortslice(isubprev+1,blen-2,mx.min,mx.max); 
                     }; 
                 } // items in this bucket were equal or are now sorted
             } // end of match (this bucket) but there may be more
