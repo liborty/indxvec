@@ -132,7 +132,6 @@ pub trait Indices {
 
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<T> {
-
     /// Maximum value in self
     fn maxt(self) -> T where T: PartialOrd+Copy;
     /// Minimum value in self
@@ -224,41 +223,84 @@ pub trait Vecops<T> {
     fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
     /// Stable Hash sort
     fn hashsort_indexed(self) -> Vec<usize> 
-        where T: PartialOrd+Copy, f64:From<T>;
+        where T: PartialOrd+Copy,F64:From<T>;
     /// Utility used by hashsort_indexed
     fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
-        where T: PartialOrd+Copy, f64:From<T>;
+        where T: PartialOrd+Copy,F64:From<T>;
     /// Immutable hash sort. Returns new sorted data vector (ascending or descending)
-    fn sorth(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy,f64:From<T>;
+    fn sorth(self, ascending: bool) -> Vec<T> 
+        where T: PartialOrd+Copy,F64:From<T>;
 }
 
-/// Defines end-types other than numeric types and their methods of conversions to f64.
-/// Needed by hashsort to hash on their numerical key values.
-pub enum EndType<'a,T> {
-    /// &str encapsulation
-    Str(&'a str),
-    /// all numerical primitive types
-    Num(T)
+
+/// Wrapper type for custom conversions to f64
+pub struct F64(pub f64);
+
+/// Example custom conversion &str -> f64.
+/// Quantifies alphabetic order using the first seven bytes
+/// that will (almost) fit into an f64. 
+/// Good enough to effectively sort most words.
+/// Enables hashsort of &str end types.
+/// Merge sort does no calculations, just binary set divisions,
+/// so PartialOrd is good enough for it. 
+impl From<&str> for F64 {
+    fn from(s:&str) -> F64 {
+        if s.is_empty() { return F64(0_f64) };
+        let bytes = s.as_bytes();
+        let mut res = bytes[0] as f64;
+        for i in 1..7 {
+            res *= 256.;
+            if i < bytes.len() { res += bytes[i] as f64; }
+        };
+        F64(res)    
+    }
 }
 
-impl<'a,T> std::convert::From<EndType<'a,T>> for f64 where f64:From<T> {
-    fn from(s:EndType<'_,T>) -> f64 {
-        match s {
-        // &str -> f64 'conversion'
-        // when the capacity of f64 is filled, 
-        // the least significant bytes will get truncated
-        // but this is ok for hash sort
-        EndType::Str(st) => { 
-            if st.is_empty() { return 0_f64 };
-            let bytes = st.as_bytes();
-            let mut res = bytes[0] as f64;
-            for &byte in bytes.iter().skip(1) {
-                res = 256.*res + byte as f64;
-            };
-            res
-        },
-        EndType::Num(n) => f64::from(n) }
-    } 
+impl From<usize> for F64 {
+    fn from(s:usize) -> F64 { F64(s as f64) } 
+}
+
+impl From<u8> for F64 {
+    fn from(s:u8) -> F64 { F64(s as f64)}  
+}
+
+impl From<u16> for F64 {
+    fn from(s:u16) -> F64 { F64(s as f64) } 
+}
+
+impl From<u32> for F64 {
+    fn from(s:u32) -> F64 { F64(s as f64) } 
+}
+
+impl From<u64> for F64 {
+    fn from(s:u64) -> F64 { F64(s as f64) } 
+}
+
+impl From<i8> for F64 {
+    fn from(s:i8) -> F64 { F64(s as f64)}  
+}
+
+impl From<i16> for F64 {
+    fn from(s:i16) -> F64 { F64(s as f64) } 
+}
+
+impl From<i32> for F64 {
+    fn from(s:i32) -> F64 { F64(s as f64) } 
+}
+
+impl From<i64> for F64 {
+    fn from(s:i64) -> F64 { F64(s as f64) } 
+}
+
+impl From<f32> for F64 {
+    fn from(s:f32) -> F64 { F64(s as f64) } 
+}
+
+/// Applies conversions, including custom, from T to F64 
+/// and unwraps to f64
+pub fn inf64<T>(arg:T) -> f64 where F64:From<T> {
+    let F64(res) = F64::from(arg);
+    res
 }
 
 /// Mutable Operators on `&mut[T]`
@@ -273,8 +315,8 @@ fn mutsortthree(self, i0:usize, i1:usize, i2:usize)
     where T: PartialOrd;
 /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
 fn muthashsort(self)
-    where T: PartialOrd+Copy, f64:From<T>;
+    where T: PartialOrd+Copy, F64:From<T>;
 /// Sorts n items from i in self. Used by muthashsort.
 fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
-    where T: PartialOrd+Copy, f64:From<T>;
+    where T: PartialOrd+Copy, F64:From<T>;
 }

@@ -1,8 +1,9 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use indxvec::{ here, printing::*, Indices, Printing, Vecops, Mutops};
+use indxvec::{ here, F64, printing::*, Indices, Printing, Vecops, Mutops};
 use ran::*;
+use std::convert::From;
 
 #[test]
 fn indices() {
@@ -104,6 +105,16 @@ fn indices() {
     println!("Dedup:\n{}\n",sorted.gr());
 }
 
+#[test]
+fn text() {
+    let sentence = "Oh what a bunch of doodaas , doodaa , doodaa - daa";
+    let mut v = sentence.split(' ').collect::<Vec<_>>();
+    println!("{}",v.gr()); // Display
+    v.muthashsort();
+    println!("Ascending: {}",v.gr()); // Display 
+    v.mutrevs(); 
+    println!("Descending: {}",v.gr()); // Display     
+} 
 #[test]
 fn printing() {
     set_seeds(123456789);

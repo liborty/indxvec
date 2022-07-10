@@ -8,7 +8,7 @@
 ## The following will import everything
 
 ```rust
-use indxvec::{MinMax,EndType,here,tof64,printing::*,Indices,Vecops,Mutops,Printing};
+use indxvec::{ MinMax, F64, here, tof64, inf64,printing::*, Indices,Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -86,7 +86,6 @@ The methods of this trait are applicable to all generic slices `&[T]` (the data)
 ```rust
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<T> {
-
     /// Maximum value in self
     fn maxt(self) -> T where T: PartialOrd+Copy;
     /// Minimum value in self
@@ -98,8 +97,8 @@ pub trait Vecops<T> {
     /// MinMax of n items starting at subscript i
     fn minmax_slice(self,i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Copy;
     /// MinMax of a subset of self, defined by its idx subslice between i,i+n.
-    fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
-        where T: PartialOrd+Copy;
+    fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) ->
+     MinMax<T> where T: PartialOrd+Copy;
     /// Reversed copy of self
     fn revs(self) -> Vec<T> where T: Copy;
     /// Repeated items removed
@@ -112,12 +111,10 @@ pub trait Vecops<T> {
     fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd;
     /// Binary search for val via ascending sort index i, 
     /// returns subscript of val
-    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> 
-        where T:PartialOrd;
+    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> where T:PartialOrd;
     /// Backwards binary search for val via descending sort index i,
     /// returns subscript of val 
-    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> 
-        where T: PartialOrd;
+    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd;
     /// Binary search of an explicitly sorted list in ascending order.
     /// Returns subscript of the first item that is greater than val.
     /// When none are greater, returns s.len()
@@ -130,16 +127,13 @@ pub trait Vecops<T> {
     /// Returns subscript of the first item that is greater than val.
     fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
     /// Binary search of an index sorted list in descending order.
-    /// Returns subscript of the first item that is smaller than val 
-    /// (in descending order). 
+    /// Returns subscript of the first item that is smaller than val (in descending order). 
     fn binsearchdesc_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
     /// Counts occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
     /// Efficiently counts number of occurences from ascending and descending sorts
-    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize 
-        where T: PartialOrd+Copy;
-    /// Unites (concatenates) two unsorted slices. 
-    /// For union of sorted slices, use `merge`
+    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
+    /// Unites (concatenates) two unsorted slices. For union of sorted slices, use `merge`
     fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
     /// Unites two ascending index-sorted slices.
     fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
@@ -154,19 +148,16 @@ pub trait Vecops<T> {
     /// Removes items of v2 from self using their sort indices.
     fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
         where T: PartialOrd+Copy;
-    /// Divides an unordered set into three:
-    /// items smaller than pivot, equal, and greater
+    /// Divides an unordered set into three: items smaller than pivot, equal, and greater
     fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
         where T: PartialOrd+Copy;
-    /// Divides an unordered set into three by the pivot. 
-    /// The results are subscripts to self.   
+    /// Divides an unordered set into three by the pivot. The results are subscripts to self   
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
         where T: PartialOrd+Copy;
     /// Merges (unites) two sorted sets, result is also sorted    
     fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
-    /// Merges (unites) two sets, using their sort indices,
-    /// giving also the resulting sort index.
-    fn merge_indexed(self,idx1:&[usize],v2:&[T],idx2:&[usize])->(Vec<T>,Vec<usize>)
+    /// Merges (unites) two sets, using their sort indices, giving also the resulting sort index
+    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
         where T: PartialOrd+Copy;
     /// Used by `merge_indexed`
     fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
@@ -181,20 +172,19 @@ pub trait Vecops<T> {
     /// Rank index obtained via mergesort_indexed
     fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
     /// Utility, swaps any two items into ascending order
-    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool 
-        where T:PartialOrd;
+    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd;
     /// Utility, sorts any three items into ascending order
-    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) 
-        where T: PartialOrd; 
+    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
     /// Stable Hash sort
     fn hashsort_indexed(self) -> Vec<usize> 
-        where T: PartialOrd+Copy, f64:From<T>;
+        where T: PartialOrd+Copy,F64:From<T>;
     /// Utility used by hashsort_indexed
     fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
-        where T: PartialOrd+Copy, f64:From<T>;
-    /// Immutable hash sort. Returns new sorted data vector (ascending or descending)
+        where T: PartialOrd+Copy,F64:From<T>;
+    /// Immutable hash sort. Returns new sorted data vector 
+    /// (ascending or descending)
     fn sorth(self, ascending: bool) -> Vec<T> 
-        where T: PartialOrd+Copy,f64:From<T>;
+        where T: PartialOrd+Copy,F64:From<T>;
 }
 ```
 
@@ -209,8 +199,9 @@ This trait contains `muthashsort`, which overwrites `self` with sorted data. Whe
 **Nota bene:** `muthashsort` really wins on longer Vecs. For about one thousand items upwards, it is on average about 25%-30% faster than the default Rust (Quicksort) `sort_unstable`.
 
 ```rust
-pub trait Mutsops<T> {
-/// mutable reversal
+/// Mutable Operators on `&mut[T]`
+pub trait Mutops<T> {
+/// mutable reversal, general utility
 fn mutrevs(self);
 /// utility that mutably swaps two indexed items into ascending order
 fn mutsorttwo(self, i0:usize, i1:usize) -> bool
@@ -219,12 +210,13 @@ fn mutsorttwo(self, i0:usize, i1:usize) -> bool
 fn mutsortthree(self, i0:usize, i1:usize, i2:usize)
     where T: PartialOrd;
 /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
-fn muthashsort(self, min:f64, max:f64)
-    where T: PartialOrd+Copy, f64:From<T>;
+fn muthashsort(self)
+    where T: PartialOrd+Copy, F64:From<T>;
 /// Sorts n items from i in self. Used by muthashsort.
-fn muthashsortslice(self, i:usize, n:usize, min:f64, max:f64) 
-    where T: PartialOrd+Copy, f64:From<T>;
+fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
+    where T: PartialOrd+Copy, F64:From<T>;
 }
+
 ```
 
 ## Trait `Printing`
@@ -320,7 +312,7 @@ use indxvec::{MinMax,here,tof64};
 
 ## Release Notes (Latest First)
 
-**Version 1.2.7** - Introduced general conversion of non-numeric end types, specifically &str, to their approximate f64 values. This is so that hashsort can compute its keys and sort them. Widening the applicability of hashsort.
+**Version 1.2.8** - Enabled custom conversions of non-numeric end types, specifically &str. This is so that `hashsort` can compute its keys and sort them. Thus widening the applicability of superfast hashsort.
 
 **Version 1.2.6** - Renamed trait `Mutsort` to `Mutops`.  Renamed some `Vecops` methods for naming consistency. Made hashsort easier to use by removing the data range. Added `sorth`, equivalent to `sortm`, using hashsort instead of mergesort. Added a test.
 

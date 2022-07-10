@@ -1,4 +1,4 @@
-use crate::{Mutops,Vecops};
+use crate::{F64,inf64,Mutops,Vecops};
 
 impl<T> Mutops<T> for &mut[T] {
 
@@ -22,7 +22,8 @@ impl<T> Mutops<T> for &mut[T] {
         
     /// N recursive hash sort.
     /// Sorts mutable first argument in place
-    fn muthashsort(self) where T: PartialOrd+Copy, f64:From<T> {
+    fn muthashsort(self) 
+        where T: PartialOrd+Copy, F64:From<T> {
         let (min,max) = self.minmaxt();
         self.muthashsortslice(0,self.len(),min,max);
     }
@@ -32,7 +33,7 @@ impl<T> Mutops<T> for &mut[T] {
     /// If the range is known in advance, use this in preference to `muthashsort`
     /// to save finding it
     fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
-        where T: PartialOrd+Copy, f64:From<T> { 
+        where T: PartialOrd+Copy, F64:From<T> { 
         // Recursion termination conditions
         match n {
             0|1 => { return; }, // no sorting needed
@@ -41,8 +42,8 @@ impl<T> Mutops<T> for &mut[T] {
             _ => ()
             };
         // convert limits to f64 for accurate hash calculations            
-        let fmax = f64::from(max);
-        let fmin = f64::from(min);
+        let fmax = inf64(max);
+        let fmin = inf64(min);
         // hash is a precomputed factor, s.t. ((x-min)*hash).floor() subscripts will be in [0,n]
         // this is then reduced to [0,n-1] 
         let hash = n as f64 / (fmax-fmin); 
@@ -50,7 +51,7 @@ impl<T> Mutops<T> for &mut[T] {
 
         // group data items into buckets, subscripted by the data hash values
         for &xi in self.iter().skip(i).take(n) {
-            let mut hashsub = (hash*(f64::from(xi)-fmin)).floor() as usize; 
+            let mut hashsub = (hash*(inf64(xi)-fmin)).floor() as usize; 
             if hashsub == n { hashsub -= 1; };
             buckets[hashsub].push(xi);  
         };
