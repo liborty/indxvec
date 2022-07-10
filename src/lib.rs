@@ -296,6 +296,10 @@ impl From<f32> for F64 {
     fn from(s:f32) -> F64 { F64(s as f64) } 
 }
 
+impl From<f64> for F64 {
+    fn from(s:f64) -> F64 { F64(s) } 
+}
+
 /// Applies conversions, including custom, from T to F64 
 /// and unwraps to f64
 pub fn inf64<T>(arg:T) -> f64 where F64:From<T> {

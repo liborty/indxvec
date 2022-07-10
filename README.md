@@ -312,6 +312,8 @@ use indxvec::{MinMax,here,tof64};
 
 ## Release Notes (Latest First)
 
+**Version 1.2.9** - Added explicit conversion from f64 to f64, without which the methods needing F64:From<T> did not do work when T=f64. The primitive numeric types up to u64, i64, f64 varieties now all work, plus the custom lexical quantification of &str. It should be easy to add more custom ones. All this achieved without resorting to unstable `specialization` feature.
+
 **Version 1.2.8** - Enabled custom conversions of non-numeric end types, specifically &str. This is so that `hashsort` can compute its keys and sort them. Thus widening the applicability of superfast hashsort.
 
 **Version 1.2.6** - Renamed trait `Mutsort` to `Mutops`.  Renamed some `Vecops` methods for naming consistency. Made hashsort easier to use by removing the data range. Added `sorth`, equivalent to `sortm`, using hashsort instead of mergesort. Added a test.
