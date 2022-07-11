@@ -3,6 +3,12 @@ use std::iter::FromIterator;
 
 impl<T> Vecops<T> for &[T] {
 
+/// Helper function to copy and cast entire &[T] to `Vec<f64>`.
+/// Like the standard `.to_vec()` method but also recasts to f64 end type
+fn tof64(self) -> Vec<f64> where T: Copy, f64: From<T>, {
+    self.iter().map(|&x| f64::from(x)).collect()
+}
+
 /// Maximum value T of slice &[T]
 fn maxt(self) -> T where T: PartialOrd+Copy {
     let mut max = &self[0];

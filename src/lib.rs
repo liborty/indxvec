@@ -34,12 +34,6 @@ macro_rules! here {
     }};
 }
 
-/// Helper function to copy and cast entire &[T] to `Vec<f64>`.
-/// Like the standard `.to_vec()` method but also recasts to f64 end type
-pub fn tof64<T>(s: &[T]) -> Vec<f64> where T: Copy, f64: From<T>, {
-    s.iter().map(|&x| f64::from(x)).collect()
-}
-
 /// struct for minimum value, its index, maximum value, its index
 #[derive(Default)]
 pub struct MinMax<T> {
@@ -132,6 +126,8 @@ pub trait Indices {
 
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<T> {
+    /// Helper function to copy and cast entire &[T] to `Vec<f64>`. 
+    fn tof64(self) -> Vec<f64> where T: Copy, f64: From<T>;
     /// Maximum value in self
     fn maxt(self) -> T where T: PartialOrd+Copy;
     /// Minimum value in self
@@ -309,6 +305,8 @@ pub fn inf64<T>(arg:T) -> f64 where F64:From<T> {
 
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
+/// Sorts a mutable slice in place.
+ fn mutsort(self) where T: PartialOrd;
 /// mutable reversal, general utility
 fn mutrevs(self);
 /// utility that mutably swaps two indexed items into ascending order

@@ -2,6 +2,13 @@ use crate::{F64,inf64,Mutops,Vecops};
 
 impl<T> Mutops<T> for &mut[T] {
 
+    /// Sorts a mutable slice in place.
+    /// The fastest default Rust sort  
+    /// It is the responsibility of the user to ensure that there are no NaNs etc.
+    fn mutsort(self) where T: PartialOrd {
+        self.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap())
+    }
+
     /// Destructive reversal by swapping
     fn mutrevs(self) {
         let n = self.len();

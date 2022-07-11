@@ -26,7 +26,7 @@ The facilities provided are:
 * coloured pretty printing (ANSI terminal output, mainly for testing)
 * macro `here!()` for more informative errors reporting
 
-It is highly recommended to read and run `tests/tests.rs` to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order:
+It is highly recommended to read and run `tests/tests.rs` to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order. It is also necessary to tun the timing benchmark `sorts()` on its own for mewningful results.
 
 ```bash
 cargo test --release -- --test-threads=1 --nocapture --color always
@@ -312,7 +312,9 @@ use indxvec::{MinMax,here,tof64};
 
 ## Release Notes (Latest First)
 
-**Version 1.2.9** - Added explicit conversion from f64 to f64, without which the methods needing F64:From<T> did not do work when T=f64. The primitive numeric types up to u64, i64, f64 varieties now all work, plus the custom lexical quantification of &str. It should be easy to add more custom ones. All this achieved without resorting to unstable `specialization` feature.
+**Version 1.2.10** - Moved `tof64` into `Vecops` trait to act as one of its methods: `v.tof64()`. Added benchmarking function `sorts()` into `tests.rs`. It also illustrates effective use of an index sort.
+
+**Version 1.2.9** - Added explicit conversion from f64 to f64, without which the methods needing `F64:From<T>` did not do work when T=f64. The primitive numeric types up to u64, i64, f64 varieties now all work, plus the custom lexical quantification of &str. It should be easy to add more custom ones. All this achieved without resorting to unstable `specialization` feature.
 
 **Version 1.2.8** - Enabled custom conversions of non-numeric end types, specifically &str. This is so that `hashsort` can compute its keys and sort them. Thus widening the applicability of superfast hashsort.
 

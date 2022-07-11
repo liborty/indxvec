@@ -9,10 +9,11 @@ use std::convert::From;
 fn indices() {
     let midval:u8 = 128;
     set_seeds(98777777);
-    let v1 = ranvu8(20);
+    let rn = Rnum::newu8();
+    let v1 = rn.ranv(20).getvu8(); 
     let mut vm = v1.clone();
-    println!("{GR}\nv1: {}", v1.bl());  
-    let v2 = ranvu8(20);
+    println!("{GR}\nv1: {}", v1.bl()); 
+    let v2 = rn.ranv(20).getvu8(); 
     println!("{GR}v2: {}", v2.bl());    
     println!("minmax v1: {}", v1.minmax());
     println!("minmaxt v1: {GR}{:?}{UN}", v1.minmaxt()); 
@@ -58,11 +59,11 @@ fn indices() {
 
     #[test]
     fn vecops() { 
-        let midval:u8 = 128; 
-        let v1 = ranvu8(20);
-        // let mut vm = v1.clone();
+        let midval:u8 = 128;
+        let rn = Rnum::newu8();
+        let v1 = rn.ranv(20).getvu8();
         println!("{GR}\nv1: {}", v1.bl());  
-        let v2 = ranvu8(20);
+        let v2 = rn.ranv(20).getvu8();
         println!("{GR}v2: {}", v2.bl());    
     let (vm, mut vi) = v1.merge_indexed( // merge two vecs using their sort indices
         &v1.hashsort_indexed(), &v2,&v2.hashsort_indexed());  
@@ -118,8 +119,8 @@ fn text() {
 #[test]
 fn printing() {
     set_seeds(123456789);
-    let mut v1 = ranvu8(20);
-    v1.muthashsort(); 
+    let rn = Rnum::newu8();
+    let v1 = rn.ranv(20).getvu8();
     println!("\n{}",v1.rd());
     println!("\n{}",v1.gr());
     println!("\n{}",v1.yl());
@@ -134,4 +135,55 @@ fn printing() {
     v1.wvec(&mut f)
         .unwrap_or_else(|e| panic!("{} {} failed to write",here!(),e));
     println!() // blank line to mark the end of the test
+}
+
+fn onetest<F>(alg: F, v:&mut[u8], timer:&mut SimpleTimer) -> f64 where F: Fn(&mut[u8]) {
+    timer.start();  alg(v);  timer.stop();
+    timer.time_in_nanos().unwrap() as f64    
+}
+
+use devtimer::{DevTime,SimpleTimer};
+#[test]
+fn sorts()
+{ 
+    println!("\n{YL}Timing sort algorithms in nanoseconds{UN}");
+    let n = 20_usize; // number of vectors to test for each magnitude
+    let nf = n as f64;
+    set_seeds(7777777777_u64);   // intialise random numbers generator
+    let rn = Rnum::newu8();
+    let mut n_timer = DevTime::new_simple();
+    const TEST_NAMES:[&str;6] = [ "sortm","sorth","mergesort_indexed","hashsort_indexed","mutsort","muthashsort" ];
+    let test_closures = [
+        |v:&mut [u8]| { v.sortm(true); }, 
+        |v:&mut [u8]| { v.sorth(true); }, 
+        |v:&mut [u8]| { v.mergesort_indexed(); },
+        |v:&mut [u8]| { v.hashsort_indexed(); },
+        |v:&mut [u8]| { v.mutsort(); },
+        |v:&mut [u8]| { v.muthashsort(); } ];
+    // let (mut m_time, mut h_time, mut mi_time, mut hi_time, mut mh_time) = (0_u128, 0_u128, 0_u128, 0_u128, 0_u128); 
+
+    for d in [10,100,1000,10000,100000] {        
+        println!("\nTesting sorts on a set of {GR}{}{UN} random vectors of length {GR}{}{UN} each",n,d);
+        let mut times = [0_f64;TEST_NAMES.len()];
+        let mut timessq = [0_f64;TEST_NAMES.len()]; 
+
+        for _ in 0..n {
+            let mut v = rn.ranv(d).getvu8(); // random vector  
+            for (i,test) in test_closures.iter().enumerate() {
+                let this_time = onetest(test,&mut v,&mut n_timer);
+                times[i] += this_time;
+                timessq[i] += this_time.powi(2);            
+           } 
+        }
+
+        let timesx = times.hashsort_indexed();
+        let times_sorted = timesx.unindex(&times,true);
+        let names_sorted = timesx.unindex(&TEST_NAMES,true);
+        let timessq_sorted = timesx.unindex(&timessq,true);
+        
+        for i in 0..TEST_NAMES.len() {
+            println!("{GR}{:18}{:9.0} ± {:8.0}",names_sorted[i],times_sorted[i]/nf,
+            ((timessq_sorted[i]-times_sorted[i].powi(2)/nf)/nf).sqrt()); 
+        } 
+    }
 }
