@@ -34,8 +34,8 @@ macro_rules! here {
     }};
 }
 
-/// Helper function to copy and cast entire &[T] to Vec<f64>.
-/// Like the standard .to_vec() method but also recasts to f64 end type
+/// Helper function to copy and cast entire &[T] to `Vec<f64>`.
+/// Like the standard `.to_vec()` method but also recasts to f64 end type
 pub fn tof64<T>(s: &[T]) -> Vec<f64> where T: Copy, f64: From<T>, {
     s.iter().map(|&x| f64::from(x)).collect()
 }
