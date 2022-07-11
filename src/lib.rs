@@ -84,13 +84,13 @@ pub trait Printing<T> where Self: Sized {
     /// Printable in cyan
     fn cy(self) -> String { format!("{CY}{}{UN}",self.to_str()) }        
 
-    /// Method to write vector(s) to file f (without brackets). 
+    /// Method to write vector(s) to file f (space separated, without brackets). 
     /// Passes up io errors
     fn wvec(self,f:&mut File) -> Result<(), io::Error> { 
         Ok(write!(*f,"{} ", self.to_plainstr())?) 
     }
 
-    /// Method to print vector(s) to stdout (without brackets).
+    /// Method to print vector(s) to stdout (space separated,without brackets).
     fn pvec(self)  { print!("{} ", self.to_plainstr()) }
     
     /// Method to serialize generic items, slices, and slices of Vecs.

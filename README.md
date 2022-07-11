@@ -8,7 +8,7 @@
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, F64, here, tof64, inf64,printing::*, Indices,Vecops, Mutops, Printing };
+use indxvec::{ MinMax, F64, here, inf64, printing::*, Indices,Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -86,6 +86,8 @@ The methods of this trait are applicable to all generic slices `&[T]` (the data)
 ```rust
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<T> {
+    /// Helper function to copy and cast entire &[T] to `Vec<f64>`. 
+    fn tof64(self) -> Vec<f64> where T: Copy, f64: From<T>;
     /// Maximum value in self
     fn maxt(self) -> T where T: PartialOrd+Copy;
     /// Minimum value in self
@@ -201,6 +203,8 @@ This trait contains `muthashsort`, which overwrites `self` with sorted data. Whe
 ```rust
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
+/// Sorts a mutable slice in place.
+ fn mutsort(self) where T: PartialOrd;
 /// mutable reversal, general utility
 fn mutrevs(self);
 /// utility that mutably swaps two indexed items into ascending order
@@ -312,7 +316,7 @@ use indxvec::{MinMax,here,tof64};
 
 ## Release Notes (Latest First)
 
-**Version 1.2.10** - Moved `tof64` into `Vecops` trait to act as one of its methods: `v.tof64()`. Added benchmarking function `sorts()` into `tests.rs`. It also illustrates effective use of an index sort.
+**Version 1.2.10** - Moved `tof64` into `Vecops` trait to act as one of its methods: `v.tof64()`.  Added default Rust destructive sort `mutsort` to trait `Mutops`. Added benchmarking function `sorts()` into `tests.rs`. It also illustrates effective use of an index sort.
 
 **Version 1.2.9** - Added explicit conversion from f64 to f64, without which the methods needing `F64:From<T>` did not do work when T=f64. The primitive numeric types up to u64, i64, f64 varieties now all work, plus the custom lexical quantification of &str. It should be easy to add more custom ones. All this achieved without resorting to unstable `specialization` feature.
 
