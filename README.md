@@ -316,6 +316,8 @@ use indxvec::{MinMax,here,tof64};
 
 ## Release Notes (Latest First)
 
+**Version 1.2.11** - Moved the benchmark timing function to its own new crate called `times`.
+
 **Version 1.2.10** - Moved `tof64` into `Vecops` trait to act as one of its methods: `v.tof64()`.  Added default Rust destructive sort `mutsort` to trait `Mutops`. Added benchmarking function `sorts()` into `tests.rs`. It also illustrates effective use of an index sort.
 
 **Version 1.2.9** - Added explicit conversion from f64 to f64, without which the methods needing `F64:From<T>` did not do work when T=f64. The primitive numeric types up to u64, i64, f64 varieties now all work, plus the custom lexical quantification of &str. It should be easy to add more custom ones. All this achieved without resorting to unstable `specialization` feature.
