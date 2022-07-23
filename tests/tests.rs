@@ -2,9 +2,8 @@
 #![allow(dead_code)]
 #[cfg(test)]
 use indxvec::{ here, F64, printing::*, Indices, Printing, Vecops, Mutops};
-use devtimer::{DevTime,SimpleTimer};
 use ran::*;
-use times::bench;
+use times::*;
 use std::convert::From;
 
 #[test]
@@ -139,15 +138,11 @@ fn printing() {
     println!() // blank line to mark the end of the test
 }
 
-fn onetest<F>(alg: F, v:&mut[u8], timer:&mut SimpleTimer) -> f64 where F: Fn(&mut[u8]) {
-    timer.start();  alg(v);  timer.stop();
-    timer.time_in_nanos().unwrap() as f64    
-}
-
 #[test]
 fn sorts()
 { 
-    const NAMES:[&str;6] = [ "sortm","sorth","mergesort_indexed","hashsort_indexed","muthashsort","mutsort" ];
+    const NAMES:[&str;6] = 
+        [ "sortm","sorth","mergesort_indexed","hashsort_indexed","mutquicksort","muthashsort"];
     // Here we found it necessary to declare the data argument v as mutable in all closures,
     // even though only the last two require it.
     // The Rust compiler would throw a fit otherwise.
@@ -156,10 +151,11 @@ fn sorts()
         |v:&mut [u8]| { v.sorth(true); }, 
         |v:&mut [u8]| { v.mergesort_indexed(); },
         |v:&mut [u8]| { v.hashsort_indexed(); },
-        |v:&mut [u8]| { v.muthashsort(); },
-        |v:&mut [u8]| { v.mutsort(); } ];
+        |v:&mut [u8]| { v.mutquicksort(); },
+        |v:&mut [u8]| { v.muthashsort(); }
+    ];
 
     set_seeds(7777777777_u64);   // intialise the random numbers generator
     let rn = Rnum::newu8(); // specifies the type of data items
-    bench(rn,5,10,&NAMES,&closures); 
+    mutbenchu8(rn,5,10,&NAMES,&closures); 
 }

@@ -34,6 +34,13 @@ macro_rules! here {
     }};
 }
 
+/// Applies conversions, including custom, from T to F64 
+/// and unwraps to f64
+pub fn inf64<T>(arg:T) -> f64 where F64:From<T> {
+    let F64(res) = F64::from(arg);
+    res
+}
+
 /// struct for minimum value, its index, maximum value, its index
 #[derive(Default)]
 pub struct MinMax<T> {
@@ -296,17 +303,10 @@ impl From<f64> for F64 {
     fn from(s:f64) -> F64 { F64(s) } 
 }
 
-/// Applies conversions, including custom, from T to F64 
-/// and unwraps to f64
-pub fn inf64<T>(arg:T) -> f64 where F64:From<T> {
-    let F64(res) = F64::from(arg);
-    res
-}
-
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
 /// Sorts a mutable slice in place.
- fn mutsort(self) where T: PartialOrd;
+ fn mutquicksort(self) where T: PartialOrd;
 /// mutable reversal, general utility
 fn mutrevs(self);
 /// utility that mutably swaps two indexed items into ascending order

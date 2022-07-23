@@ -1,4 +1,4 @@
-use crate::{here,MinMax,F64,inf64,Indices,Vecops};
+use crate::{here,MinMax,F64,inf64,Indices,Vecops, Mutops};
 use std::iter::FromIterator;
 
 impl<T> Vecops<T> for &[T] {
@@ -867,9 +867,15 @@ fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Copy {
 /// Mergesortslice and mergesort_indexed produce only an ascending index.
 /// Sortm will produce descending data order with ascending == false.
 fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy {
+    if self.len() < 120 {  // use default Rust sort for short Vecs
+        let mut sorted = self.to_vec();
+        sorted.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap()); 
+        sorted
+    } else { 
     self
         .mergesortslice(0, self.len())
         .unindex(self, ascending)
+    }
 }
 
 /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity.
@@ -914,8 +920,8 @@ fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: Pa
 /// The range is often known. If not, it can be obtained with `minmaxt()`.
 fn hashsort_indexed(self) -> Vec<usize> 
     where T: PartialOrd+Copy, F64:From<T> { 
-    let (min,max) = self.minmaxt(); 
     let n = self.len();
+    let (min,max) = self.minmaxt();
     // create a mutable index for the result
     let mut idx = Vec::from_iter(0..n); 
     self.hashsortslice(&mut idx,0,n,min,max); // sorts idx
@@ -995,9 +1001,10 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T)
 /// Sortm will produce descending data order with ascending == false.
 fn sorth(self, ascending: bool) -> Vec<T> 
     where T: PartialOrd+Copy,F64:From<T> {
-    self
-        .hashsort_indexed()
-        .unindex(self, ascending)
+    let mut sorted = self.to_vec(); 
+    sorted.muthashsort();
+    if !ascending { sorted.mutrevs() };
+    sorted 
 }
 
 }

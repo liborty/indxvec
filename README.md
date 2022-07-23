@@ -26,7 +26,7 @@ The facilities provided are:
 * coloured pretty printing (ANSI terminal output, mainly for testing)
 * macro `here!()` for more informative errors reporting
 
-It is highly recommended to read and run `tests/tests.rs` to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order. It is also necessary to tun the timing benchmark `sorts()` on its own for mewningful results.
+It is highly recommended to read and run `tests/tests.rs` to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order. It is also necessary to tun the timing benchmark `sorts()` on its own for meaningful results.
 
 ```bash
 cargo test --release -- --test-threads=1 --nocapture --color always
@@ -220,7 +220,6 @@ fn muthashsort(self)
 fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
     where T: PartialOrd+Copy, F64:From<T>;
 }
-
 ```
 
 ## Trait `Printing`
@@ -272,7 +271,7 @@ pub trait Printing<T> {
 }
 ```
 
-The methods of this trait are implemented for generic individual items `T`, for slices `&[T]` for slices of slices `&[&[T]]` and for slices of vecs `&[Vec<T>]`. Note that these types are normally unprintable in Rust (do not have `Display` implemented).
+The methods of this trait are implemented for generic individual items `T`, for slices `&[T]` for slices of slices `&[&[T]]` and for slices of Vecs `&[Vec<T>]`. Note that these types are normally unprintable in Rust (do not have `Display` implemented).
 
 The following methods: `.to_plainstr`, `.to_str()`, `.gr()`, `.rd()`, `.yl()` `.bl()`, `.mg()`, `.cy()` convert all these types to printable strings. The colouring methods just add the relevant colouring to the formatted output of `.to_str()`.
 
@@ -304,17 +303,20 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 `memsearch` returns `Option(None)`, when `midval` is not found in `vm`. Here, `None` will be printed in red, while any found item will be printed in green. This is also an example of how to process `Option`s without the long-winded `match` statements.
 
-## Struct and utility functions
+## Structs and Utility Functions
 
 ```rust
-use indxvec::{MinMax,here,tof64};
+use indxvec::{MinMax,F64,inf64,here};
 ```
 
-* Struct `Minmax` is holds minimum and maximum values of a `Vec` and their indices.  
-* `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.  
-* `pub fn tof64<T>(s: &[T]) -> Vec<f64>...` utility that converts generic (numeric) Vecs to `Vec<f64>`.
+* `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices. 
+* `pub struct F64(pub f64)` is a wrapper for custom conversions of T to f64, needed by hashsort for non-numeric types.  
+* `pub fn inf64<T>(arg:T) -> f64 where F64:From<T>` is a utility that converts generic T type value to f64.
+* `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.2.12** - Improved some sort algorithms. Removed dev-dependence `devtimer` and updated other dependencies. Note that the `sorts()` benchmarking test needs to be run on its own. When run under `cargo -test`, together with all the other tests, its timings are unreliable.
 
 **Version 1.2.11** - Moved the benchmark timing function to its own new crate called `times`.
 

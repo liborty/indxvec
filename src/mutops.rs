@@ -5,7 +5,7 @@ impl<T> Mutops<T> for &mut[T] {
     /// Sorts a mutable slice in place.
     /// The fastest default Rust sort  
     /// It is the responsibility of the user to ensure that there are no NaNs etc.
-    fn mutsort(self) where T: PartialOrd {
+    fn mutquicksort(self) where T: PartialOrd {
         self.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap())
     }
 
@@ -31,8 +31,12 @@ impl<T> Mutops<T> for &mut[T] {
     /// Sorts mutable first argument in place
     fn muthashsort(self) 
         where T: PartialOrd+Copy, F64:From<T> {
+        let n = self.len();
+        if n < 120 {  // use default Rust sort for short Vecs
+            self.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap()); 
+            return; };
         let (min,max) = self.minmaxt();
-        self.muthashsortslice(0,self.len(),min,max);
+        self.muthashsortslice(0,n,min,max);
     }
 
     /// Does the work for `muthashsort` 
@@ -41,13 +45,6 @@ impl<T> Mutops<T> for &mut[T] {
     /// to save finding it
     fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
         where T: PartialOrd+Copy, F64:From<T> { 
-        // Recursion termination conditions
-        match n {
-            0|1 => { return; }, // no sorting needed
-            2 => { self.mutsorttwo(i,i+1); return; },
-            3 => { self.mutsortthree(i,i+1,i+2); return; },
-            _ => ()
-            };
         // convert limits to f64 for accurate hash calculations            
         let fmax = inf64(max);
         let fmin = inf64(min);
@@ -66,7 +63,7 @@ impl<T> Mutops<T> for &mut[T] {
         // isub to point at the current place in the self data
         let mut isub = i;
         // sort and copy the buckets into the self  
-        for bucket in buckets.iter() { 
+        for bucket in buckets.iter_mut() { 
             let blen = bucket.len(); // size of the current bucket    
             // up to three items in a bucket can be sorted immediately
             // println!("muthashsortslice bucket start: {} items: {}",isub,blen);  
@@ -83,10 +80,14 @@ impl<T> Mutops<T> for &mut[T] {
                     self.mutsortthree(isub,isub+1,isub+2); 
                     isub += 3;
                 },
+                x if x < 120 => { 
+                    bucket.mutquicksort(); // small buckets sorted by quicksort
+                    for item in bucket { self[isub] = *item; isub += 1; }; // copy sorted bucket to self
+                }, 
                 x if x == n => { 
                     // this bucket alone is populated, 
                     // items in it are most likely all equal
-                    // we need not copy bucket into self, as no grouping took place
+                    // we need not copy bucket into self, as no grouping to buckets took place
                     let mx = self.minmax_slice(isub, blen);
                     if mx.min < mx.max {  // not all the same
                         self.mutsorttwo(isub,mx.minindex); // swap min to the front
@@ -99,7 +100,7 @@ impl<T> Mutops<T> for &mut[T] {
                 _ => { 
                     // copy to self the grouped but as yet unsorted items from bucket
                     let isubprev = isub;
-                    for &item in bucket { self[isub] = item; isub += 1; }; 
+                    for item in bucket { self[isub] = *item; isub += 1; }; 
                     // isub-1 now points at the last copied item
                     let mx = self.minmax_slice(isubprev, blen);
                     if mx.min < mx.max { 
