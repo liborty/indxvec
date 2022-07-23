@@ -123,8 +123,6 @@ pub trait Indices {
     /// Collect values from `v` in the order of indices in self.
     fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T>
         where T:Copy;
-    /// Collects values from v, as f64s, in the order given by self index.
-    fn unindexf64<T>(self, v: &[T], ascending: bool) -> Vec<f64> where T:Copy,f64: From<T>;
     /// Correlation coefficient of two &[usize] slices. Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
     /// Potentially useful clone-recast of &[usize] to Vec<f64>

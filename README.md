@@ -65,9 +65,6 @@ pub trait Indices {
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of index in self. Or opposite order.
     fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
-    /// Collects values from v, as f64s, in the order given by self index.    
-    fn unindexf64<T: Copy>(self, v:&[T], ascending: bool) -> Vec<f64> 
-        where f64:From<T>;
     /// Pearson's correlation coefficient of two slices, typically ranks.  
     fn ucorrelation(self, v: &[usize]) -> f64;
     /// Potentially useful clone-recast of &[usize] to Vec<f64>
@@ -315,6 +312,8 @@ use indxvec::{MinMax,F64,inf64,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.2.13** - Removed no longer needed `unindexf64` from trait `Indices`.
 
 **Version 1.2.12** - Improved some sort algorithms. Removed dev-dependence `devtimer` and updated other dependencies. Note that the `sorts()` benchmarking test needs to be run on its own. When run under `cargo -test`, together with all the other tests, its timings are unreliable.
 
