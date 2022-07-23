@@ -315,7 +315,7 @@ use indxvec::{MinMax,F64,inf64,here};
 
 **Version 1.2.13** - Removed no longer needed `unindexf64` from trait `Indices`.
 
-**Version 1.2.12** - Improved some sort algorithms. Removed dev-dependence `devtimer` and updated other dependencies. Note that the `sorts()` benchmarking test needs to be run on its own. When run under `cargo -test`, together with all the other tests, its timings are unreliable.
+**Version 1.2.12** - Improved some sort algorithms. Removed dev-dependence `devtimer` and updated other dependencies. Note that the `sorts()` benchmarking test needs to be run on its own. When run under `cargo test -- --nocapture`, together with all the other tests, its timings are unreliable.
 
 **Version 1.2.11** - Moved the benchmark timing function to its own new crate called `times`.
 
