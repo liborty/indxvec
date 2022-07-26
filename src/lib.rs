@@ -71,8 +71,8 @@ where
     }
 }
 
-/// Trait to serialize slices of generic items &[T] (vectors)
-/// and slices of Vecs of generic items &[Vec<T>] (matrices).
+/// Trait to serialize slices of generic items `&[T]` (vectors)
+/// and slices of Vecs of generic items `&[Vec<T>]` (matrices).
 /// All are converted into printable strings and optionally coloured.
 /// Also, methods to serialize and render the resulting string
 /// in bold ANSI terminal colours.
@@ -121,9 +121,9 @@ pub trait Indices {
     /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
-    fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T>
-        where T:Copy;
-    /// Correlation coefficient of two &[usize] slices. Pearsons on raw data, Spearman's when applied to ranks.
+    fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T> where T:Copy;
+    /// Correlation coefficient of two &[usize] slices. 
+    /// Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
     /// Potentially useful clone-recast of &[usize] to Vec<f64>
     fn indx_to_f64(self) -> Vec<f64>;
