@@ -58,49 +58,50 @@ fn indices() {
     println!("Spearm. corr self 1: {}", v1ranks.ucorrelation(&v1ranks).gr()); // 1 for any Vec
 }
 
-    #[test]
-    fn vecops() { 
-        let midval:u8 = 128;
-        let rn = Rnum::newu8();
-        let v1 = rn.ranv(20).getvu8();
-        println!("{GR}\nv1: {}", v1.bl());  
-        let v2 = rn.ranv(20).getvu8();
-        println!("{GR}v2: {}", v2.bl());    
+#[test]
+fn vecops() { 
+    let midval:u8 = 128;
+    let rn = Rnum::newu8();
+    let v1 = rn.ranv(20).getvu8();
+    println!("{GR}\nv1: {}", v1.bl());  
+    let v2 = rn.ranv(20).getvu8();
+    println!("{GR}v2: {}", v2.bl());    
     let (vm, mut vi) = v1.merge_indexed( // merge two vecs using their sort indices
         &v1.hashsort_indexed(), &v2,&v2.hashsort_indexed());  
     println!("\nv1 and v2 appended:\n{}",vm.gr());
-    let mut sorted = vi.unindex(&vm, true);
-    println!("v1 and v2 hashsorted, merged and unindexed:\n{}", sorted.mg());
+    println!("Number of occurrences of {BL}89{UN}: {GR}{}{UN}",vm.occurs(89));  
+    println!("Number of occurrences of {BL}128{UN}: {GR}{}{UN}",vm.occurs(128));  
+    println!("Number of occurrences of {BL}199{UN}: {GR}{}{UN}",vm.revs().occurs(199));  
 
-    println!("Binsearch for {BL}{midval}{UN}, fits in sort position before: {GR}{}{UN}",
-        sorted.binsearch(midval)); // binsearch
+    let mut sorted = vi.unindex(&vm, true);    
+    println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg()); 
+    let (idx,count) = sorted.binsearch(&199);
+    println!("Binary_search for {BL}199{UN}: {GR}({},{}){UN}",idx,count); 
     println!("Binsearch_indexed for {BL}{midval}{UN}, fits in sort position before: {GR}{}{UN}",
         vm.binsearch_indexed(&vi,midval)); // binsearch_indexed
     println!("Nearest greater item from {BL}{midval}{UN} is: {GR}{}{UN}",
         vm[vi[vm.binsearch_indexed(&vi,midval)]]);
-    println!("Memsearch for {BL}{midval}{UN}, is in sorted at: {}",
-        sorted.memsearch(midval).map_or_else(||"None".rd(),|x| vi[x].gr()));
-    println!("Memsearch_indexed for {BL}199{UN}, is in sorted at: {}",
-        vm.memsearch_indexed(&vi,199).map_or_else(||"None".rd(),|x| vi[x].gr()));
-    let sorteddesc = vi.unindex(&vm, false);    
-    
-    vi.mutrevs();
+    println!("Member forwards for {BL}199{UN}, is in sorted at: {}",
+        sorted.member(199,true).map_or_else(||"None".rd(),|x| x.gr()));
+    println!("Member backwards for {BL}199{UN}, is in sorted at: {}",
+        sorted.member(199,false).map_or_else(||"None".rd(),|x| x.gr()));
+    // println!("Memsearch_indexed for {BL}199{UN}, is in sorted at: {}",
+    //    vm.memsearch_indexed(&vi,199).map_or_else(||"None".rd(),|x| x.gr()));
 
-    println!("\nThe above unindexed into descending order:\n{}", sorteddesc.mg());
-    println!("Binsearchdesc for {BL}{midval}{UN}, fits in descending before: {GR}{}{UN}",
-        sorteddesc.binsearchdesc(midval)); // binsearchdesc
+    let sorteddesc = vi.unindex(&vm, false);    
+    vi.mutrevs();
+    println!("\nThe above unindexed into descending order:\n{}", sorteddesc.mg()); 
+    let (idx,count) = sorteddesc.binsearchdesc(&199);
+    println!("Binsearchdesc for {BL}199{UN}: {GR}({},{}){UN}",idx,count); 
     println!("Binsearchdesc_indexed for {BL}{midval}{UN}, fits in descending before: {GR}{}{UN}",
         vm.binsearchdesc_indexed(&vi,midval)); // binsearch_indexed
     println!("Nearest smaller item from {BL}{midval}{UN} is: {GR}{}{UN}",
         vm[vi[vm.binsearchdesc_indexed(&vi,midval)]]);
-    println!("Memsearchdesc for {BL}161{UN}, found in descending at: {}",
-        sorteddesc.memsearchdesc(161).map_or_else(||"None".rd(),|x| x.gr()));    
-    println!("Memsearchdesc_indexed for {BL}161{UN}, found in descending
-     at: {}",
-        vm.memsearchdesc_indexed(&vi,161).map_or_else(||"None".rd(),|x| x.gr()));   
-
-    println!("\nOccurrences count of {BL}{midval}{UN}: {GR}{}{UN}",sorted.occurs(midval));
-    println!("Occurrences count of {BL}{}{UN}: {GR}{}{UN}",96,sorted.occurs_multiple(&sorteddesc,96));
+    // println!("Memsearchdesc for {BL}161{UN}, found in descending at: {}",
+    //    sorteddesc.memsearchdesc(161).map_or_else(||"None".rd(),|x| x.gr()));    
+    // println!("Memsearchdesc_indexed for {BL}161{UN}, found in descending at: {}",
+    //    vm.memsearchdesc_indexed(&vi,161).map_or_else(||"None".rd(),|x| x.gr()));  
+ 
     println!("Intersect_indexed:\n{}", vm.intersect_indexed(&vi, &v1, &v1.mergesort_indexed()).gr());
     println!("Diff_indexed:\n{}", vm.diff_indexed(&vi, &v1, &v1.mergesort_indexed()).gr());
     sorted.dedup();
@@ -157,5 +158,5 @@ fn sorts()
 
     set_seeds(7777777777_u64);   // intialise the random numbers generator
     let rn = Rnum::newu8(); // specifies the type of data items
-    mutbenchu8(rn,5,10,&NAMES,&closures); 
+    mutbenchu8(rn,4,10,&NAMES,&closures); 
 }

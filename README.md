@@ -5,10 +5,13 @@
 [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec)
 [<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec)
 
+Vecs indexing, ranking, sorting, merging, searching, reversing, 
+intersecting, printing, etc.
+
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, F64, here, inf64, printing::*, Indices,Vecops, Mutops, Printing };
+use indxvec::{ MinMax, F64, here, inf64, printing::*, Indices, Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -313,6 +316,8 @@ use indxvec::{MinMax,F64,inf64,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.2.14** - Removed spurious newline from printing matrices. Updated `times` dependency.
+
 **Version 1.2.13** - Removed no longer needed `unindexf64` from trait `Indices`.
 
 **Version 1.2.12** - Improved some sort algorithms. Removed dev-dependence `devtimer` and updated other dependencies. Note that the `sorts()` benchmarking test needs to be run on its own. When run under `cargo test -- --nocapture`, together with all the other tests, its timings are unreliable.
@@ -338,21 +343,3 @@ use indxvec::{MinMax,F64,inf64,here};
 **Version 1.2.1** - Removed the functions module `merge.rs`, it has been replaced by traits `Vecops` and `Mutsort`. Improved hashsorts. Added some more comments. Added short glossary.
 
 **Version 1.2.0** - Changed functions in module `merge.rs` to trait methods in two new traits: `Vecops` and `Mutsort`. Applying trait methods is more idiomatic and easier to read when chained. Narrowed down some trait constraints. Kept the old functions for now for backwards compatibility but they will be removed in the next version to save space.
-
-**Version 1.1.9** - Added method `to_plainstr()` to `Printing` trait to ease writing plain format to files.
-
-**Version 1.1.8** - Added method `pvec(self)` to `Printing` trait. It prints `Vec`s to `stdout`. Completed all six ANSI terminal primary bold colours. Moved their constants to module `printing.rs`. Renamed `red()` to `rd()` for consistent two letter names. Updated and reorganised readme.
-
-**Version 1.1.7** - Added method `wvec(self,&mut f)` to Printing. It writes vectors to file f and passes up errors. Added colour `bl()`. Added printing test. Prettier readme.md.
-
-**Version 1.1.6** - Added simple `partition` into three sets (lt,eq,gt).
-
-**Version 1.1.5** - Updated dev dependency to ran = "^0.3". Changed `partition_indexed` to include equal set. Tweaked printing layout.
-
-**Version 1.1.4** - Minor change: `hashsort` min,max arguments type changed from T to  f64. This is more convenient for a priori known data range limits. Also to be the same as for `hashsort_indexed`. Added `newindex` and `minmax_slice` functions. Updated readme file.
-
-**Version 1.1.3** - `hashsort` renamed to `hashsort_indexed`, in keeping with the naming convention here. New plain `hashsort` added: it sorts `&mut[T]` in place, just like does the default Rust sort. Suitable for long explicit sorts.
-
-**Version 1.1.2** - Added `.red()` method to `Printing`. Some tidying up of `tests.rs` and the docs. `hashsort` improved.
-
-**Version 1.1.0** - Added superfast n-recursive `hashsort`. Suitable for multithreading (to do).

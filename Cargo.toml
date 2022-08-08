@@ -1,9 +1,9 @@
 [package]
 name = "indxvec"
-version = "1.2.13"
+version = "1.2.14"
 authors = ["Libor Spacek"]
 edition = "2021"
-description = """Efficiently sorting, merging, ranking, searching, reversing, intersecting, etc."""
+description = "Vecs sorting, merging, indexing, ranking, searching, reversing, intersecting, printing, etc."
 readme = "README.md"
 homepage = "https://github.com/liborty/indxvec"
 repository = "https://github.com/liborty/indxvec"
@@ -22,4 +22,4 @@ maintenance = { status = "actively-developed" }
 [lib]
 [dev-dependencies]
 ran = "^1"
-times = "^0"
+times = "^1"

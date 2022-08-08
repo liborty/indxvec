@@ -1,227 +1,195 @@
 use crate::{here,MinMax,F64,inf64,Indices,Vecops, Mutops};
-use std::cmp::Ordering;
-//use std::iter::FromIterator;
+use std::iter::FromIterator;
 
 impl<T> Vecops<T> for &[T] {
 
-/// Helper function to copy and cast entire &[T] to `Vec<f64>`.
-/// Like the standard `.to_vec()` method but also recasts to f64 end type
-fn tof64(self) -> Vec<f64> where T: Copy, f64: From<T>, {
-    self.iter().map(|&x| f64::from(x)).collect()
-}
-
-/// Maximum value T of slice &[T]
-fn maxt(self) -> T where T: PartialOrd+Copy {
-    let mut max = &self[0];
-    self.iter().skip(1).for_each(|s| {
-        if s > max { max = s }
-    });
-    *max
-}
-
-/// Minimum value T of slice &[T]
-fn mint(self) -> T where T: PartialOrd+Copy {
-    let mut min = &self[0];
-    self.iter().skip(1).for_each(|s| {
-        if s < min { min = s }
-    });
-    *min
-}
-
-/// Minimum and maximum (T,T) of a slice &[T]
-fn minmaxt(self) -> (T, T) where T: PartialOrd+Copy {
-    let mut x1 = self[0];
-    let mut x2 = x1;
-    self.iter().skip(1).for_each(|&s| {
-        if s < x1 { x1 = s } 
-        else if s > x2 { x2 = s };
-    });
-    (x1, x2)
-}
-
-/// Minimum, minimum's first index, maximum, maximum's first index
-fn minmax(self) -> MinMax<T> where T: PartialOrd+Copy {
-    let mut min = self[0];
-    let mut max = min; // initialise both to the first item
-    let (mut minindex, mut maxindex) = (0, 0); // indices of min, max
-    self.iter().enumerate().skip(1).for_each(|(i, &x)| {
-        if x < min { min = x; minindex = i; } 
-        else if x > max { max = x; maxindex = i }
-    });
-    MinMax {
-        min,
-        minindex,
-        max,
-        maxindex,
-    }
-}
-
-/// Finds min and max of a subset of self, defined by its subslice between i,i+n.
-/// Returns min of self, its index, max of self, its index.
-fn minmax_slice(self, i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Copy {
-    let mut min = self[i];
-    let mut max = min;
-    let mut minindex = i; // indices of min, max 
-    let mut maxindex = minindex;
-    for (j,&x) in self.iter().enumerate().skip(i+1).take(n-1) {
-        if x < min { min = x; minindex = j; } 
-        else if x > max { max = x; maxindex = j; };
-    };
-    MinMax { min, minindex, max, maxindex }
-}
-
-/// Using only a subset of self, defined by its idx subslice between i,i+n.
-/// Returns min of self, its index's index, max of self, its index's index.
-fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
-    where T: PartialOrd+Copy {
-    let mut min = self[idx[i]];
-    let mut max = min;
-    let mut minix = 0; // indices of indices of min, max 
-    let mut maxix = minix;
-    for (ii,&ix) in idx.iter().enumerate().skip(i+1).take(n-1) {
-        if self[ix] < min { min = self[ix]; minix = ii; } 
-        else if self[ix] > max { max = self[ix]; maxix = ii; };
-    };
-    MinMax { min, minindex:minix, max, maxindex:maxix }
-}
-
-/// Reverse a generic slice by reverse iteration.
-/// Creates a new Vec. Its naive use for descending sort etc.
-/// is to be avoided for efficiency reasons.
-fn revs(self) -> Vec<T> where T: Copy {
-    self.iter().rev().copied().collect::<Vec<T>>()
-}
-
-/// Removes repetitions from an explicitly ordered set.
-fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy { 
-    if self.len() < 2 { return self.to_vec(); };
-    let mut r: Vec<T> = Vec::new();
-    let mut last: T = self[0];
-    r.push(last);
-    self.iter().skip(1).for_each(|&si| {
-        if si != last { last = si; r.push(si) }
-    });
-    r
-}
-
-/// Finds the first/last occurence of item `m` in self by forward/backward iteration.
-/// Returns `Some(index)` of the found item or `None`.
-/// Suitable for small unordered lists.
-/// For longer lists, it is better to sort them and use `memsearch` (see below).
-/// For repeated tests, index sort first and then use memsearch_indexed. 
-fn member(self,m: T,forward: bool) -> Option<usize> where T: PartialEq+Copy {
-    if forward {
-        for (i, &x) in self.iter().enumerate() { 
-            if x == m { return Some(i); }; 
-        };
-        None
-    } 
-    else {
-        for (i, &x) in self.iter().rev().enumerate() { 
-            if x == m { return Some(self.len()-i-1); }; 
-        };
-        None
-    }
-}
-
-/// Binary search of an explicitly sorted list in ascending order.
-/// Returns an index and the total number of occurrences.
-/// When the latter is zero, val was not found and the index is where val belongs in sort order.
-/// Otherwise the index points to the first occurrence.
-/// The complement index (the result subtracted from s.len()), gives
-/// the first item in descending order that is not greater than val.
-/// Note that both complements of binsearch and binsearchdesc,
-/// in their respective opposite orderings, refer to the same preceding item
-/// iff there exists precisely one item equal to val.
-/// However, there can be more than one such items, or none.
-fn binsearch(self, val: &T) -> (usize,usize) where T: PartialOrd {
+/// Binary search of an explicitly sorted list (in ascending order).
+/// Returns `Some(index)` of any item that is equal to val.
+/// When none are found, returns `None`.
+/// Example use: membership of an ascending ordered set.
+fn memsearch(self, val: T) -> Option<usize> where T: PartialOrd {
     let n = self.len();
-    if n == 0 { return(0,0); }; // empty self, val could be inserted at index 0
-    let mut hi = n - 1; // initial high index
-    if val > &self[0] {}
-    else { // val is less than or partially equal to first item
-        let mut count = 0_usize; // initially no matches
-        for s in self.iter() { // count matching items (until s is greater)
-            if val < s { break; } else { count += 1; };
-        };
-        return(0,count);
-    };
-    if val < &self[hi] {}
-    else { 
-        let mut count = 0_usize;
-        for s in self.iter().rev() { // count down items until s is less
-            if val > s { break; } else { count += 1; };
-        };
-        return(n-count,count);
-    };
-    let mut lo = 0; // initial low index
+    if n == 0 { return None; } // the slice s is empty
+    if n == 1 {
+        // the slice contains a single item
+        if self[0] == val { return Some(0); }
+        else { return None; }
+    }
+    let mut lo = 0_usize; // initial index of the low limit
+    if val < self[lo] {
+        return None;
+    } // val is smaller than the smallest item in self
+    let mut hi = n - 1; // index of the last item
+    if self[hi] < val {
+        return None;
+    }; // val exceeds the greatest item in self
     loop {
-        let mid = (lo + hi) / 2; // binary chop here
-        if mid > lo {
-            match val.partial_cmp(&self[mid]) {
-                Some(Ordering::Less) => hi = mid,
-                Some(Ordering::Greater) => lo = mid,
-                _ => { // match, termination
-                    let mut upcount = 0_usize; // initially no matches
-                    for s in self.iter().skip(mid) { // count matching items (until s is greater)
-                        if val < s { break; } else { upcount += 1; };
-                    };
-                    let mut downcount = 0_usize; // initially no matches
-                    for s in self.iter().take(mid).rev() { // count down items until s is less
-                        if val > s { break; } else { downcount += 1; };
-                    };
-                    return(mid-downcount,upcount+downcount);            
-                }
-            };
+        let gap = hi - lo;
+        if gap <= 1 {
+            return None;
+        } // termination, nothing left in the middle
+        let mid = hi - gap / 2;
+        // if mid's value is greater than val, reduce the high index to it
+        if self[mid] > val {
+            hi = mid;
+            continue;
         }
-        else { return(hi,0) }; 
+        // if mid's value is smaller than val, raise the low index to it
+        if self[mid] < val {
+            lo = mid;
+            continue;
+        }
+        return Some(mid); // otherwise found it!
     }
 }
 
-fn binsearchdesc(self, val: &T) -> (usize,usize) where T: PartialOrd {
+/// Binary search of an explicitly sorted list (in descending order).
+/// Returns `Some(index)` of any item that is
+/// neither smaller nor greater than val.
+/// When none are found, returns `None`.
+/// Example use: membership of a descending ordered set.
+fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd {
     let n = self.len();
-    if n == 0 { return(0,0); }; // empty self, val could be inserted at index 0
-    let mut hi = n - 1; // initial high index
-    if val < &self[0] {} // is somewhere further on
-    else { // val is gt than or partially equal to first item
-        let mut count = 0_usize; // initially no matches
-        for s in self.iter() { // count matching items (until s is lt)
-            if val > s { break; } else { count += 1; };
-        };
-        return(0,count);
-    };
-    if val > &self[hi] { }
-    else {
-        let mut count = 0_usize;
-        for s in self.iter().rev() { // count down items until s is gt
-            if val < s { break; } else { count += 1; };
-        };
-        return(n-count,count);
-    };
-    let mut lo = 0_usize; // initial low index
-    loop {
-        let mid = (lo + hi) / 2; // binary chop here
-        if mid > lo {
-            match val.partial_cmp(&self[mid]) {
-                Some(Ordering::Less) => lo = mid,
-                Some(Ordering::Greater) => hi = mid,
-                _ => { // match, termination
-                    let mut upcount = 0_usize; // initially no matches
-                    for s in self.iter().skip(mid) { // count matching items (until s is less)
-                        if val > s { break; } else { upcount += 1; };
-                    };
-                    let mut downcount = 0_usize; // initially no matches
-                    for s in self.iter().take(mid).rev() { // count down items until s is greater
-                        if val < s { break; } else { downcount += 1; };
-                    };
-                    return(mid-downcount,upcount+downcount);            
-                }
-            };
+    if n == 0 {
+        return None;
+    } // the slice s is empty
+    if n == 1 {
+        // the slice contains a single item
+        if self[0] < val {
+            return None;
         }
-        else { return(hi,0) }; 
+        if self[0] > val {
+            return None;
+        }
+        return Some(0);
+    }
+    let mut lo = n - 1; // initial index of the low limit
+    if val < self[lo] {
+        return None;
+    } // val is smaller than the smallest item in s
+    let mut hi = 0_usize; // index of the last item
+    if val > self[hi] {
+        return None;
+    }; // val exceeds the greatest item in s
+    loop {
+        let gap = lo - hi;
+        if gap <= 1 {
+            return None;
+        } // termination, nothing left in the middle
+        let mid = lo - gap / 2;
+        // if mid's value is greater than val, increase the high index to it
+        if self[mid] > val {
+            hi = mid;
+            continue;
+        }
+        // if mid's value is smaller than val, lower the low index to it
+        if self[mid] < val {
+            lo = mid;
+            continue;
+        }
+        return Some(mid); // otherwise found it!
     }
 }
 
+/// Binary search of an indexed list (in ascending order).
+/// Just like `memsearch` but uses sort index instead of explicitly sorted list. 
+/// Returns `Some(index)` into the sort order, of any item that is
+/// neither smaller nor greater than val. 
+/// Its position in the original unsorted data is: i[index].
+/// When none are found, returns `None`.
+/// Example use: membership of an indexed ordered set.
+fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> 
+    where T: PartialOrd {
+    let n = self.len();
+    if n == 0 {
+        return None;
+    } // the slice s is empty
+    if n == 1 {
+        // the slice contains a single item
+        if self[0] < val {
+            return None;
+        }
+        if self[0] > val {
+            return None;
+        }
+        return Some(0);
+    }
+    let mut lo = 0_usize; // initial index of the low limit
+    if val < self[i[lo]] {
+        return None;
+    } // val is smaller than the smallest item in s
+    let mut hi = n - 1; // index of the last item
+    if self[i[hi]] < val {
+        return None;
+    }; // val exceeds the greatest item in s
+    loop {
+        let gap = hi - lo;
+        if gap <= 1 {
+            return None;
+        } // termination, nothing left in the middle
+        let mid = hi - gap / 2;
+        // if mid's value is greater than val, reduce the high index to it
+        if self[i[mid]] > val {
+            hi = mid;
+            continue;
+        }
+        // if mid's value is smaller than val, raise the low index to it
+        if self[i[mid]] < val {
+            lo = mid;
+            continue;
+        }
+        return Some(mid); // otherwise found it!
+    }
+}
+
+/// Binary search of an indexed list (in descending order).
+/// Just like `memsearchdesc` but uses descending sort index instead of explicitly sorted list. 
+/// Returns `Some(index)` (in desc. order) of any item that is neither smaller nor greater than val.
+/// Its position in the original unsorted data is: i[index].
+/// To find the member position in the original unsorted data, simply use i[index].
+/// When none are found, returns `None`.
+fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd {
+    let n = self.len();
+    if n == 0 {
+        return None;
+    } // the slice s is empty
+    if n == 1 {
+        // the slice contains a single item
+        if self[0] < val {
+            return None;
+        }
+        if self[0] > val {
+            return None;
+        }
+        return Some(0);
+    }
+    let mut lo = n - 1; // initial index of the low limit
+    if val < self[i[lo]] {
+        return None;
+    } // val is smaller than the smallest item in s
+    let mut hi = 0_usize; // index of the last item
+    if self[i[hi]] < val {
+        return None;
+    }; // val exceeds the greatest item in s
+    loop {
+        let gap = lo - hi;
+        if gap <= 1 {
+            return None;
+        } // termination, nothing left in the middle
+        let mid = lo - gap / 2;
+        // if mid's value is greater than val, reduce the high index to it
+        if self[i[mid]] > val {
+            hi = mid;
+            continue;
+        }
+        // if mid's value is smaller than val, raise the low index to it
+        if self[i[mid]] < val {
+            lo = mid;
+            continue;
+        }
+        return Some(mid); // otherwise found it!
+    }
+}
 
 /// Binary search of an index sorted list in ascending order.
 /// Returns a sort index of the first item that is greater than val.
@@ -234,6 +202,7 @@ fn binsearchdesc(self, val: &T) -> (usize,usize) where T: PartialOrd {
 /// in their respective opposite orderings, refer to the same preceding item
 /// iff there exists precisely one item equal to val.
 /// However, there can be more than one such items or none.
+/// Example use: looking up cummulative probability density functions.
 fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd {
     let n = self.len();
     if n == 0 {
@@ -274,6 +243,7 @@ fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd {
 /// in their respective opposite orderings, refer to the same preceding item
 /// iff there exists precisely one item equal to val.
 /// However, there can be more than one such items or none.
+/// Example use: looking up cummulative probability density functions.
 fn binsearchdesc_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd {
     let n = self.len();
     if n == 0 {
@@ -312,6 +282,27 @@ fn occurs(self, val:T) -> usize where T: PartialOrd {
         count += 1;
     };
     count
+}
+
+/// Counts occurrences of val, in explicitly sorted data.
+/// This is to facilitate counting of many
+/// different values without having to repeat the sorting.
+/// This function is efficient at finding and counting
+/// numerous repetitions in large sets (e.g. when computing probabilities).
+/// Binary search is deployed: O(2log(n)).
+fn occurs_sorted(self, val:&T) -> (usize,usize) where T:Ord+Copy { 
+    match self.binary_search(val) {
+        Ok(x) => {
+            let mut count = 1_usize; // found item is the first occurrence
+            for s in self.iter().skip(x+1) {
+                if s == val { count += 1; } else { break; };
+            };
+            let mut idx = x; // the lowest index so far
+            for s in self.iter().take(x).rev() {
+                if s == val { count += 1; idx -= 1; } else { break; };
+            };
+            (idx,count) },
+        Err(x) => (x,0) }
 }
 
 /// Unites (joins) two unsorted sets. For union of sorted sets, use `merge`
@@ -815,5 +806,4 @@ fn sorth(self, ascending: bool) -> Vec<T>
     if !ascending { sorted.mutrevs() };
     sorted 
 }
-
 }

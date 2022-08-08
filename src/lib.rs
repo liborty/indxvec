@@ -1,7 +1,6 @@
 #![warn(missing_docs)]
-//! Statistics, Vector Algebra, 
-//! Characterising Multidimensional Data, Machine Learning,
-//! Data Analysis
+//! Vecs indexing, ranking, sorting, merging, searching, reversing, 
+//! intersecting, printing, etc.
 
 /// Implementation of trait Indices for `&[usize]`
 pub mod indices; 
@@ -13,11 +12,51 @@ pub mod vecops;
 /// Implementation of trait Mutops for `&mut[T]`
 pub mod mutops;
 
-
 use std::io;
 use std::io::Write;
 use std::fs::File;
 use printing::*;
+
+use std::fmt;
+use std::error::Error;
+use std::thread::AccessError;
+use std::fmt::{Debug,Display};
+
+#[derive(Debug)]
+/// Custom Indxvec Error
+pub enum IErr<T> where T:Sized+Debug {
+    /// Error indicating that insufficient data has been supplied
+    NoDataError(T),
+    /// Error indicating that a wrong kind/size of data has been supplied
+    DataError(T),
+    /// Error indicating an invalid result, such as an attempt at division by zero
+    ArithError(T),
+    /// Other error converted to IErr
+    OtherError(T)
+}
+
+/// Shorthand type for returned errors with message payload
+pub type IE = IErr<&'static str>;
+
+impl<T> Error for IErr<T> where T:Sized+Debug+Display {}
+
+impl<T> fmt::Display for IErr<T> where T:Sized+Debug+Display {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            IErr::NoDataError(s) => write!(f,"Missing or insufficient data: {}",s),
+            IErr::DataError(s) => write!(f,"Wrong data: {}",s),
+            IErr::ArithError(s) => write!(f,"Arithmetic error: {}",s),
+            IErr::OtherError(s) => write!(f,"Converted from {}",s)
+        }
+    }
+}
+
+/// Example 'From' implementation for converting to RError
+impl From<AccessError> for IErr<& 'static str> {
+    fn from(_: AccessError) -> Self {
+        IErr::OtherError("AccessError")
+    }
+}
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
@@ -151,25 +190,11 @@ pub trait Vecops<T> {
     /// Repeated items removed
     fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy;
     /// Some(subscript) of the first occurence of m, or None
-    fn member(self, m: T) -> Option<usize> where T: PartialEq+Copy;
-    /// Binary search for the subscript of the first occurence of val
-    fn memsearch(self, val: T) -> Option<usize> where T: PartialOrd;
-    /// Binary search for the subscript of the last occurence of val
-    fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd;
-    /// Binary search for val via ascending sort index i, 
-    /// returns subscript of val
-    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> where T:PartialOrd;
-    /// Backwards binary search for val via descending sort index i,
-    /// returns subscript of val 
-    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd;
+    fn member(self, m:T, forward:bool) -> Option<usize> where T: PartialEq+Copy;
     /// Binary search of an explicitly sorted list in ascending order.
-    /// Returns subscript of the first item that is greater than val.
-    /// When none are greater, returns s.len()
-    fn binsearch(self, val: T) -> usize where T: PartialOrd;
+    fn binsearch(self, val:&T) -> (usize,usize) where T: PartialOrd;
     /// Binary search of an explicitly sorted list in descending order.
-    /// Returns subscript of the first item that is smaller than val.
-    /// When none are smaller, returns s.len() 
-    fn binsearchdesc(self, val: T) -> usize where T: PartialOrd;
+    fn binsearchdesc(self, val:&T) -> (usize,usize) where T: PartialOrd;
     /// Binary search of an index sorted list in ascending order.
     /// Returns subscript of the first item that is greater than val.
     fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
@@ -178,8 +203,6 @@ pub trait Vecops<T> {
     fn binsearchdesc_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
     /// Counts occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
-    /// Efficiently counts number of occurences from ascending and descending sorts
-    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
     /// Unites (concatenates) two unsorted slices. For union of sorted slices, use `merge`
     fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
     /// Unites two ascending index-sorted slices.
