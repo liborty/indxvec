@@ -75,8 +75,7 @@ fn vecops() {
 
     let mut sorted = vi.unindex(&vm, true);    
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg()); 
-    let (idx,count) = sorted.binsearch(&199);
-    println!("Binary_search for {BL}199{UN}: {GR}({},{}){UN}",idx,count); 
+    println!("Binary_search for {BL}199{UN}: {}",sorted.binsearch(&199,true)); 
     println!("Binsearch_indexed for {BL}{midval}{UN}, fits in sort position before: {GR}{}{UN}",
         vm.binsearch_indexed(&vi,midval)); // binsearch_indexed
     println!("Nearest greater item from {BL}{midval}{UN} is: {GR}{}{UN}",
@@ -91,8 +90,7 @@ fn vecops() {
     let sorteddesc = vi.unindex(&vm, false);    
     vi.mutrevs();
     println!("\nThe above unindexed into descending order:\n{}", sorteddesc.mg()); 
-    let (idx,count) = sorteddesc.binsearchdesc(&199);
-    println!("Binsearchdesc for {BL}199{UN}: {GR}({},{}){UN}",idx,count); 
+    println!("Binsearch for {BL}199{UN}: {}",sorteddesc.binsearch(&199,false)); 
     println!("Binsearchdesc_indexed for {BL}{midval}{UN}, fits in descending before: {GR}{}{UN}",
         vm.binsearchdesc_indexed(&vi,midval)); // binsearch_indexed
     println!("Nearest smaller item from {BL}{midval}{UN} is: {GR}{}{UN}",

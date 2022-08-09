@@ -80,6 +80,22 @@ pub fn inf64<T>(arg:T) -> f64 where F64:From<T> {
     res
 }
 
+#[derive(Default)]
+/// Item(s) found in a sorted slice
+pub struct Found {
+    /// index of a sort position
+    pub index: usize,
+    /// number of PartialEq items starting at index; can be zero
+    pub count: usize 
+}
+/// Display implementation for Found struct
+impl std::fmt::Display for Found
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "index: {GR}{}{UN}, count: {GR}{}{UN}", self.index, self.count )
+    }
+}
+
 /// struct for minimum value, its index, maximum value, its index
 #[derive(Default)]
 pub struct MinMax<T> {
@@ -192,9 +208,9 @@ pub trait Vecops<T> {
     /// Some(subscript) of the first occurence of m, or None
     fn member(self, m:T, forward:bool) -> Option<usize> where T: PartialEq+Copy;
     /// Binary search of an explicitly sorted list in ascending order.
-    fn binsearch(self, val:&T) -> (usize,usize) where T: PartialOrd;
-    /// Binary search of an explicitly sorted list in descending order.
-    fn binsearchdesc(self, val:&T) -> (usize,usize) where T: PartialOrd;
+    fn binsearch(self, val:&T, ascending:bool) -> Found where T: PartialOrd;
+    // Binary search of an explicitly sorted list in descending order.
+    // fn binsearchdesc(self, val:&T) -> Found where T: PartialOrd;
     /// Binary search of an index sorted list in ascending order.
     /// Returns subscript of the first item that is greater than val.
     fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;

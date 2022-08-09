@@ -1,5 +1,4 @@
-use crate::{here,MinMax,F64,inf64,Indices,Vecops, Mutops};
-use std::cmp::Ordering;
+use crate::{here,Found,MinMax,F64,inf64,Indices,Vecops, Mutops};
 //use std::iter::FromIterator;
 
 impl<T> Vecops<T> for &[T] {
@@ -124,60 +123,52 @@ fn member(self,m: T,forward: bool) -> Option<usize> where T: PartialEq+Copy {
     }
 }
 
-/// Binary search of an explicitly sorted list in ascending order.
-/// Returns an index and the total number of occurrences.
-/// When the latter is zero, val was not found and the index is where val belongs in sort order.
-/// Otherwise the index points to the first occurrence.
-/// The complement index (the result subtracted from s.len()), gives
-/// the first item in descending order that is not greater than val.
-/// Note that both complements of binsearch and binsearchdesc,
-/// in their respective opposite orderings, refer to the same preceding item
-/// iff there exists precisely one item equal to val.
-/// However, there can be more than one such items, or none.
-fn binsearch(self, val: &T) -> (usize,usize) where T: PartialOrd {
+/// Binary search of an explicitly sorted list in ascending or descending order.
+/// Returns Found{index:usize,count:usize}.
+/// `index` is where val is or could be inserted in the given sort order.
+/// `count` is the number of occurrences of val found.
+/// When `count` is zero, val was not found but its sort `index` is still given
+fn binsearch(self, val: &T, ascending:bool ) -> Found where T: PartialOrd {
+    let pcomp = if ascending { |a:&T,b:&T| a > b } else { |a:&T,b:&T| a < b };
     let n = self.len();
-    if n == 0 { return(0,0); }; // empty self, val could be inserted at index 0
+    if n == 0 { return Found::default(); }; // empty self, val could be inserted at index 0
     let mut hi = n - 1; // initial high index
-    if val > &self[0] {}
-    else { // val is less than or partially equal to first item
+    if !pcomp(val,&self[0]) { // val is before or partially equal to the first item
         let mut count = 0_usize; // initially no matches
-        for s in self.iter() { // count matching items (until s is greater)
-            if val < s { break; } else { count += 1; };
+        for s in self.iter() { // count up all matching items 
+            if pcomp(s,val) { break; } else { count += 1; };
         };
-        return(0,count);
+        return Found{index:0,count};
     };
-    if val < &self[hi] {}
-    else { 
+    if !pcomp(&self[hi],val) { // val is after or partially equal to the last item
         let mut count = 0_usize;
-        for s in self.iter().rev() { // count down items until s is less
-            if val > s { break; } else { count += 1; };
+        for s in self.iter().rev() { // count down all matching items
+            if pcomp(val,s) { break; } else { count += 1; };
         };
-        return(n-count,count);
+        return Found{index:n-count,count};
     };
     let mut lo = 0; // initial low index
     loop {
         let mid = (lo + hi) / 2; // binary chop here
         if mid > lo {
-            match val.partial_cmp(&self[mid]) {
-                Some(Ordering::Less) => hi = mid,
-                Some(Ordering::Greater) => lo = mid,
-                _ => { // match, termination
-                    let mut upcount = 0_usize; // initially no matches
-                    for s in self.iter().skip(mid) { // count matching items (until s is greater)
-                        if val < s { break; } else { upcount += 1; };
-                    };
-                    let mut downcount = 0_usize; // initially no matches
-                    for s in self.iter().take(mid).rev() { // count down items until s is less
-                        if val > s { break; } else { downcount += 1; };
-                    };
-                    return(mid-downcount,upcount+downcount);            
-                }
+            if pcomp(val,&self[mid]) { lo = mid; continue; };
+            if pcomp(&self[mid],val) { hi = mid; continue; }; 
+            // neither greater nor smaller, hence we found a match
+            let mut upcount = 0_usize; // initially no matches
+            for s in self.iter().skip(mid) { // count up matching items
+                if pcomp(s,val) { break; } else { upcount += 1; }; 
             };
+            let mut downcount = 0_usize; // initially no matches
+            for s in self.iter().take(mid).rev() { // count down matching items
+                if pcomp(val,s) { break; } else { downcount += 1; }; 
+            };
+            return Found{index:mid-downcount,count:upcount+downcount};            
         }
-        else { return(hi,0) }; 
+        else { return Found{ index:hi,count:0 } }; // interval gone, not found
     }
 }
 
+/*
 fn binsearchdesc(self, val: &T) -> (usize,usize) where T: PartialOrd {
     let n = self.len();
     if n == 0 { return(0,0); }; // empty self, val could be inserted at index 0
@@ -221,7 +212,7 @@ fn binsearchdesc(self, val: &T) -> (usize,usize) where T: PartialOrd {
         else { return(hi,0) }; 
     }
 }
-
+*/
 
 /// Binary search of an index sorted list in ascending order.
 /// Returns a sort index of the first item that is greater than val.
