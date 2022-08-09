@@ -11,7 +11,7 @@ intersecting, printing, etc.
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, F64, here, inf64, printing::*, Indices, Vecops, Mutops, Printing };
+use indxvec::{ Found, MinMax, F64, here, inf64, printing::*, Indices, Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -84,7 +84,6 @@ use indxvec::{Vecops};
 The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Copy`, are  implemented for `T`.
 
 ```rust
-/// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<T> {
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`. 
     fn tof64(self) -> Vec<f64> where T: Copy, f64: From<T>;
@@ -97,44 +96,28 @@ pub trait Vecops<T> {
     /// Returns MinMax{min, minindex, max, maxindex}
     fn minmax(self) -> MinMax<T> where T: PartialOrd+Copy;
     /// MinMax of n items starting at subscript i
-    fn minmax_slice(self,i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Copy;
-    /// MinMax of a subset of self, defined by its idx subslice between i,i+n.
-    fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) ->
-     MinMax<T> where T: PartialOrd+Copy;
+    fn minmax_slice(self,i:usize, n:usize) -> MinMax<T>
+        where T: PartialOrd+Copy;
+    /// MinMax of a subset of self in range i..n
+    fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
+        where T: PartialOrd+Copy;
     /// Reversed copy of self
     fn revs(self) -> Vec<T> where T: Copy;
     /// Repeated items removed
     fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy;
     /// Some(subscript) of the first occurence of m, or None
-    fn member(self, m: T) -> Option<usize> where T: PartialEq+Copy;
-    /// Binary search for the subscript of the first occurence of val
-    fn memsearch(self, val: T) -> Option<usize> where T: PartialOrd;
-    /// Binary search for the subscript of the last occurence of val
-    fn memsearchdesc(self, val: T) -> Option<usize> where T:PartialOrd;
-    /// Binary search for val via ascending sort index i, 
-    /// returns subscript of val
-    fn memsearch_indexed(self, i: &[usize], val: T) -> Option<usize> where T:PartialOrd;
-    /// Backwards binary search for val via descending sort index i,
-    /// returns subscript of val 
-    fn memsearchdesc_indexed(self, i: &[usize], val: T) -> Option<usize> where T: PartialOrd;
-    /// Binary search of an explicitly sorted list in ascending order.
-    /// Returns subscript of the first item that is greater than val.
-    /// When none are greater, returns s.len()
-    fn binsearch(self, val: T) -> usize where T: PartialOrd;
-    /// Binary search of an explicitly sorted list in descending order.
-    /// Returns subscript of the first item that is smaller than val.
-    /// When none are smaller, returns s.len() 
-    fn binsearchdesc(self, val: T) -> usize where T: PartialOrd;
-    /// Binary search of an index sorted list in ascending order.
-    /// Returns subscript of the first item that is greater than val.
-    fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
-    /// Binary search of an index sorted list in descending order.
-    /// Returns subscript of the first item that is smaller than val (in descending order). 
-    fn binsearchdesc_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
-    /// Counts occurrences of val by simple linear search of an unordered set
+    fn member(self, m:T, forward:bool) -> Option<usize>
+        where T: PartialEq+Copy;
+    /// Binary search of a slice in ascending or descending order.
+    fn binsearch(self, val:&T, ascending:bool) -> Found 
+        where T: PartialOrd;
+    /// Binary search of an index sorted slice in ascending or descending order. 
+    /// Like binsearch but using indirection via idx.
+    fn binsearch_indexed(self, idx:&[usize], val:&T, ascending:bool) -> Found 
+        where T: PartialOrd;
+    /// Counts partially equal occurrences of val 
+    /// by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
-    /// Efficiently counts number of occurences from ascending and descending sorts
-    fn occurs_multiple(self, sdesc: &[T], val: T) -> usize where T: PartialOrd+Copy;
     /// Unites (concatenates) two unsorted slices. For union of sorted slices, use `merge`
     fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
     /// Unites two ascending index-sorted slices.
@@ -153,15 +136,17 @@ pub trait Vecops<T> {
     /// Divides an unordered set into three: items smaller than pivot, equal, and greater
     fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
         where T: PartialOrd+Copy;
-    /// Divides an unordered set into three by the pivot. The results are subscripts to self   
+    /// Divides an unordered set into three by the pivot. 
+    /// The results are subscripts to self.   
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
         where T: PartialOrd+Copy;
     /// Merges (unites) two sorted sets, result is also sorted    
     fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
-    /// Merges (unites) two sets, using their sort indices, giving also the resulting sort index
-    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
-        where T: PartialOrd+Copy;
-    /// Used by `merge_indexed`
+    /// Merges (unites) two sets, using their sort indices,
+    /// giving also the resulting sort index
+    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize])
+        -> (Vec<T>, Vec<usize>) where T: PartialOrd+Copy;
+        /// Used by `merge_indexed`
     fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
         where T: PartialOrd+Copy;
     /// Stable Merge sort main method, giving sort index
@@ -174,17 +159,19 @@ pub trait Vecops<T> {
     /// Rank index obtained via mergesort_indexed
     fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
     /// Utility, swaps any two items into ascending order
-    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd;
+    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool
+        where T:PartialOrd;
     /// Utility, sorts any three items into ascending order
-    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
+    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize)
+        where T: PartialOrd; 
     /// Stable Hash sort
     fn hashsort_indexed(self) -> Vec<usize> 
         where T: PartialOrd+Copy,F64:From<T>;
     /// Utility used by hashsort_indexed
     fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
         where T: PartialOrd+Copy,F64:From<T>;
-    /// Immutable hash sort. Returns new sorted data vector 
-    /// (ascending or descending)
+    /// Immutable hash sort. 
+    /// Returns new sorted data vector (ascending or descending)
     fn sorth(self, ascending: bool) -> Vec<T> 
         where T: PartialOrd+Copy,F64:From<T>;
 }
@@ -306,17 +293,18 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 ## Structs and Utility Functions
 
 ```rust
-use indxvec::{MinMax,F64,inf64,here};
+use indxvec::{Found,MinMax,F64,inf64,here};
 ```
 
-* `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices. 
+* `pub struct Found` for general result of binary search. Index and count of items found.
+* `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices.
 * `pub struct F64(pub f64)` is a wrapper for custom conversions of T to f64, needed by hashsort for non-numeric types.  
 * `pub fn inf64<T>(arg:T) -> f64 where F64:From<T>` is a utility that converts generic T type value to f64.
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
 
-**Version 1.2.14** - Removed spurious newline from printing matrices. Updated `times` dependency.
+**Version 1.3.0** - Binary search that is superior to `std:slice:binary_search`. Two methods provided: `binsearch` and `binsearch_indexed`. They return new `struct Found`. Removed spurious newline from printing matrices. Updated `times` dependency.
 
 **Version 1.2.13** - Removed no longer needed `unindexf64` from trait `Indices`.
 

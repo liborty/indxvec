@@ -207,17 +207,12 @@ pub trait Vecops<T> {
     fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy;
     /// Some(subscript) of the first occurence of m, or None
     fn member(self, m:T, forward:bool) -> Option<usize> where T: PartialEq+Copy;
-    /// Binary search of an explicitly sorted list in ascending order.
+    /// Binary search of a slice in ascending or descending order.
     fn binsearch(self, val:&T, ascending:bool) -> Found where T: PartialOrd;
-    // Binary search of an explicitly sorted list in descending order.
-    // fn binsearchdesc(self, val:&T) -> Found where T: PartialOrd;
-    /// Binary search of an index sorted list in ascending order.
-    /// Returns subscript of the first item that is greater than val.
-    fn binsearch_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
-    /// Binary search of an index sorted list in descending order.
-    /// Returns subscript of the first item that is smaller than val (in descending order). 
-    fn binsearchdesc_indexed(self, i:&[usize], val: T) -> usize where T: PartialOrd;
-    /// Counts occurrences of val by simple linear search of an unordered set
+    /// Binary search of an index sorted slice in ascending or descending order. 
+    /// Like binsearch but using indirection via idx.
+    fn binsearch_indexed(self, idx:&[usize], val:&T, ascending:bool) -> Found where T: PartialOrd;
+    /// Counts partially equal occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
     /// Unites (concatenates) two unsorted slices. For union of sorted slices, use `merge`
     fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
