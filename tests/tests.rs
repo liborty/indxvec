@@ -75,11 +75,11 @@ fn vecops() {
 
     let mut sorted = vi.unindex(&vm, true);    
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg()); 
-    println!("Binary_search for {BL}199{UN}: {}",sorted.binsearch(&199,true)); 
-    println!("Binsearch_indexed for {BL}{midval}{UN}: {GR}{}{UN}", 
+    println!("Binary_search for {BL}199{UN}: {GR}{:?}{UN}",sorted.binsearch(&199,true)); 
+    println!("Binsearch_indexed for {BL}{midval}{UN}: {GR}{:?}{UN}", 
         vm.binsearch_indexed(&vi,&midval,true));  // binsearch_indexed, ascending
-    println!("Nearest equal or greater item from {BL}{midval}{UN} is: {GR}{}{UN}",
-        vm[vi[vm.binsearch_indexed(&vi,&midval,true).index]]);
+    println!("Nearest equal or greater item from {BL}{midval}{UN} is: {GR}{:?}{UN}",
+        vm[vi[vm.binsearch_indexed(&vi,&midval,true).start]]);
     println!("Member forwards for {BL}199{UN}, is in sorted at: {}",
         sorted.member(199,true).map_or_else(||"None".rd(),|x| x.gr()));
     println!("Member backwards for {BL}199{UN}, is in sorted at: {}",
@@ -88,11 +88,11 @@ fn vecops() {
     let sorteddesc = vi.unindex(&vm, false);    
     vi.mutrevs();
     println!("\nThe above unindexed into descending order:\n{}", sorteddesc.mg()); 
-    println!("Binsearch for {BL}199{UN}: {}",sorteddesc.binsearch(&199,false)); 
-    println!("Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{}{UN}",
+    println!("Binsearch for {BL}199{UN}: {GR}{:?}{UN}",sorteddesc.binsearch(&199,false)); 
+    println!("Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN}",
         vm.binsearch_indexed(&vi,&midval,false)); // binsearch_indexed, descending
     println!("Nearest equal or smaller item from {BL}{midval}{UN} is: {GR}{}{UN}",
-        vm[vi[vm.binsearch_indexed(&vi,&midval,false).index]]); 
+        vm[vi[vm.binsearch_indexed(&vi,&midval,false).start]]); 
     println!("Intersect_indexed:\n{}", vm.intersect_indexed(&vi, &v1, &v1.mergesort_indexed()).gr());
     println!("Diff_indexed:\n{}", vm.diff_indexed(&vi, &v1, &v1.mergesort_indexed()).gr());
     sorted.dedup();

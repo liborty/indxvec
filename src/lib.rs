@@ -22,6 +22,8 @@ use std::error::Error;
 use std::thread::AccessError;
 use std::fmt::{Debug,Display};
 
+use core::ops::Range;
+
 #[derive(Debug)]
 /// Custom Indxvec Error
 pub enum IErr<T> where T:Sized+Debug {
@@ -78,22 +80,6 @@ macro_rules! here {
 pub fn inf64<T>(arg:T) -> f64 where F64:From<T> {
     let F64(res) = F64::from(arg);
     res
-}
-
-#[derive(Default)]
-/// Item(s) found in a sorted slice
-pub struct Found {
-    /// index of a sort position
-    pub index: usize,
-    /// number of PartialEq items starting at index; can be zero
-    pub count: usize 
-}
-/// Display implementation for Found struct
-impl std::fmt::Display for Found
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "index: {GR}{}{UN}, count: {GR}{}{UN}", self.index, self.count )
-    }
 }
 
 /// struct for minimum value, its index, maximum value, its index
@@ -208,10 +194,10 @@ pub trait Vecops<T> {
     /// Some(subscript) of the first occurence of m, or None
     fn member(self, m:T, forward:bool) -> Option<usize> where T: PartialEq+Copy;
     /// Binary search of a slice in ascending or descending order.
-    fn binsearch(self, val:&T, ascending:bool) -> Found where T: PartialOrd;
+    fn binsearch(self, val:&T, ascending:bool) -> Range<usize> where T: PartialOrd;
     /// Binary search of an index sorted slice in ascending or descending order. 
     /// Like binsearch but using indirection via idx.
-    fn binsearch_indexed(self, idx:&[usize], val:&T, ascending:bool) -> Found where T: PartialOrd;
+    fn binsearch_indexed(self, idx:&[usize], val:&T, ascending:bool) -> Range<usize> where T: PartialOrd;
     /// Counts partially equal occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
     /// Unites (concatenates) two unsorted slices. For union of sorted slices, use `merge`

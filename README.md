@@ -11,7 +11,7 @@ intersecting, printing, etc.
 ## The following will import everything
 
 ```rust
-use indxvec::{ Found, MinMax, F64, here, inf64, printing::*, Indices, Vecops, Mutops, Printing };
+use indxvec::{ MinMax, F64, here, inf64, printing::*, Indices, Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -109,11 +109,11 @@ pub trait Vecops<T> {
     fn member(self, m:T, forward:bool) -> Option<usize>
         where T: PartialEq+Copy;
     /// Binary search of a slice in ascending or descending order.
-    fn binsearch(self, val:&T, ascending:bool) -> Found 
+    fn binsearch(self, val:&T, ascending:bool) -> Range<usize> 
         where T: PartialOrd;
     /// Binary search of an index sorted slice in ascending or descending order. 
     /// Like binsearch but using indirection via idx.
-    fn binsearch_indexed(self, idx:&[usize], val:&T, ascending:bool) -> Found 
+    fn binsearch_indexed(self, idx:&[usize], val:&T, ascending:bool) -> Range<usize> 
         where T: PartialOrd;
     /// Counts partially equal occurrences of val 
     /// by simple linear search of an unordered set
@@ -304,7 +304,9 @@ use indxvec::{Found,MinMax,F64,inf64,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.3.0** - Binary search that is superior to `std:slice:binary_search`. Two methods provided: `binsearch` and `binsearch_indexed`. They return new `struct Found`. Removed spurious newline from printing matrices. Updated `times` dependency.
+**Version 1.3.1** - Binary search methods now return standard rust type Range. 
+
+**Version 1.3.0** - Binary search that is superior to `std:slice:binary_search`. Two methods provided: `binsearch` and `binsearch_indexed`. Removed spurious newline from printing matrices. Updated `times` dependency.
 
 **Version 1.2.13** - Removed no longer needed `unindexf64` from trait `Indices`.
 
