@@ -304,6 +304,8 @@ use indxvec::{Found,MinMax,F64,inf64,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.3.2** - Some more code pruning, reducing the footprint.
+
 **Version 1.3.1** - Binary search methods now return standard rust type Range. 
 
 **Version 1.3.0** - Binary search that is superior to `std:slice:binary_search`. Two methods provided: `binsearch` and `binsearch_indexed`. Removed spurious newline from printing matrices. Updated `times` dependency.

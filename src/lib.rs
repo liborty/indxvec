@@ -17,48 +17,7 @@ use std::io::Write;
 use std::fs::File;
 use printing::*;
 
-use std::fmt;
-use std::error::Error;
-use std::thread::AccessError;
-use std::fmt::{Debug,Display};
-
 use core::ops::Range;
-
-#[derive(Debug)]
-/// Custom Indxvec Error
-pub enum IErr<T> where T:Sized+Debug {
-    /// Error indicating that insufficient data has been supplied
-    NoDataError(T),
-    /// Error indicating that a wrong kind/size of data has been supplied
-    DataError(T),
-    /// Error indicating an invalid result, such as an attempt at division by zero
-    ArithError(T),
-    /// Other error converted to IErr
-    OtherError(T)
-}
-
-/// Shorthand type for returned errors with message payload
-pub type IE = IErr<&'static str>;
-
-impl<T> Error for IErr<T> where T:Sized+Debug+Display {}
-
-impl<T> fmt::Display for IErr<T> where T:Sized+Debug+Display {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            IErr::NoDataError(s) => write!(f,"Missing or insufficient data: {}",s),
-            IErr::DataError(s) => write!(f,"Wrong data: {}",s),
-            IErr::ArithError(s) => write!(f,"Arithmetic error: {}",s),
-            IErr::OtherError(s) => write!(f,"Converted from {}",s)
-        }
-    }
-}
-
-/// Example 'From' implementation for converting to RError
-impl From<AccessError> for IErr<& 'static str> {
-    fn from(_: AccessError) -> Self {
-        IErr::OtherError("AccessError")
-    }
-}
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
