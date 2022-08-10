@@ -20,7 +20,7 @@ This crate is lightweight and has no dependencies. The methods of all four trait
 
 The facilities provided are:
 
-* ranking, sorting (merge sort and hash sort), merging, searching, indexing, selecting, partitioning
+* ranking, sorting (merge sort and hash sort), merging, binary searching, indexing, selecting, partitioning
 * many useful operations on generic vectors and their indices
 * set operations
 * serialising generic slices and slices of vectors to Strings: `to_plainstr()`
@@ -109,11 +109,11 @@ pub trait Vecops<T> {
     fn member(self, m:T, forward:bool) -> Option<usize>
         where T: PartialEq+Copy;
     /// Binary search of a slice in ascending or descending order.
-    fn binsearch(self, val:&T, ascending:bool) -> Range<usize> 
+    fn binsearch(self, val:&T) -> Range<usize> 
         where T: PartialOrd;
     /// Binary search of an index sorted slice in ascending or descending order. 
     /// Like binsearch but using indirection via idx.
-    fn binsearch_indexed(self, idx:&[usize], val:&T, ascending:bool) -> Range<usize> 
+    fn binsearch_indexed(self, idx:&[usize], val:&T) -> Range<usize> 
         where T: PartialOrd;
     /// Counts partially equal occurrences of val 
     /// by simple linear search of an unordered set
@@ -303,6 +303,8 @@ use indxvec::{Found,MinMax,F64,inf64,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.3.3** - Simplified `binsearch` and `binsearch_indexed`. It is no longer necessary to specify the sort order, it is detected automatically.
 
 **Version 1.3.2** - Some more code pruning, reducing the footprint.
 

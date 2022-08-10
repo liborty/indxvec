@@ -153,10 +153,10 @@ pub trait Vecops<T> {
     /// Some(subscript) of the first occurence of m, or None
     fn member(self, m:T, forward:bool) -> Option<usize> where T: PartialEq+Copy;
     /// Binary search of a slice in ascending or descending order.
-    fn binsearch(self, val:&T, ascending:bool) -> Range<usize> where T: PartialOrd;
+    fn binsearch(self, val:&T) -> Range<usize> where T: PartialOrd;
     /// Binary search of an index sorted slice in ascending or descending order. 
     /// Like binsearch but using indirection via idx.
-    fn binsearch_indexed(self, idx:&[usize], val:&T, ascending:bool) -> Range<usize> where T: PartialOrd;
+    fn binsearch_indexed(self, idx:&[usize], val:&T) -> Range<usize> where T: PartialOrd;
     /// Counts partially equal occurrences of val by simple linear search of an unordered set
     fn occurs(self, val:T) -> usize where T: PartialOrd;
     /// Unites (concatenates) two unsorted slices. For union of sorted slices, use `merge`

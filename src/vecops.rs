@@ -125,30 +125,36 @@ fn member(self,m: T,forward: bool) -> Option<usize> where T: PartialEq+Copy {
 
 /// Binary search of an explicitly sorted list in ascending or descending order.
 /// Returns range of index values matching val. Can be empty. 
-/// range.start is where first val is, or  when missing, could be inserted in the correct sort order.
-fn binsearch(self, val: &T, ascending:bool ) -> Range<usize> where T: PartialOrd {
-    let pcomp = if ascending { |a:&T,b:&T| a > b } else { |a:&T,b:&T| a < b };
+/// range.start is where the first val is, or  when missing, could be inserted in the correct sort order.
+fn binsearch(self, val: &T) -> Range<usize> where T: PartialOrd {
+    if self.is_empty() { return 0..0; }; // empty self, val could be inserted at index 0
     let n = self.len();
-    if n == 0 { return 0..0; }; // empty self, val could be inserted at index 0
+    if self[0] == self[n-1] { // all values are already partially equal
+        if self[0] == *val { return 0..n; } // they are val, return full range
+        else { return 0..0; }; // they are not val, return empty range
+    }; 
+    let pcomp = if self[n-1] > self[0] { |a:&T,b:&T| a > b } 
+    else { |a:&T,b:&T| a < b }; // comparisons closure determined by the sort order
+ 
     let mut hi = n - 1; // initial high index
     if !pcomp(val,&self[0]) { // val is before or partially equal to the first item
-        let mut count = 0_usize; // initially no matches
+        let mut countup = 0_usize; 
         for s in self.iter() { // count up all matching items 
-            if pcomp(s,val) { break; } else { count += 1; };
+            if pcomp(s,val) { break; } else { countup += 1; };
         };
-        return 0..count;
+        return 0..countup;
     };
     if !pcomp(&self[hi],val) { // val is after or partially equal to the last item
-        let mut count = 0_usize;
+        let mut countdown = 0_usize;
         for s in self.iter().rev() { // count down all matching items
-            if pcomp(val,s) { break; } else { count += 1; };
+            if pcomp(val,s) { break; } else { countdown += 1; };
         };
-        return n-count..n;
+        return n-countdown..n;
     };
     let mut lo = 0; // initial low index
     loop {
-        let mid = (lo + hi) / 2; // binary chop here
-        if mid > lo {
+        let mid = (lo + hi) / 2; // binary chop here with truncation
+        if mid > lo { 
             if pcomp(val,&self[mid]) { lo = mid; continue; };
             if pcomp(&self[mid],val) { hi = mid; continue; }; 
             // neither greater nor smaller, hence we found a match
@@ -162,7 +168,7 @@ fn binsearch(self, val: &T, ascending:bool ) -> Range<usize> where T: PartialOrd
             };
             return mid-downcount..mid+upcount;            
         }
-        else { return hi..hi }; // interval gone, not found
+        else { return hi..hi }; // interval is exhausted, val not found
     }
 }
 
@@ -170,11 +176,17 @@ fn binsearch(self, val: &T, ascending:bool ) -> Range<usize> where T: PartialOrd
 /// Ordering is by indirection, through idx.
 /// Returns range of idx items pointing at all occurrence of val in self.
 /// When val was not found, range.start gives the position in idx where it could be inserted.
-fn binsearch_indexed(self, idx:&[usize], val: &T, ascending:bool) -> Range<usize>
-    where T: PartialOrd {
-    let pcomp = if ascending { |a:&T,b:&T| a > b } else { |a:&T,b:&T| a < b };
+fn binsearch_indexed(self, idx:&[usize], val: &T) -> Range<usize> where T: PartialOrd {
+    
+    if self.is_empty() { return 0..0; }; // empty self, val could be inserted at index 0
     let n = self.len();
-    if n == 0 { return 0..0; }; // empty self, val could be inserted at index 0
+    if self[idx[0]] == self[idx[n-1]] { // all values are already partially equal
+        if self[idx[0]] == *val { return 0..n; } // they are val, return full range
+        else { return 0..0; }; // they are not val, return empty range
+    }; 
+    let pcomp = if self[idx[n-1]] > self[idx[0]] { |a:&T,b:&T| a > b } 
+    else { |a:&T,b:&T| a < b }; // comparisons closure determined by the sort order
+
     let mut hi = n - 1; // initial high index
     if !pcomp(val,&self[idx[0]]) { // val is before or partially equal to the first item
         let mut count = 0_usize; // initially no matches
