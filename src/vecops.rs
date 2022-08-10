@@ -106,18 +106,18 @@ fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy {
 /// Finds the first/last occurence of item `m` in self by forward/backward iteration.
 /// Returns `Some(index)` of the found item or `None`.
 /// Suitable for small unordered lists.
-/// For longer lists, it is better to sort them and use `memsearch` (see below).
-/// For repeated tests, index sort first and then use memsearch_indexed. 
-fn member(self,m: T,forward: bool) -> Option<usize> where T: PartialEq+Copy {
+/// For longer lists, it is better to sort them and use `binsearch` (see below).
+/// For repeated tests, index sort first and then use `binsearch_indexed. 
+fn member(self,m: T,forward: bool) -> Option<usize> where T: PartialEq+Copy { 
     if forward {
         for (i, &x) in self.iter().enumerate() { 
             if x == m { return Some(i); }; 
         };
         None
-    } 
+    }
     else {
-        for (i, &x) in self.iter().rev().enumerate() { 
-            if x == m { return Some(self.len()-i-1); }; 
+        for (i, &x) in self.iter().enumerate().rev() { 
+            if x == m { return Some(i); }; 
         };
         None
     }
