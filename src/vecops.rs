@@ -176,8 +176,7 @@ fn binsearch(self, val: &T) -> Range<usize> where T: PartialOrd {
 /// Ordering is by indirection, through idx.
 /// Returns range of idx items pointing at all occurrence of val in self.
 /// When val was not found, range.start gives the position in idx where it could be inserted.
-fn binsearch_indexed(self, idx:&[usize], val: &T) -> Range<usize> where T: PartialOrd {
-    
+fn binsearch_indexed(self, idx:&[usize], val: &T) -> Range<usize> where T: PartialOrd {    
     if self.is_empty() { return 0..0; }; // empty self, val could be inserted at index 0
     let n = self.len();
     if self[idx[0]] == self[idx[n-1]] { // all values are already partially equal
