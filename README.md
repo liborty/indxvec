@@ -11,7 +11,7 @@ intersecting, printing, etc.
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, F64, here, inf64, printing::*, Indices, Vecops, Mutops, Printing };
+use indxvec::{ MinMax, here, printing::*, Indices, Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -170,10 +170,11 @@ pub trait Vecops<T> {
     /// Utility used by hashsort_indexed
     fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
         where T: PartialOrd+Copy,F64:From<T>;
-    /// Immutable hash sort. 
-    /// Returns new sorted data vector (ascending or descending)
+    /// Stable hash sort. Returns new sorted data vector (ascending or descending)
     fn sorth(self, ascending: bool) -> Vec<T> 
         where T: PartialOrd+Copy,F64:From<T>;
+    /// Makes a sort index for self, using key generating closure `keyfn`
+    fn keyindex(self, keyfn:fn(&T)->f64, ascending:bool) -> Vec<usize>;
 }
 ```
 
@@ -298,11 +299,11 @@ use indxvec::{Found,MinMax,F64,inf64,here};
 
 * `pub struct Found` for general result of binary search. Index and count of items found.
 * `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices.
-* `pub struct F64(pub f64)` is a wrapper for custom conversions of T to f64, needed by hashsort for non-numeric types.  
-* `pub fn inf64<T>(arg:T) -> f64 where F64:From<T>` is a utility that converts generic T type value to f64.
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.3.4** - Removed the custom F64 type and automatic custom conversions. Hashsort now again requires strictly numerical types convertible to f64 by standard means. Replaced this with new `keyindex` in trait `Vecops`. It is able to apply `hashsort_indexed` to any (user) type T, using custom closure `keyfn:fn(&T) -> f64` to generate f64 keys. This is more easily extensible and not nearly so verbose.
 
 **Version 1.3.3** - Simplified `binsearch` and `binsearch_indexed`. It is no longer necessary to specify the sort order, it is detected automatically.
 

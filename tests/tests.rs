@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use indxvec::{ here, F64, printing::*, Indices, Printing, Vecops, Mutops};
+use indxvec::{ here, printing::*, Indices, Printing, Vecops, Mutops};
 use ran::*;
 use times::*;
 use std::convert::From;
@@ -101,14 +101,24 @@ fn vecops() {
 
 #[test]
 fn text() {
+    fn fromstr(s:&str) -> f64 {
+        if s.is_empty() { return 0_f64 };
+        let bytes = s.as_bytes();
+        let mut res = bytes[0] as f64;
+        for i in 1..7 {
+            res *= 256.;
+            if i < bytes.len() { res += bytes[i] as f64; }
+        };
+        res    
+    }
     let sentence = "Oh what a bunch of doodaas , doodaa , doodaa - daa";
-    let mut v = sentence.split(' ').collect::<Vec<_>>();
+    let v = sentence.split(' ').collect::<Vec<_>>();
     println!("{}",v.gr()); // Display
-    v.muthashsort();
-    println!("Ascending: {}",v.gr()); // Display 
-    v.mutrevs(); 
-    println!("Descending: {}",v.gr()); // Display     
-} 
+    // using custom key generating closure fromstr above
+    let index = v.keyindex(|s| fromstr(s),true);  
+    println!("Descending: {}",index.unindex(&v,false).gr()); // Display 
+}
+
 #[test]
 fn printing() {
     set_seeds(123456789);

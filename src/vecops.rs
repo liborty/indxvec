@@ -1,4 +1,4 @@
-use crate::{MinMax,F64,inf64,Indices,Vecops, Mutops};
+use crate::{MinMax,Indices,Vecops, Mutops};
 use core::ops::Range;
 
 impl<T> Vecops<T> for &[T] {
@@ -647,7 +647,7 @@ fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: Pa
 /// Requires min,max, the data range, that must enclose all its values. 
 /// The range is often known. If not, it can be obtained with `minmaxt()`.
 fn hashsort_indexed(self) -> Vec<usize> 
-    where T: PartialOrd+Copy, F64:From<T> { 
+    where T: PartialOrd+Copy, f64:From<T> { 
     let n = self.len();
     let (min,max) = self.minmaxt();
     // create a mutable index for the result
@@ -657,7 +657,7 @@ fn hashsort_indexed(self) -> Vec<usize>
 }   
 
 fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
-    where T: PartialOrd+Copy, F64:From<T> { 
+    where T: PartialOrd+Copy, f64:From<T> { 
     // Recursion termination conditions
     match n {
         0 => { return; }, // nothing to do
@@ -666,14 +666,14 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T)
         3 => { self.isortthree(idx, i,i+1,i+2); return; },
         _ => () // carry on below
     };      
-    let fmin = inf64(min);
-    let fmax = inf64(max); 
+    let fmin = f64::from(min);
+    let fmax = f64::from(max); 
     // hash is a constant s.t. (x-min)*hash is in [0,n] 
     let hash = (n as f64) / (fmax-fmin);  
     let mut buckets:Vec<Vec<usize>> = vec![Vec::new();n];
     // group current index items into buckets by their associated self[] values
     for &xi in idx.iter().skip(i).take(n) {  
-        let mut hashsub = (hash*(inf64(self[xi])-fmin)).floor() as usize; 
+        let mut hashsub = (hash*(f64::from(self[xi])-fmin)).floor() as usize; 
         if hashsub == n { hashsub -=1 }; // reduce subscripts to [0,n-1] 
         buckets[hashsub].push(xi);
     }
@@ -728,11 +728,17 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T)
 /// Mergesortslice and mergesort_indexed produce only an ascending index.
 /// Sortm will produce descending data order with ascending == false.
 fn sorth(self, ascending: bool) -> Vec<T> 
-    where T: PartialOrd+Copy,F64:From<T> {
+    where T: PartialOrd+Copy,f64:From<T> {
     let mut sorted = self.to_vec(); 
     sorted.muthashsort();
     if !ascending { sorted.mutrevs() };
     sorted 
 }
 
+/// Makes a sort index for self, using key generating closure `keyfn`
+fn keyindex(self, keyfn:fn(&T)->f64, ascending:bool) -> Vec<usize> {
+    let mut index = self.iter().map(keyfn).collect::<Vec<f64>>().hashsort_indexed();
+    if !ascending { index.mutrevs(); };
+    index
+}
 }
