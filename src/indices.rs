@@ -17,10 +17,9 @@ impl Indices for &[usize] {
     /// Collects values from v in the order given by self index. 
     /// When ascending is false, collects in descending order.  
     /// It is used here by msort for ascending or descending sort.   
-    fn unindex<T>(self, v:&[T], ascending: bool) -> Vec<T> 
-        where T:Copy {
-        if ascending { self.iter().map(|&i| v[i]).collect() }
-        else { self.iter().rev().map(|&i| v[i]).collect()   } 
+    fn unindex<T>(self, v:&[T], ascending: bool) -> Vec<T> where T:Clone {
+        if ascending { self.iter().map(|&i| v[i].clone()).collect() }
+        else { self.iter().rev().map(|&i| v[i].clone()).collect()   } 
     }
 
     /// Complement of an index  (is symmetric) - 

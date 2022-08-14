@@ -1,104 +1,104 @@
 use crate::{MinMax,Indices,Vecops, Mutops};
-use core::ops::Range;
+use core::{ops::Range};
 
 impl<T> Vecops<T> for &[T] {
 
 /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
 /// Like the standard `.to_vec()` method but also recasts to f64 end type
-fn tof64(self) -> Vec<f64> where T: Copy, f64: From<T>, {
-    self.iter().map(|&x| f64::from(x)).collect()
+fn tof64(self) -> Vec<f64> where T: Clone, f64: From<T>, {
+    self.iter().map(|x| f64::from(x.clone())).collect()
 }
 
 /// Maximum value T of slice &[T]
-fn maxt(self) -> T where T: PartialOrd+Copy {
+fn maxt(self) -> T where T: PartialOrd+Clone {
     let mut max = &self[0];
     self.iter().skip(1).for_each(|s| {
         if s > max { max = s }
     });
-    *max
+    max.clone()
 }
 
 /// Minimum value T of slice &[T]
-fn mint(self) -> T where T: PartialOrd+Copy {
+fn mint(self) -> T where T: PartialOrd+Clone {
     let mut min = &self[0];
     self.iter().skip(1).for_each(|s| {
         if s < min { min = s }
     });
-    *min
+    min.clone()
 }
 
 /// Minimum and maximum (T,T) of a slice &[T]
-fn minmaxt(self) -> (T, T) where T: PartialOrd+Copy {
-    let mut x1 = self[0];
+fn minmaxt(self) -> (T, T) where T: PartialOrd+Clone {
+    let mut x1 = &self[0];
     let mut x2 = x1;
-    self.iter().skip(1).for_each(|&s| {
+    self.iter().skip(1).for_each(|s| {
         if s < x1 { x1 = s } 
         else if s > x2 { x2 = s };
     });
-    (x1, x2)
+    (x1.clone(), x2.clone())
 }
 
 /// Minimum, minimum's first index, maximum, maximum's first index
-fn minmax(self) -> MinMax<T> where T: PartialOrd+Copy {
-    let mut min = self[0];
+fn minmax(self) -> MinMax<T> where T: PartialOrd+Clone {
+    let mut min = &self[0];
     let mut max = min; // initialise both to the first item
     let (mut minindex, mut maxindex) = (0, 0); // indices of min, max
-    self.iter().enumerate().skip(1).for_each(|(i, &x)| {
+    self.iter().enumerate().skip(1).for_each(|(i, x)| {
         if x < min { min = x; minindex = i; } 
         else if x > max { max = x; maxindex = i }
     });
     MinMax {
-        min,
+        min: min.clone(),
         minindex,
-        max,
+        max: max.clone(),
         maxindex,
     }
 }
 
 /// Finds min and max of a subset of self, defined by its subslice between i,i+n.
 /// Returns min of self, its index, max of self, its index.
-fn minmax_slice(self, i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Copy {
-    let mut min = self[i];
+fn minmax_slice(self, i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Clone {
+    let mut min = &self[i];
     let mut max = min;
     let mut minindex = i; // indices of min, max 
     let mut maxindex = minindex;
-    for (j,&x) in self.iter().enumerate().skip(i+1).take(n-1) {
+    for (j,x) in self.iter().enumerate().skip(i+1).take(n-1) {
         if x < min { min = x; minindex = j; } 
         else if x > max { max = x; maxindex = j; };
     };
-    MinMax { min, minindex, max, maxindex }
+    MinMax { min:min.clone(), minindex, max:max.clone(), maxindex }
 }
 
 /// Using only a subset of self, defined by its idx subslice between i,i+n.
 /// Returns min of self, its index's index, max of self, its index's index.
 fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
-    where T: PartialOrd+Copy {
-    let mut min = self[idx[i]];
+    where T: PartialOrd+Clone {
+    let mut min = &self[idx[i]];
     let mut max = min;
     let mut minix = 0; // indices of indices of min, max 
     let mut maxix = minix;
-    for (ii,&ix) in idx.iter().enumerate().skip(i+1).take(n-1) {
-        if self[ix] < min { min = self[ix]; minix = ii; } 
-        else if self[ix] > max { max = self[ix]; maxix = ii; };
+    for (ii,ix) in idx.iter().enumerate().skip(i+1).take(n-1) {
+        if &self[*ix] < min { min = &self[*ix]; minix = ii; } 
+        else if &self[*ix] > max { max = &self[*ix]; maxix = ii; };
     };
-    MinMax { min, minindex:minix, max, maxindex:maxix }
+    MinMax { min:min.clone(), minindex:minix, max:max.clone(), maxindex:maxix }
 }
 
 /// Reverse a generic slice by reverse iteration.
 /// Creates a new Vec. Its naive use for descending sort etc.
 /// is to be avoided for efficiency reasons.
-fn revs(self) -> Vec<T> where T: Copy {
-    self.iter().rev().copied().collect::<Vec<T>>()
+fn revs(self) -> Vec<T> where T: Clone {
+    self.iter().rev().cloned().collect::<Vec<T>>()
 }
 
 /// Removes repetitions from an explicitly ordered set.
-fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy { 
+fn sansrepeat(self) -> Vec<T> where T: PartialEq+Clone { 
     if self.len() < 2 { return self.to_vec(); };
     let mut r: Vec<T> = Vec::new();
-    let mut last: T = self[0];
-    r.push(last);
-    self.iter().skip(1).for_each(|&si| {
-        if si != last { last = si; r.push(si) }
+    let mut last = &self[0];
+    r.push(last.clone());
+    self.iter().skip(1).for_each(|si| {
+        if *si != *last { last = si; r.push(si.clone()) }
     });
     r
 }
@@ -108,16 +108,16 @@ fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy {
 /// Suitable for small unordered lists.
 /// For longer lists, it is better to sort them and use `binsearch` (see below).
 /// For repeated tests, index sort first and then use `binsearch_indexed. 
-fn member(self,m: T,forward: bool) -> Option<usize> where T: PartialEq+Copy { 
+fn member(self,m: T,forward: bool) -> Option<usize> where T: PartialEq+Clone { 
     if forward {
-        for (i, &x) in self.iter().enumerate() { 
-            if x == m { return Some(i); }; 
+        for (i, x) in self.iter().enumerate() { 
+            if *x == m { return Some(i); }; 
         };
         None
     }
     else {
-        for (i, &x) in self.iter().enumerate().rev() { 
-            if x == m { return Some(i); }; 
+        for (i, x) in self.iter().enumerate().rev() { 
+            if *x == m { return Some(i); }; 
         };
         None
     }
@@ -223,7 +223,7 @@ fn binsearch_indexed(self, idx:&[usize], val: &T) -> Range<usize> where T: Parti
 }
 
 /// Counts partial equal occurrences of val by simple linear search of any unordered set
-fn occurs(self, val:T) -> usize where T: PartialOrd {
+fn occurs(self, val:T) -> usize where T:PartialOrd {
     let mut count:usize = 0;
     for s in self {
         if val < *s { continue;};
@@ -234,7 +234,7 @@ fn occurs(self, val:T) -> usize where T: PartialOrd {
 }
 
 /// Unites (joins) two unsorted sets. For union of sorted sets, use `merge`
-fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone {
+fn unite_unsorted(self, v: &[T]) -> Vec<T> where T:Clone {
     [self, v].concat()
 }
 
@@ -242,7 +242,7 @@ fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone {
 /// This is the union of two index sorted sets.
 /// Returns a single explicitly ordered set.
 fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-    where T: PartialOrd+Copy {
+    where T: PartialOrd+Clone {
     let l1 = self.len();
     let l2 = v2.len();
     let mut resvec: Vec<T> = Vec::new();
@@ -253,29 +253,29 @@ fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
         if i1 == l1 {
             // v1 is now processed
             for i in i2..l2 {
-                resvec.push(v2[ix2[i]])
+                resvec.push(v2[ix2[i]].clone())
             } // copy out the rest of v2
             break; // and terminate
         }
         if i2 == l2 {
             // v2 is now processed
             for i in i1..l1 {
-                resvec.push(self[ix1[i]])
+                resvec.push(self[ix1[i]].clone())
             } // copy out the rest of v1
             break; // and terminate
         }
         if self[ix1[i1]] < v2[ix2[i2]] {
-            resvec.push(self[ix1[i1]]);
+            resvec.push(self[ix1[i1]].clone());
             i1 += 1;
             continue;
         };
         if self[ix1[i1]] > v2[ix2[i2]] {
-            resvec.push(v2[ix2[i2]]);
+            resvec.push(v2[ix2[i2]].clone());
             i2 += 1;
             continue;
         };
         // here they are equal, so consume the first, skip both
-        resvec.push(self[ix1[i1]]);
+        resvec.push(self[ix1[i1]].clone());
         i1 += 1;
         i2 += 1
     }
@@ -283,7 +283,7 @@ fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
 }
 
 /// Intersects two ascending explicitly sorted generic vectors.
-fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
+fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone {
     let l1 = self.len();
     let l2 = v2.len();
     let mut resvec: Vec<T> = Vec::new();
@@ -306,7 +306,7 @@ fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
             continue;
         };
         // here they are equal, so consume one, skip both
-        resvec.push(self[i1]);
+        resvec.push(self[i1].clone());
         i1 += 1;
         i2 += 1
     }
@@ -316,7 +316,7 @@ fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
 /// Intersects two ascending index-sorted generic vectors.
 /// Returns a single explicitly ordered set.
 fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-    where T: PartialOrd+Copy {
+    where T: PartialOrd+Clone {
     let l1 = self.len();
     let l2 = v2.len();
     let mut resvec: Vec<T> = Vec::new();
@@ -339,7 +339,7 @@ fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
             continue;
         }; // skip v2 value
            // here they are equal, so consume the first
-        resvec.push(self[ix1[i1]]);
+        resvec.push(self[ix1[i1]].clone());
         i1 += 1;
         i2 += 1
     }
@@ -348,7 +348,7 @@ fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
 
 /// Sets difference: deleting elements of the second from the first.
 /// Two ascending explicitly sorted generic vectors.
-fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
+fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone {
     let l1 = self.len();
     let l2 = v2.len();
     let mut resvec: Vec<T> = Vec::new();
@@ -360,11 +360,11 @@ fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
             break;
         } // v1 is now empty
         if i2 == l2 {
-            self.iter().skip(i1).for_each(|&v| resvec.push(v)); // copy out the rest of v1
+            self.iter().skip(i1).for_each(|v| resvec.push(v.clone())); // copy out the rest of v1
             break; // and terminate
         }
         if self[i1] < v2[i2] {
-            resvec.push(self[i1]);
+            resvec.push(self[i1].clone());
             i1 += 1;
             continue;
         }; // this v1 survived
@@ -382,7 +382,7 @@ fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
 /// Sets difference: deleting elements of the second from the first.
 /// Two ascending index sorted generic vectors.
 fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-    where T: PartialOrd+Copy {
+    where T: PartialOrd+Clone {
     let l1 = self.len();
     let l2 = v2.len();
     let mut resvec: Vec<T> = Vec::new();
@@ -395,16 +395,16 @@ fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
         } // v1 is now empty
         if i2 == l2 {
             for i in i1..l1 {
-                resvec.push(self[ix1[i]])
+                resvec.push(self[ix1[i]].clone())
             } // copy out the rest of v1
             break; // and terminate
         }
         if self[ix1[i1]] < v2[ix2[i2]] {
-            resvec.push(self[ix1[i1]]);
+            resvec.push(self[ix1[i1]].clone());
             i1 += 1;
             continue;
         }; // this v1 survived
-        if self[ix1[i1]] > v2[ix2[i2]] {
+        if self[ix1[i1]] > v2[ix2[i2]].clone() {
             i2 += 1;
             continue;
         }; // this v2 is unused
@@ -417,29 +417,29 @@ fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
 
 /// Partition with respect to a pivot into three sets
 fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
-    where T: PartialOrd+Copy {
+    where T: PartialOrd+Clone {
     let n = self.len();
     let mut negset: Vec<T> = Vec::with_capacity(n);
     let mut eqset: Vec<T> = Vec::with_capacity(n);
     let mut posset: Vec<T> = Vec::with_capacity(n);
-    for &item in self {
-        if item < pivot { negset.push(item) }
-        else if item > pivot  { posset.push(item) }
-        else  { eqset.push(item) };  
+    for item in self {
+        if *item < pivot { negset.push(item.clone()) }
+        else if *item > pivot  { posset.push(item.clone()) }
+        else  { eqset.push(item.clone()) };  
     }; 
     (negset, eqset, posset)
 }
 
 /// Partition by pivot gives three sets of indices.
 fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
-    where T: PartialOrd+Copy {
+    where T: PartialOrd+Clone {
     let n = self.len();
     let mut negset: Vec<usize> = Vec::with_capacity(n);
     let mut eqset: Vec<usize> = Vec::with_capacity(n);
     let mut posset: Vec<usize> = Vec::with_capacity(n);
-    for (i, &vi) in self.iter().enumerate() {
-        if vi < pivot { negset.push(i) }
-        else if vi > pivot  { posset.push(i) }
+    for (i, vi) in self.iter().enumerate() {
+        if *vi < pivot { negset.push(i) }
+        else if *vi > pivot  { posset.push(i) }
         else  { eqset.push(i) };  
     }; 
     (negset, eqset, posset)
@@ -448,7 +448,7 @@ fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
 /// Merges two explicitly ascending sorted generic vectors,
 /// by classical selection and copying of their head items into the result.
 /// Consider using merge_indexed instead, especially for non-primitive end types T.
-fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
+fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone {
     let l1 = self.len();
     let l2 = v2.len();
     let mut resvec: Vec<T> = Vec::with_capacity(l1 + l2);
@@ -457,28 +457,28 @@ fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
     loop {
         if i1 == l1 {
             // v1 is now processed
-            v2.iter().skip(i2).for_each(|&v| resvec.push(v)); // copy out the rest of v2
+            v2.iter().skip(i2).for_each(|v| resvec.push(v.clone())); // copy out the rest of v2
             break; // and terminate
         }
         if i2 == l2 {
             // v2 is now processed
-            self.iter().skip(i1).for_each(|&v| resvec.push(v)); // copy out the rest of v1
+            self.iter().skip(i1).for_each(|v| resvec.push(v.clone())); // copy out the rest of v1
             break; // and terminate
         }
         if self[i1] < v2[i2] {
-            resvec.push(self[i1]);
+            resvec.push(self[i1].clone());
             i1 += 1;
             continue;
         };
         if self[i1] > v2[i2] {
-            resvec.push(v2[i2]);
+            resvec.push(v2[i2].clone());
             i2 += 1;
             continue;
         };
         // here they are equal, so consume both
-        resvec.push(self[i1]);
+        resvec.push(self[i1].clone());
         i1 += 1;
-        resvec.push(v2[i2]);
+        resvec.push(v2[i2].clone());
         i2 += 1
     }
     resvec
@@ -489,7 +489,7 @@ fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy {
 /// in one go and both remain in their original order.
 /// Returns the concatenated vector and a new valid sort index into it.
 fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
-    where T: PartialOrd+Copy {
+    where T: PartialOrd+Clone {
     let res = [self, v2].concat(); // no individual shuffling, just one concatenation
     let l = idx1.len();
     // shift up all items in idx2 by length of indx1, so that they will
@@ -501,17 +501,17 @@ fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec
 }
 
 /// Merges the sort indices of two concatenated vectors.
-/// Data in s is not changed at all, only consulted for the comparisons.
+/// Data in self is not changed at all, only consulted for the comparisons.
 /// This function is used by  `mergesort` and `merge_indexed`.
 fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
-    where T: PartialOrd+Copy {
+    where T: PartialOrd+Clone {
     let l1 = idx1.len();
     let l2 = idx2.len();
     let mut residx: Vec<usize> = Vec::with_capacity(l1 + l2);
     let mut i1 = 0;
     let mut i2 = 0;
-    let mut head1 = self[idx1[i1]];
-    let mut head2 = self[idx2[i2]];
+    let mut head1 = self[idx1[i1]].clone();
+    let mut head2 = self[idx2[i2]].clone();
     loop {
         if head1 < head2 {
             residx.push(idx1[i1]);
@@ -521,7 +521,7 @@ fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
                 idx2.iter().skip(i2).for_each(|&v| residx.push(v)); // copy out the rest of idx2
                 break; // and terminate
             }
-            head1 = self[idx1[i1]]; // else move to the next idx1 value
+            head1 = self[idx1[i1]].clone(); // else move to the next idx1 value
             continue;
         }
         if head1 > head2 {
@@ -532,7 +532,7 @@ fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
                 idx1.iter().skip(i1).for_each(|&v| residx.push(v)); // copy out the rest of idx1
                 break; // and terminate
             }
-            head2 = self[idx2[i2]]; // else move to the next idx2 value
+            head2 = self[idx2[i2]].clone(); // else move to the next idx2 value
             continue;
         }
         // here the heads are equal, so consume both
@@ -543,7 +543,7 @@ fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
             idx2.iter().skip(i2).for_each(|&v| residx.push(v)); // copy out the rest of idx2
             break; // and terminate
         }
-        head1 = self[idx1[i1]];
+        head1 = self[idx1[i1]].clone();
         residx.push(idx2[i2]);
         i2 += 1;
         if i2 == l2 {
@@ -551,7 +551,7 @@ fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
             idx1.iter().skip(i1).for_each(|&v| residx.push(v)); // copy out the rest of idx1
             break; // and terminate
         }
-        head2 = self[idx2[i2]];
+        head2 = self[idx2[i2]].clone();
     }
     residx
 }
@@ -563,7 +563,7 @@ fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
 /// such that the indexed values are in ascending sort order (a sort index).
 /// Only the index values are being moved.
 fn mergesortslice(self, i: usize, n: usize) -> Vec<usize>
-    where T: PartialOrd+Copy {
+    where T: PartialOrd+Clone {
     if n == 1 {
         let res = vec![i];
         return res;
@@ -586,7 +586,7 @@ fn mergesortslice(self, i: usize, n: usize) -> Vec<usize>
 
 /// The main mergesort
 /// Wraps mergesortslice, to obtain the whole sort index
-fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Copy {
+fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Clone {
     self.mergesortslice(0, self.len())
 }
 
@@ -594,10 +594,11 @@ fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Copy {
 /// Wraps mergesortslice. 
 /// Mergesortslice and mergesort_indexed produce only an ascending index.
 /// Sortm will produce descending data order with ascending == false.
-fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy {
+fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Clone {
     if self.len() < 120 {  // use default Rust sort for short Vecs
         let mut sorted = self.to_vec();
         sorted.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap()); 
+        if !ascending { sorted.mutrevs(); };
         sorted
     } else { 
     self
@@ -612,7 +613,7 @@ fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy {
 /// Ranking is in data order, giving sorted order positions.
 /// Thus sort index and ranks are in an inverse relationship.
 /// They are easily converted by `.invindex()` (for: invert index).
-fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy {
+fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Clone {
     let n = self.len();
     let sortindex = self.mergesortslice(0, n);
     let mut rankvec: Vec<usize> = vec![0; n];
@@ -647,7 +648,7 @@ fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: Pa
 /// Requires min,max, the data range, that must enclose all its values. 
 /// The range is often known. If not, it can be obtained with `minmaxt()`.
 fn hashsort_indexed(self) -> Vec<usize> 
-    where T: PartialOrd+Copy, f64:From<T> { 
+    where T: PartialOrd+Clone, f64:From<T> { 
     let n = self.len();
     let (min,max) = self.minmaxt();
     // create a mutable index for the result
@@ -657,7 +658,7 @@ fn hashsort_indexed(self) -> Vec<usize>
 }   
 
 fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
-    where T: PartialOrd+Copy, f64:From<T> { 
+    where T: PartialOrd+Clone, f64:From<T> { 
     // Recursion termination conditions
     match n {
         0 => { return; }, // nothing to do
@@ -673,7 +674,7 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T)
     let mut buckets:Vec<Vec<usize>> = vec![Vec::new();n];
     // group current index items into buckets by their associated self[] values
     for &xi in idx.iter().skip(i).take(n) {  
-        let mut hashsub = (hash*(f64::from(self[xi])-fmin)).floor() as usize; 
+        let mut hashsub = (hash*(f64::from(self[xi].clone())-fmin)).floor() as usize; 
         if hashsub == n { hashsub -=1 }; // reduce subscripts to [0,n-1] 
         buckets[hashsub].push(xi);
     }
@@ -728,7 +729,7 @@ fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T)
 /// Mergesortslice and mergesort_indexed produce only an ascending index.
 /// Sortm will produce descending data order with ascending == false.
 fn sorth(self, ascending: bool) -> Vec<T> 
-    where T: PartialOrd+Copy,f64:From<T> {
+    where T: PartialOrd+Clone,f64:From<T> {
     let mut sorted = self.to_vec(); 
     sorted.muthashsort();
     if !ascending { sorted.mutrevs() };

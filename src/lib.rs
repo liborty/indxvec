@@ -16,8 +16,7 @@ use std::io;
 use std::io::Write;
 use std::fs::File;
 use printing::*;
-
-use core::ops::Range;
+use core::{ops::Range};
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
@@ -50,7 +49,7 @@ pub struct MinMax<T> {
 /// Display implementation for MinMax struct
 impl<T> std::fmt::Display for MinMax<T>
 where
-    T: Copy + std::fmt::Display,
+    T: Clone + std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
@@ -114,7 +113,7 @@ pub trait Indices {
     /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
-    fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T> where T:Copy;
+    fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T> where T:Clone;
     /// Correlation coefficient of two &[usize] slices. 
     /// Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
@@ -126,26 +125,26 @@ pub trait Indices {
 pub trait Vecops<T> {
 
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`. 
-    fn tof64(self) -> Vec<f64> where T: Copy, f64: From<T>;
+    fn tof64(self) -> Vec<f64> where T: Clone, f64: From<T>;
     /// Maximum value in self
-    fn maxt(self) -> T where T: PartialOrd+Copy;
+    fn maxt(self) -> T where T: PartialOrd+Clone;
     /// Minimum value in self
-    fn mint(self) -> T where T: PartialOrd+Copy;
+    fn mint(self) -> T where T: PartialOrd+Clone;
     /// Minimum and maximum values in self
-    fn minmaxt(self) -> (T, T) where T: PartialOrd+Copy;
+    fn minmaxt(self) -> (T, T) where T: PartialOrd+Clone;
     /// Returns MinMax{min, minindex, max, maxindex}
-    fn minmax(self) -> MinMax<T> where T: PartialOrd+Copy;
+    fn minmax(self) -> MinMax<T> where T: PartialOrd+Clone;
     /// MinMax of n items starting at subscript i
-    fn minmax_slice(self,i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Copy;
+    fn minmax_slice(self,i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Clone;
     /// MinMax of a subset of self, defined by its idx subslice between i,i+n.
     fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Reversed copy of self
-    fn revs(self) -> Vec<T> where T: Copy;
+    fn revs(self) -> Vec<T> where T:Clone;
     /// Repeated items removed
-    fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy;
+    fn sansrepeat(self) -> Vec<T> where T: PartialEq+Clone;
     /// Some(subscript) of the first occurence of m, or None
-    fn member(self, m:T, forward:bool) -> Option<usize> where T: PartialEq+Copy;
+    fn member(self, m:T, forward:bool) -> Option<usize> where T: PartialEq+Clone;
     /// Binary search of a slice in ascending or descending order.
     fn binsearch(self, val:&T) -> Range<usize> where T: PartialOrd;
     /// Binary search of an index sorted slice in ascending or descending order. 
@@ -157,53 +156,53 @@ pub trait Vecops<T> {
     fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
     /// Unites two ascending index-sorted slices.
     fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Copy; 
+        where T: PartialOrd+Clone; 
     /// Intersects two ascending explicitly sorted generic vectors.
-    fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
     /// Intersects two ascending index sorted vectors.
     fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Removes items of sorted v2 from sorted self.
-    fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
     /// Removes items of v2 from self using their sort indices.
     fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Divides an unordered set into three: items smaller than pivot, equal, and greater
     fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Divides an unordered set into three by the pivot. The results are subscripts to self   
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Merges (unites) two sorted sets, result is also sorted    
-    fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
     /// Merges (unites) two sets, using their sort indices, giving also the resulting sort index
     fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Used by `merge_indexed`
     fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Stable Merge sort main method, giving sort index
-    fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Copy;
+    fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Clone;
     /// Utility used by mergesort_indexed
     fn mergesortslice(self, i: usize, n: usize) -> Vec<usize>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Stable Merge sort, explicitly sorted result obtained via mergesort_indexed 
-    fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy;
+    fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Clone;
     /// Rank index obtained via mergesort_indexed
-    fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
+    fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Clone;
     /// Utility, swaps any two items into ascending order
     fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd;
     /// Utility, sorts any three items into ascending order
     fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
     /// Stable hash sort giving sort index
     fn hashsort_indexed(self) -> Vec<usize> 
-        where T: PartialOrd+Copy,f64:From<T>;
+        where T: PartialOrd+Clone,f64:From<T>;
     /// Utility used by hashsort_indexed
     fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
-        where T: PartialOrd+Copy,f64:From<T>;
+        where T: PartialOrd+Clone,f64:From<T>;
     /// Stable hash sort. Returns new sorted data vector (ascending or descending)
     fn sorth(self, ascending: bool) -> Vec<T> 
-        where T: PartialOrd+Copy,f64:From<T>;
+        where T: PartialOrd+Clone,f64:From<T>;
     /// Makes a sort index for self, using key generating closure `keyfn`
     fn keyindex(self, keyfn:fn(&T) -> f64, ascending:bool) -> Vec<usize>;
 }
@@ -222,8 +221,8 @@ fn mutsortthree(self, i0:usize, i1:usize, i2:usize)
     where T: PartialOrd;
 /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
 fn muthashsort(self)
-    where T: PartialOrd+Copy, f64:From<T>;
+    where T: PartialOrd+Clone, f64:From<T>;
 /// Sorts n items from i in self. Used by muthashsort.
 fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
-    where T: PartialOrd+Copy, f64:From<T>;
+    where T: PartialOrd+Clone, f64:From<T>;
 }

@@ -95,28 +95,23 @@ fn vecops() {
         vm[vi[vm.binsearch_indexed(&vi,&midval).start]]); 
     println!("Intersect_indexed:\n{}", vm.intersect_indexed(&vi, &v1, &v1.mergesort_indexed()).gr());
     println!("Diff_indexed:\n{}", vm.diff_indexed(&vi, &v1, &v1.mergesort_indexed()).gr());
+    println!("Sansrepeat:\n{}\n",sorted.sansrepeat().gr());
     sorted.dedup();
     println!("Dedup:\n{}\n",sorted.gr());
 }
 
 #[test]
 fn text() {
-    fn fromstr(s:&str) -> f64 {
-        if s.is_empty() { return 0_f64 };
-        let bytes = s.as_bytes();
-        let mut res = bytes[0] as f64;
-        for i in 1..7 {
-            res *= 256.;
-            if i < bytes.len() { res += bytes[i] as f64; }
-        };
-        res    
-    }
     let sentence = "Oh what a bunch of doodaas , doodaa , doodaa - daa";
     let v = sentence.split(' ').collect::<Vec<_>>();
     println!("{}",v.gr()); // Display
-    // using custom key generating closure fromstr above
-    let index = v.keyindex(|s| fromstr(s),true);  
-    println!("Descending: {}",index.unindex(&v,false).gr()); // Display 
+    // using cloning mergesort with implied alphabetic partial order 
+    let dsorted = v.sortm(false);
+    println!("Sortm descending sorted:\n{}",dsorted.gr());  
+    let word  = "doodaa";
+    // Cloning binary search using implied alphabetic partial order
+    println!("Binary_search for {BL}{word}{UN}: {GR}{:?}{UN}",dsorted.binsearch(&word));
+    println!("Sansrepeat:\n{}\n",dsorted.sansrepeat().gr());    
 }
 
 #[test]
