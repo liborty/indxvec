@@ -67,7 +67,7 @@ pub trait Indices {
     /// Complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of index in self. Or opposite order.
-    fn unindex<T: Copy>(self, v:&[T], ascending:bool) -> Vec<T>;
+    fn unindex<T: Clone>(self, v:&[T], ascending:bool) -> Vec<T>;
     /// Pearson's correlation coefficient of two slices, typically ranks.  
     fn ucorrelation(self, v: &[usize]) -> f64;
     /// Potentially useful clone-recast of &[usize] to Vec<f64>
@@ -81,33 +81,33 @@ pub trait Indices {
 use indxvec::{Vecops};
 ```
 
-The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Copy`, are  implemented for `T`.
+The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Clone`, are  implemented for `T`.
 
 ```rust
 pub trait Vecops<T> {
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`. 
-    fn tof64(self) -> Vec<f64> where T: Copy, f64: From<T>;
+    fn tof64(self) -> Vec<f64> where T: Clone, f64: From<T>;
     /// Maximum value in self
-    fn maxt(self) -> T where T: PartialOrd+Copy;
+    fn maxt(self) -> T where T: PartialOrd+Clone;
     /// Minimum value in self
-    fn mint(self) -> T where T: PartialOrd+Copy;
+    fn mint(self) -> T where T: PartialOrd+Clone;
     /// Minimum and maximum values in self
-    fn minmaxt(self) -> (T, T) where T: PartialOrd+Copy;
+    fn minmaxt(self) -> (T, T) where T: PartialOrd+Clone;
     /// Returns MinMax{min, minindex, max, maxindex}
-    fn minmax(self) -> MinMax<T> where T: PartialOrd+Copy;
+    fn minmax(self) -> MinMax<T> where T: PartialOrd+Clone;
     /// MinMax of n items starting at subscript i
     fn minmax_slice(self,i:usize, n:usize) -> MinMax<T>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// MinMax of a subset of self in range i..n
     fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Reversed copy of self
-    fn revs(self) -> Vec<T> where T: Copy;
+    fn revs(self) -> Vec<T> where T:Clone;
     /// Repeated items removed
-    fn sansrepeat(self) -> Vec<T> where T: PartialEq+Copy;
+    fn sansrepeat(self) -> Vec<T> where T: PartialEq+Clone;
     /// Some(subscript) of the first occurence of m, or None
     fn member(self, m:T, forward:bool) -> Option<usize>
-        where T: PartialEq+Copy;
+        where T: PartialEq+Clone;
     /// Binary search of a slice in ascending or descending order.
     fn binsearch(self, val:&T) -> Range<usize> 
         where T: PartialOrd;
@@ -122,42 +122,42 @@ pub trait Vecops<T> {
     fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
     /// Unites two ascending index-sorted slices.
     fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Copy; 
+        where T: PartialOrd+Clone; 
     /// Intersects two ascending explicitly sorted generic vectors.
-    fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
     /// Intersects two ascending index sorted vectors.
     fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Removes items of sorted v2 from sorted self.
-    fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
     /// Removes items of v2 from self using their sort indices.
     fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Divides an unordered set into three: items smaller than pivot, equal, and greater
     fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Divides an unordered set into three by the pivot. 
     /// The results are subscripts to self.   
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Merges (unites) two sorted sets, result is also sorted    
-    fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Copy;
+    fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
     /// Merges (unites) two sets, using their sort indices,
     /// giving also the resulting sort index
     fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize])
-        -> (Vec<T>, Vec<usize>) where T: PartialOrd+Copy;
+        -> (Vec<T>, Vec<usize>) where T: PartialOrd+Clone;
         /// Used by `merge_indexed`
     fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Stable Merge sort main method, giving sort index
-    fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Copy;
+    fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Clone;
     /// Utility used by mergesort_indexed
     fn mergesortslice(self, i: usize, n: usize) -> Vec<usize>
-        where T: PartialOrd+Copy;
+        where T: PartialOrd+Clone;
     /// Stable Merge sort, explicitly sorted result obtained via mergesort_indexed 
-    fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Copy;
+    fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Clone;
     /// Rank index obtained via mergesort_indexed
-    fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Copy;
+    fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Clone;
     /// Utility, swaps any two items into ascending order
     fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool
         where T:PartialOrd;
@@ -166,13 +166,13 @@ pub trait Vecops<T> {
         where T: PartialOrd; 
     /// Stable Hash sort
     fn hashsort_indexed(self) -> Vec<usize> 
-        where T: PartialOrd+Copy,F64:From<T>;
+        where T: PartialOrd+Clone,F64:From<T>;
     /// Utility used by hashsort_indexed
     fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
-        where T: PartialOrd+Copy,F64:From<T>;
+        where T: PartialOrd+Clone,F64:From<T>;
     /// Stable hash sort. Returns new sorted data vector (ascending or descending)
     fn sorth(self, ascending: bool) -> Vec<T> 
-        where T: PartialOrd+Copy,F64:From<T>;
+        where T: PartialOrd+Clone,F64:From<T>;
     /// Makes a sort index for self, using key generating closure `keyfn`
     fn keyindex(self, keyfn:fn(&T)->f64, ascending:bool) -> Vec<usize>;
 }
@@ -192,7 +192,7 @@ This trait contains `muthashsort`, which overwrites `self` with sorted data. Whe
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
 /// Sorts a mutable slice in place.
- fn mutsort(self) where T: PartialOrd;
+ fn mutsort(self) where T:PartialOrd;
 /// mutable reversal, general utility
 fn mutrevs(self);
 /// utility that mutably swaps two indexed items into ascending order
@@ -203,10 +203,10 @@ fn mutsortthree(self, i0:usize, i1:usize, i2:usize)
     where T: PartialOrd;
 /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
 fn muthashsort(self)
-    where T: PartialOrd+Copy, F64:From<T>;
+    where T: PartialOrd+Clone, F64:From<T>;
 /// Sorts n items from i in self. Used by muthashsort.
 fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
-    where T: PartialOrd+Copy, F64:From<T>;
+    where T: PartialOrd+Clone, F64:From<T>;
 }
 ```
 
@@ -303,7 +303,7 @@ use indxvec::{Found,MinMax,F64,inf64,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.3.5** - Relaxed all trait parameters from Copy to Clone and replaced all implicit copying of T with explicit cloning. This means that the methods are now more generally applicable to any type T that has Clone implemented. As demonstrated in test `text()`.
+**Version 1.3.5** - Relaxed all trait parameters from Clone to Clone and replaced all implicit copying of T with explicit cloning. This means that the methods are now more generally applicable to any type T that has Clone implemented. As demonstrated in test `text()`.
 
 **Version 1.3.4** - Removed the custom F64 type and automatic custom conversions. Hashsort now again requires strictly numerical types convertible to f64 by standard means. Replaced this with new `keyindex` in trait `Vecops`. It is able to apply `hashsort_indexed` to any (user) type T, using custom closure `keyfn:fn(&T) -> f64` to generate f64 keys. This is more easily extensible and not nearly so verbose.
 
