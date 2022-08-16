@@ -16,7 +16,7 @@ use std::io;
 use std::io::Write;
 use std::fs::File;
 use printing::*;
-use core::{ops::Range};
+use core::{ops::Range,iter::Rev};
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
@@ -62,6 +62,68 @@ where
         )
     }
 }
+
+/// General Binary Search
+/// Search only within the specified inrange, which is always ascending. 
+/// Probe obtains the data value T at key:usize, by any means, 
+/// from any kind of sorted data source or monotonic function.
+/// The data sort order can be either ascending or descending.
+/// PartialOrd has to be implemented for custom types T.
+/// When item is in order before inrange.start, Err(inrange.start) is returned.
+/// When item is in order after inrange.end, Err(inrange.end) is returned.
+/// Otherwise binary_find returns Range of consecutive values PartiallyEqual to the sought item:&T.
+/// When the item was not found, then the returned_range will be empty and 
+/// returned_range.start will give the sort position where the item can be inserted.
+pub fn binary_find<'a,T>(inrange:Range<usize>,probe: fn(usize)-> &'a T, item:& T ) 
+    -> Result<Range<usize>,usize> where T:PartialOrd { 
+
+    let upmatches = |r:Range<usize>| {
+        let mut count = 1_usize;
+        for i in r { // count all additional matching items within the range
+            if item == probe(i) { count += 1; } else { break; }; 
+            }
+        count
+    };
+    let downmatches = |r: Rev<Range<usize>>| {
+        let mut count = 1_usize;
+        for i in r { // count all additional matching items within the range
+            if item == probe(i) { count += 1; } else { break; }; 
+            }
+        count
+    };
+ 
+ 
+    let firstval = probe(inrange.start); 
+    let lastval = probe(inrange.end-1);
+    // when data is in descending order, reverse all comparisons
+    let ordered = if firstval < lastval { |a:&T,b:&T| a < b } 
+    else { |a:&T,b:&T| b < a }; // comparisons closure defined by the sort order 
+
+    if ordered(item,firstval) { return Err(inrange.start); } // item is before the range.start
+    else if ordered(lastval,item) { return Err(inrange.end); } // item is beyond the range.end
+    else if firstval == lastval { return Ok(inrange); } // range data is all equal to item or empty 
+
+    if item == firstval { // item is equal to the first data item
+        return Ok(inrange.start..inrange.start+upmatches(inrange.start+1..inrange.end));
+    };
+    if item == lastval { // item is equal to the last data item in range
+        return Ok(inrange.end-downmatches((inrange.start..inrange.end-1).rev())..inrange.end);
+    };
+    let mut hi = inrange.end - 1; // initial high index
+    let mut lo = inrange.start; // initial low index
+    loop {
+        let mid = (lo + hi) / 2; // binary chop here with truncation
+        if mid > lo { // still some range left
+            let midval = probe(mid);
+            if ordered(midval,item) { lo = mid; continue; };
+            if ordered(item,midval) { hi = mid; continue; }; 
+            // neither greater nor smaller, hence we found match(es) 
+            return Ok((mid-downmatches((mid..inrange.end-1).rev()))..(mid+upmatches(mid+1..inrange.end)));            
+        }
+        else { return Ok(hi..hi) }; // interval is exhausted, val not found
+    }
+}
+
 
 /// Trait to serialize slices of generic items `&[T]` (vectors)
 /// and slices of Vecs of generic items `&[Vec<T>]` (matrices).
@@ -122,7 +184,7 @@ pub trait Indices {
 }
 
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
-pub trait Vecops<T> {
+pub trait Vecops<T> {  
 
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`. 
     fn tof64(self) -> Vec<f64> where T: Clone, f64: From<T>;

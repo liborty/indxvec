@@ -1,5 +1,5 @@
-use crate::{MinMax,Indices,Vecops, Mutops};
-use core::{ops::Range};
+use crate::{MinMax,Indices,Vecops,Mutops};
+use core::ops::Range;
 
 impl<T> Vecops<T> for &[T] {
 
@@ -124,8 +124,9 @@ fn member(self,m: T,forward: bool) -> Option<usize> where T: PartialEq+Clone {
 }
 
 /// Binary search of an explicitly sorted list in ascending or descending order.
-/// Returns range of index values matching val. Can be empty. 
-/// range.start is where the first val is, or  when missing, could be inserted in the correct sort order.
+/// Returns range of index values matching val. The range can be empty. 
+/// range.start is where the first val is.
+/// When val is not found, then range.start == range.end is val's insertion sort order.
 fn binsearch(self, val: &T) -> Range<usize> where T: PartialOrd {
     if self.is_empty() { return 0..0; }; // empty self, val could be inserted at index 0
     let n = self.len();
