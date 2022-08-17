@@ -11,7 +11,7 @@ intersecting, printing, etc.
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, binary_find, 1.3.6'here, printing::*, Indices, Vecops, Mutops, Printing };
+use indxvec::{ MinMax, binary_find, here, printing::*, Indices, Vecops, Mutops, Printing };
 ```
 
 ## Description
