@@ -166,13 +166,13 @@ pub trait Vecops<T> {
         where T: PartialOrd; 
     /// Stable Hash sort
     fn hashsort_indexed(self) -> Vec<usize> 
-        where T: PartialOrd+Clone,F64:From<T>;
+        where T: PartialOrd+Clone,f64:From<T>;
     /// Utility used by hashsort_indexed
     fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
-        where T: PartialOrd+Clone,F64:From<T>;
+        where T: PartialOrd+Clone,f64:From<T>;
     /// Stable hash sort. Returns new sorted data vector (ascending or descending)
     fn sorth(self, ascending: bool) -> Vec<T> 
-        where T: PartialOrd+Clone,F64:From<T>;
+        where T: PartialOrd+Clone,f64:From<T>;
     /// Makes a sort index for self, using key generating closure `keyfn`
     fn keyindex(self, keyfn:fn(&T)->f64, ascending:bool) -> Vec<usize>;
 }
@@ -304,7 +304,7 @@ use indxvec::{MinMax,binary_find,here};
 
 **Version 1.3.6** - Added `binary_find`.
 
-**Version 1.3.5** - Relaxed all trait parameters from Clone to Clone and replaced all implicit copying of T with explicit cloning. This means that the methods are now more generally applicable to any type T that has Clone implemented. As demonstrated in test `text()`.
+**Version 1.3.5** - Relaxed all trait parameters from Copy to Clone and replaced all implicit copying of T with explicit cloning. This means that the methods are now more generally applicable to any type T that has Clone implemented. As demonstrated in test `text()`.
 
 **Version 1.3.4** - Removed the custom F64 type and automatic custom conversions. Hashsort now again requires strictly numerical types convertible to f64 by standard means. Replaced this with new `keyindex` in trait `Vecops`. It is able to apply `hashsort_indexed` to any (user) type T, using custom closure `keyfn:fn(&T) -> f64` to generate f64 keys. This is more easily extensible and not nearly so verbose.
 
