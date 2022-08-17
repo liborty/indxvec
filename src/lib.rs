@@ -66,28 +66,28 @@ where
 /// General Binary Search
 /// Search only within the specified range, which is always ascending. 
 /// Probe obtains the data value T at key:usize, by any means, 
-/// from any kind of sorted data source or monotonic function.
-/// The sort order can be either ascending or descending.
+/// from any kind of sorted data or monotonic function.
+/// The sort order can be either ascending or descending (increasing/decreasing).
 /// PartialOrd has to be implemented separately for custom types T.
 /// When item is in order before range.start, Err(range.start) is returned.
 /// When item is in order after range.end, Err(range.end) is returned.
 /// Otherwise binary_find returns Range of all the consecutive values PartiallyEqual to the sought item:&T.
 /// When item was not found, then the returned_range will be empty and 
-/// returned_range.start will give the sort position where the item can be inserted.
-pub fn binary_find<'a,T,F>(range:Range<usize>,probe: F, item:& T )  
-    -> Result<Range<usize>,usize> where T:PartialOrd+'a, F:Fn(usize)-> &'a T { 
+/// returned_range.start (and end) will give the sort position where the item can be inserted.
+pub fn binary_find<T,F>(range:Range<usize>,probe: F, item:&T )  
+    -> Result<Range<usize>,usize> where T:PartialOrd, F:Fn(usize)-> T { 
 
     let last = |idx:usize| -> usize {
         let mut lastidx = idx+1;
         for i in idx+1..range.end { // move end up
-            if item == probe(i) { lastidx += 1; } else { break; }; 
+            if item == &probe(i) { lastidx += 1; } else { break; }; 
         }
         lastidx
     };
     let first = |idx:usize| -> usize {
         let mut firstidx = idx;
         for i in (range.start..idx).rev() { // move start down
-            if item == probe(i) { firstidx -= 1; } else { break; }; 
+            if item == &probe(i) { firstidx -= 1; } else { break; }; 
         }
         firstidx
     }; 
@@ -98,24 +98,24 @@ pub fn binary_find<'a,T,F>(range:Range<usize>,probe: F, item:& T )
     let ordered = if firstval < lastval { |a:&T,b:&T| a < b } 
     else { |a:&T,b:&T| b < a }; // comparisons closure defined by the sort order 
 
-    if ordered(item,firstval) { return Err(range.start); } // item is before the range.start
-    else if ordered(lastval,item) { return Err(range.end); } // item is beyond the range.end
+    if ordered(item,&firstval) { return Err(range.start); } // item is before the range.start
+    else if ordered(&lastval,item) { return Err(range.end); } // item is beyond the range.end
     else if firstval == lastval { return Ok(range); } // range data is all equal to item or empty 
 
-    if item == firstval { // item is equal to the first data item
+    if item == &firstval { // item is equal to the first data item
         return Ok(range.start..last(range.start));
     };
-    if item == lastval { // item is equal to the last data item in range
+    if item == &lastval { // item is equal to the last data item in range
         return Ok(first(range.end-1)..range.end);
     };
     let mut hi = range.end - 1; // initial high index
     let mut lo = range.start; // initial low index
     loop {
-        let mid = (lo + hi) / 2; // binary chop here with truncation
+        let mid = lo + (hi-lo) / 2; // binary chop here with truncation
         if mid > lo { // still some range left
             let midval = probe(mid);
-            if ordered(midval,item) { lo = mid; continue; };
-            if ordered(item,midval) { hi = mid; continue; }; 
+            if ordered(&midval,item) { lo = mid; continue; };
+            if ordered(item,&midval) { hi = mid; continue; }; 
             // neither greater nor smaller, hence we found match(es) 
             return Ok(first(mid)..last(mid));            
         }

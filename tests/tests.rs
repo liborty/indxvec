@@ -100,6 +100,12 @@ fn vecops() {
     println!("Dedup:\n{}\n",sorted.gr());
 }
 
+/// transforms i:usize which is normally in the full usize range
+/// to f64, such that roots of num are bracketed
+fn uasf(num:f64,i:usize) -> f64 {
+    num*(i as f64)/(usize::MAX as f64)
+}
+
 #[test]
 fn text() {
     let sentence = 
@@ -111,35 +117,43 @@ fn text() {
     println!("{}",v.gr()); // Display
     // using cloning mergesort with implied alphabetic partial order 
     let mut sorted = v.sortm(true);
-    println!("Sortm ascending sorted:\n{}",sorted.gr());
-    // Cloning binary search using implied alphabetic partial order
-    println!("Binary_search for {BL}Humpty{UN}: {YL}{:?}{UN}",
-        binary_find(0..sorted.len(),|i|&sorted[i], &"Humpty"));
-    println!("Binary_search for {BL}Humpty{UN} in range 5..: {YL}{:?}{UN}", 
-        binary_find(5..sorted.len(),|i|&sorted[i], &"Humpty"));
-    println!("Binary_search for {BL}the{UN}: {YL}{:?}{UN}", 
-        binary_find(0..sorted.len(),|i|&sorted[i], &"the"));
-    println!("Binary_search for {BL}the{UN} in range 0..24: {YL}{:?}{UN}", 
-        binary_find(0..24,|i|&sorted[i], &"the"));
-    println!("Binary_search for {BL}queen's{UN}: {YL}{:?}{UN}", 
-        binary_find(0..sorted.len(),|i|&sorted[i], &"queen's"));
+    println!("Ascending sorted:\n{}",sorted.gr());
+    // Binary search using implied alphabetic partial order
+    println!("Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
+        binary_find(0..sorted.len(),|i|sorted[i], &"Humpty"));
+    println!("Binary_search for {BL}'Humpty'{UN} in range 5..end: {YL}{:?}{UN}", 
+        binary_find(5..sorted.len(),|i|sorted[i], &"Humpty"));
+    println!("Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}", 
+        binary_find(0..sorted.len(),|i|sorted[i], &"the"));
+    println!("Binary_search for {BL}'the'{UN} in range 0..24: {YL}{:?}{UN}", 
+        binary_find(0..24,|i|sorted[i], &"the"));
+    println!("Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}", 
+        binary_find(0..sorted.len(),|i|sorted[i], &"queen's"));
     sorted.dedup();
     println!("Dedup:\n{}\n",sorted.gr());    
     let mut dsorted = v.sortm(false);
     println!("Sortm descending sorted:\n{}",dsorted.gr());
     // Cloning binary search using implied alphabetic partial order
-    println!("Binary_search for {BL}Humpty{UN}: {YL}{:?}{UN}",
-        binary_find(0..dsorted.len(),|i|&dsorted[i], &"Humpty"));
-    println!("Binary_search for {BL}Humpty{UN} in range 0..22: {YL}{:?}{UN}", 
-        binary_find(0..22,|i|&dsorted[i], &"Humpty"));
-    println!("Binary_search for {BL}the{UN}: {YL}{:?}{UN}", 
-        binary_find(0..dsorted.len(),|i|&dsorted[i], &"the"));
-    println!("Binary_search for {BL}the{UN} in range 5..end: {YL}{:?}{UN}", 
-        binary_find(5..dsorted.len(),|i|&dsorted[i], &"the"));
-    println!("Binary_search for {BL}queen's{UN}: {YL}{:?}{UN}", 
-        binary_find(0..dsorted.len(),|i|&dsorted[i], &"queen's"));
+    println!("Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
+        binary_find(0..dsorted.len(),|i|dsorted[i], &"Humpty"));
+    println!("Binary_search for {BL}'Humpty'{UN} in range 0..22: {YL}{:?}{UN}", 
+        binary_find(0..22,|i|dsorted[i], &"Humpty"));
+    println!("Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}", 
+        binary_find(0..dsorted.len(),|i|dsorted[i], &"the"));
+    println!("Binary_search for {BL}'the'{UN} in range 5..end: {YL}{:?}{UN}", 
+        binary_find(5..dsorted.len(),|i|dsorted[i], &"the"));
+    println!("Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}", 
+        binary_find(0..dsorted.len(),|i|dsorted[i], &"queen's"));
     dsorted.dedup();
-    println!("Dedup:\n{}\n",dsorted.gr());    
+    println!("Dedup:\n{}\n",sorted.gr());
+
+    let num = 5.;
+    let root = 3;
+    // find 1/nth root of num
+    if let Ok(r) = binary_find(0..usize::MAX,
+        |i| { uasf(num,i).powi(root) },&num)  
+        { println!("1/{} power of {} {} {}", 
+          root.yl(), num.yl(), num.powf(1./root as f64).gr(),uasf(num,r.start).gr()); };
 }
 
 #[test]

@@ -11,7 +11,7 @@ intersecting, printing, etc.
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, binary_find, here, printing::*, Indices, Vecops, Mutops, Printing };
+use indxvec::{ MinMax, binary_find, 1.3.6'here, printing::*, Indices, Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -302,7 +302,7 @@ use indxvec::{MinMax,binary_find,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.3.6** - Added `binary_find`. 
+**Version 1.3.6** - Added `binary_find`.
 
 **Version 1.3.5** - Relaxed all trait parameters from Clone to Clone and replaced all implicit copying of T with explicit cloning. This means that the methods are now more generally applicable to any type T that has Clone implemented. As demonstrated in test `text()`.
 
