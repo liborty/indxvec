@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use indxvec::{ here, printing::*, Indices, Printing, Vecops, Mutops};
+use indxvec::{ here, binary_find,printing::*, Indices, Printing, Vecops, Mutops};
 use ran::*;
 use times::*;
 use std::convert::From;
@@ -102,16 +102,44 @@ fn vecops() {
 
 #[test]
 fn text() {
-    let sentence = "Oh what a bunch of doodaas , doodaa , doodaa - daa";
+    let sentence = 
+        "Humpty Dumpty sat on a wall, \
+        Humpty Dumpty had a great fall, \
+        and all the king's horses and all the king's men \
+        could not put Humpty together again";
     let v = sentence.split(' ').collect::<Vec<_>>();
     println!("{}",v.gr()); // Display
     // using cloning mergesort with implied alphabetic partial order 
-    let dsorted = v.sortm(false);
-    println!("Sortm descending sorted:\n{}",dsorted.gr());  
-    let word  = "doodaa";
+    let mut sorted = v.sortm(true);
+    println!("Sortm ascending sorted:\n{}",sorted.gr());
     // Cloning binary search using implied alphabetic partial order
-    println!("Binary_search for {BL}{word}{UN}: {GR}{:?}{UN}",dsorted.binsearch(&word));
-    println!("Sansrepeat:\n{}\n",dsorted.sansrepeat().gr());    
+    println!("Binary_search for {BL}Humpty{UN}: {YL}{:?}{UN}",
+        binary_find(0..sorted.len(),|i|&sorted[i], &"Humpty"));
+    println!("Binary_search for {BL}Humpty{UN} in range 5..: {YL}{:?}{UN}", 
+        binary_find(5..sorted.len(),|i|&sorted[i], &"Humpty"));
+    println!("Binary_search for {BL}the{UN}: {YL}{:?}{UN}", 
+        binary_find(0..sorted.len(),|i|&sorted[i], &"the"));
+    println!("Binary_search for {BL}the{UN} in range 0..24: {YL}{:?}{UN}", 
+        binary_find(0..24,|i|&sorted[i], &"the"));
+    println!("Binary_search for {BL}queen's{UN}: {YL}{:?}{UN}", 
+        binary_find(0..sorted.len(),|i|&sorted[i], &"queen's"));
+    sorted.dedup();
+    println!("Dedup:\n{}\n",sorted.gr());    
+    let mut dsorted = v.sortm(false);
+    println!("Sortm descending sorted:\n{}",dsorted.gr());
+    // Cloning binary search using implied alphabetic partial order
+    println!("Binary_search for {BL}Humpty{UN}: {YL}{:?}{UN}",
+        binary_find(0..dsorted.len(),|i|&dsorted[i], &"Humpty"));
+    println!("Binary_search for {BL}Humpty{UN} in range 0..22: {YL}{:?}{UN}", 
+        binary_find(0..22,|i|&dsorted[i], &"Humpty"));
+    println!("Binary_search for {BL}the{UN}: {YL}{:?}{UN}", 
+        binary_find(0..dsorted.len(),|i|&dsorted[i], &"the"));
+    println!("Binary_search for {BL}the{UN} in range 5..end: {YL}{:?}{UN}", 
+        binary_find(5..dsorted.len(),|i|&dsorted[i], &"the"));
+    println!("Binary_search for {BL}queen's{UN}: {YL}{:?}{UN}", 
+        binary_find(0..dsorted.len(),|i|&dsorted[i], &"queen's"));
+    dsorted.dedup();
+    println!("Dedup:\n{}\n",dsorted.gr());    
 }
 
 #[test]

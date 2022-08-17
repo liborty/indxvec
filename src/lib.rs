@@ -16,7 +16,7 @@ use std::io;
 use std::io::Write;
 use std::fs::File;
 use printing::*;
-use core::{ops::Range,iter::Rev};
+use core::{ops::Range};
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
@@ -64,53 +64,52 @@ where
 }
 
 /// General Binary Search
-/// Search only within the specified inrange, which is always ascending. 
+/// Search only within the specified range, which is always ascending. 
 /// Probe obtains the data value T at key:usize, by any means, 
 /// from any kind of sorted data source or monotonic function.
-/// The data sort order can be either ascending or descending.
-/// PartialOrd has to be implemented for custom types T.
-/// When item is in order before inrange.start, Err(inrange.start) is returned.
-/// When item is in order after inrange.end, Err(inrange.end) is returned.
-/// Otherwise binary_find returns Range of consecutive values PartiallyEqual to the sought item:&T.
-/// When the item was not found, then the returned_range will be empty and 
+/// The sort order can be either ascending or descending.
+/// PartialOrd has to be implemented separately for custom types T.
+/// When item is in order before range.start, Err(range.start) is returned.
+/// When item is in order after range.end, Err(range.end) is returned.
+/// Otherwise binary_find returns Range of all the consecutive values PartiallyEqual to the sought item:&T.
+/// When item was not found, then the returned_range will be empty and 
 /// returned_range.start will give the sort position where the item can be inserted.
-pub fn binary_find<'a,T>(inrange:Range<usize>,probe: fn(usize)-> &'a T, item:& T ) 
-    -> Result<Range<usize>,usize> where T:PartialOrd { 
+pub fn binary_find<'a,T,F>(range:Range<usize>,probe: F, item:& T )  
+    -> Result<Range<usize>,usize> where T:PartialOrd+'a, F:Fn(usize)-> &'a T { 
 
-    let upmatches = |r:Range<usize>| {
-        let mut count = 1_usize;
-        for i in r { // count all additional matching items within the range
-            if item == probe(i) { count += 1; } else { break; }; 
-            }
-        count
+    let last = |idx:usize| -> usize {
+        let mut lastidx = idx+1;
+        for i in idx+1..range.end { // move end up
+            if item == probe(i) { lastidx += 1; } else { break; }; 
+        }
+        lastidx
     };
-    let downmatches = |r: Rev<Range<usize>>| {
-        let mut count = 1_usize;
-        for i in r { // count all additional matching items within the range
-            if item == probe(i) { count += 1; } else { break; }; 
-            }
-        count
-    };
+    let first = |idx:usize| -> usize {
+        let mut firstidx = idx;
+        for i in (range.start..idx).rev() { // move start down
+            if item == probe(i) { firstidx -= 1; } else { break; }; 
+        }
+        firstidx
+    }; 
  
- 
-    let firstval = probe(inrange.start); 
-    let lastval = probe(inrange.end-1);
+    let firstval = probe(range.start); 
+    let lastval = probe(range.end-1);
     // when data is in descending order, reverse all comparisons
     let ordered = if firstval < lastval { |a:&T,b:&T| a < b } 
     else { |a:&T,b:&T| b < a }; // comparisons closure defined by the sort order 
 
-    if ordered(item,firstval) { return Err(inrange.start); } // item is before the range.start
-    else if ordered(lastval,item) { return Err(inrange.end); } // item is beyond the range.end
-    else if firstval == lastval { return Ok(inrange); } // range data is all equal to item or empty 
+    if ordered(item,firstval) { return Err(range.start); } // item is before the range.start
+    else if ordered(lastval,item) { return Err(range.end); } // item is beyond the range.end
+    else if firstval == lastval { return Ok(range); } // range data is all equal to item or empty 
 
     if item == firstval { // item is equal to the first data item
-        return Ok(inrange.start..inrange.start+upmatches(inrange.start+1..inrange.end));
+        return Ok(range.start..last(range.start));
     };
     if item == lastval { // item is equal to the last data item in range
-        return Ok(inrange.end-downmatches((inrange.start..inrange.end-1).rev())..inrange.end);
+        return Ok(first(range.end-1)..range.end);
     };
-    let mut hi = inrange.end - 1; // initial high index
-    let mut lo = inrange.start; // initial low index
+    let mut hi = range.end - 1; // initial high index
+    let mut lo = range.start; // initial low index
     loop {
         let mid = (lo + hi) / 2; // binary chop here with truncation
         if mid > lo { // still some range left
@@ -118,7 +117,7 @@ pub fn binary_find<'a,T>(inrange:Range<usize>,probe: fn(usize)-> &'a T, item:& T
             if ordered(midval,item) { lo = mid; continue; };
             if ordered(item,midval) { hi = mid; continue; }; 
             // neither greater nor smaller, hence we found match(es) 
-            return Ok((mid-downmatches((mid..inrange.end-1).rev()))..(mid+upmatches(mid+1..inrange.end)));            
+            return Ok(first(mid)..last(mid));            
         }
         else { return Ok(hi..hi) }; // interval is exhausted, val not found
     }

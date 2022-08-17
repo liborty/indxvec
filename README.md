@@ -11,7 +11,7 @@ intersecting, printing, etc.
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, here, printing::*, Indices, Vecops, Mutops, Printing };
+use indxvec::{ MinMax, binary_find, here, printing::*, Indices, Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -294,14 +294,15 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 ## Structs and Utility Functions
 
 ```rust
-use indxvec::{Found,MinMax,F64,inf64,here};
+use indxvec::{MinMax,binary_find,here};
 ```
-
-* `pub struct Found` for general result of binary search. Index and count of items found.
 * `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices.
+* `binary_find` is a general purpose binary search/solver.
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.3.6** - Added `binary_find`. 
 
 **Version 1.3.5** - Relaxed all trait parameters from Clone to Clone and replaced all implicit copying of T with explicit cloning. This means that the methods are now more generally applicable to any type T that has Clone implemented. As demonstrated in test `text()`.
 
