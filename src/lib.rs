@@ -100,7 +100,7 @@ pub fn binary_find<T,F>(range:Range<usize>,probe: F, item:&T )
 
     if ordered(item,&firstval) { return Err(range.start); } // item is before the range.start
     else if ordered(&lastval,item) { return Err(range.end); } // item is beyond the range.end
-    else if firstval == lastval { return Ok(range); } // range data is all equal to item or empty 
+    else if firstval == lastval { return Ok(range); }; // range data is all equal to item or empty 
 
     if item == &firstval { // item is equal to the first data item
         return Ok(range.start..last(range.start));

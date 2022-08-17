@@ -133,7 +133,7 @@ fn text() {
     println!("Dedup:\n{}\n",sorted.gr());    
     let mut dsorted = v.sortm(false);
     println!("Sortm descending sorted:\n{}",dsorted.gr());
-    // Cloning binary search using implied alphabetic partial order
+    // Binary search using implied alphabetic partial order
     println!("Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
         binary_find(0..dsorted.len(),|i|dsorted[i], &"Humpty"));
     println!("Binary_search for {BL}'Humpty'{UN} in range 0..22: {YL}{:?}{UN}", 
@@ -149,9 +149,8 @@ fn text() {
 
     let num = 5.;
     let root = 3;
-    // find 1/nth root of num
-    if let Ok(r) = binary_find(0..usize::MAX,
-        |i| { uasf(num,i).powi(root) },&num)  
+    // find root's root of num
+    if let Ok(r) = binary_find(0..usize::MAX, |i| { uasf(num,i).powi(root) },&num)  
         { println!("1/{} power of {} {} {}", 
           root.yl(), num.yl(), num.powf(1./root as f64).gr(),uasf(num,r.start).gr()); };
 }
