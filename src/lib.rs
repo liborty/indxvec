@@ -75,15 +75,18 @@ where
 /// When item was not found, then the returned_range will be empty and 
 /// returned_range.start (and end) will give the sort position where the item can be inserted.
 pub fn binary_find<T,F>(range:Range<usize>,probe: F, item:&T )  
-    -> Result<Range<usize>,usize> where T:PartialOrd, F:Fn(usize)-> T { 
+    -> Result<Range<usize>,usize> where T:PartialOrd, F:Fn(usize)->T { 
 
-    let last = |idx:usize| -> usize {
+    // binary search lands possibly anywhere within several matching items
+    // closure `last` finds the end of their range   
+    let last = |idx:usize| -> usize { 
         let mut lastidx = idx+1;
         for i in idx+1..range.end { // move end up
             if item == &probe(i) { lastidx += 1; } else { break; }; 
         }
         lastidx
     };
+    // closure `first` finds the start of the range of the matching items  
     let first = |idx:usize| -> usize {
         let mut firstidx = idx;
         for i in (range.start..idx).rev() { // move start down

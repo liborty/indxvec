@@ -100,11 +100,8 @@ fn vecops() {
     println!("Dedup:\n{}\n",sorted.gr());
 }
 
-/// transforms i:usize which is normally in the full usize range
-/// to f64, such that roots of num are bracketed
-fn uasf(num:f64,i:usize) -> f64 {
-    num*(i as f64)/(usize::MAX as f64)
-}
+/// transforms i:usize which is normally in the full usize range to f64 in [0,num] 
+fn uasf(num:f64,i:usize) -> f64 { num*(i as f64)/(usize::MAX as f64) }
 
 #[test]
 fn text() {
@@ -150,9 +147,9 @@ fn text() {
     let num = 5.;
     let root = 3;
     // find root's root of num
-    if let Ok(r) = binary_find(0..usize::MAX, |i| { uasf(num,i).powi(root) },&num)  
-        { println!("1/{} power of {} {} {}", 
-          root.yl(), num.yl(), num.powf(1./root as f64).gr(),uasf(num,r.start).gr()); };
+    if let Ok(r) = binary_find(1..usize::MAX, |i| { uasf(num,i).powi(root) },&num)  
+        { println!("1/{} power of {} powf: {} binary_find: {}", 
+          root.yl(), num.yl(), num.powf(1./root as f64).gr(),(uasf(num,r.start)).gr()); };
 }
 
 #[test]
