@@ -100,9 +100,6 @@ fn vecops() {
     println!("Dedup:\n{}\n",sorted.gr());
 }
 
-/// transforms i:usize which is normally in the full usize range to f64 in [0,num] 
-fn uasf(num:f64,i:usize) -> f64 { num*(i as f64)/(usize::MAX as f64) }
-
 #[test]
 fn text() {
     let sentence = 
@@ -143,13 +140,30 @@ fn text() {
         binary_find(0..dsorted.len(),|i|dsorted[i], &"queen's"));
     dsorted.dedup();
     println!("Dedup:\n{}\n",sorted.gr());
+}
 
-    let num = 5.;
-    let root = 3;
-    // find root's root of num
-    if let Ok(r) = binary_find(1..usize::MAX, |i| { uasf(num,i).powi(root) },&num)  
-        { println!("1/{} power of {} powf: {} binary_find: {}", 
-          root.yl(), num.yl(), num.powf(1./root as f64).gr(),(uasf(num,r.start)).gr()); };
+use core::ops::Range;
+#[test]
+fn roottest() { 
+    let num:f64 = 1.1;
+    let root:f64 = 5.;
+    match broot(num,root) {
+        Ok(rng) => { 
+            let r = rng.start as f64;
+            println!("Power {} of {} powf: {} binary_find: {}", 
+            (1./root).yl(), num.yl(), num.powf(1./root).gr(),
+            (num*r/(usize::MAX as f64)).gr()); 
+        },
+        Err(badend) => { 
+            println!{ "{RD}Extend the range limit: {}{UN}", badend };
+        }
+    }
+}
+
+///Same as num.powf(1./root), using binary search
+fn broot(num:f64,root:f64) -> Result<Range<usize>,usize> {
+    let numf = num/(usize::MAX as f64); // scaling to better utilise the usize range
+    binary_find(1..usize::MAX, |i| { (numf*i as f64).powf(root) },&num)
 }
 
 #[test]

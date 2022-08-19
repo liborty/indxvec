@@ -94,23 +94,26 @@ pub fn binary_find<T,F>(range:Range<usize>,probe: F, item:&T )
         }
         firstidx
     }; 
- 
+
+    // Checking for errors, special cases and order
+    if range.is_empty() { return Err(range.end) }; 
     let firstval = probe(range.start); 
     let lastval = probe(range.end-1);
+    // search range data is all equal to item 
+    if firstval == lastval { return Ok(range); }; 
     // when data is in descending order, reverse all comparisons
     let ordered = if firstval < lastval { |a:&T,b:&T| a < b } 
-    else { |a:&T,b:&T| b < a }; // comparisons closure defined by the sort order 
-
+    else { |a:&T,b:&T| b < a }; // comparisons closure defined by the sort order
     if ordered(item,&firstval) { return Err(range.start); } // item is before the range.start
-    else if ordered(&lastval,item) { return Err(range.end); } // item is beyond the range.end
-    else if firstval == lastval { return Ok(range); }; // range data is all equal to item or empty 
-
+    else if ordered(&lastval,item) { return Err(range.end); } // item is beyond the range.end 
     if item == &firstval { // item is equal to the first data item
         return Ok(range.start..last(range.start));
     };
     if item == &lastval { // item is equal to the last data item in range
         return Ok(first(range.end-1)..range.end);
     };
+
+    // Clean binary search
     let mut hi = range.end - 1; // initial high index
     let mut lo = range.start; // initial low index
     loop {

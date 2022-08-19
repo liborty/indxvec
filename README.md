@@ -302,6 +302,8 @@ use indxvec::{MinMax,binary_find,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.3.7** - Tweaked `binary_find` and its test.
+
 **Version 1.3.6** - Added `binary_find`.
 
 **Version 1.3.5** - Relaxed all trait parameters from Copy to Clone and replaced all implicit copying of T with explicit cloning. This means that the methods are now more generally applicable to any type T that has Clone implemented. As demonstrated in test `text()`.
