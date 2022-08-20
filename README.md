@@ -49,6 +49,16 @@ cargo test --release -- --test-threads=1 --nocapture --color always
 
 * **Unindexing** - given a sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1,..data_n`, not explicitly joined together in some bulky Struct elements. The sort index obtained by: `let indx = keys.sort_indexed()` can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
 
+## Struct and Utility Functions
+
+```rust
+use indxvec::{MinMax,binary_find,here};
+```
+
+* `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices.
+* `binary_find` is a general purpose binary search/solver.
+* `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
+
 ## Trait `Indices`
 
 ```rust
@@ -291,16 +301,9 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 `memsearch` returns `Option(None)`, when `midval` is not found in `vm`. Here, `None` will be printed in red, while any found item will be printed in green. This is also an example of how to process `Option`s without the long-winded `match` statements.
 
-## Structs and Utility Functions
-
-```rust
-use indxvec::{MinMax,binary_find,here};
-```
-* `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices.
-* `binary_find` is a general purpose binary search/solver.
-* `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
-
 ## Release Notes (Latest First)
+
+**Version 1.3.8** - Widened the range of input data and probe function of `binary_find` to u128.
 
 **Version 1.3.7** - Tweaked `binary_find` and its test.
 
