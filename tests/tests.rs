@@ -114,30 +114,30 @@ fn text() {
     println!("Ascending sorted:\n{}",sorted.gr());
     // Binary search using implied alphabetic partial order
     println!("Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        binary_find(0..sorted.len(),|i|sorted[i], &"Humpty"));
+        binary_find(0..sorted.len() as u128,|i|sorted[i as usize], &"Humpty"));
     println!("Binary_search for {BL}'Humpty'{UN} in range 5..end: {YL}{:?}{UN}", 
-        binary_find(5..sorted.len(),|i|sorted[i], &"Humpty"));
+        binary_find(5..sorted.len() as u128,|i|sorted[i as usize], &"Humpty"));
     println!("Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}", 
-        binary_find(0..sorted.len(),|i|sorted[i], &"the"));
+        binary_find(0..sorted.len() as u128,|i|sorted[i as usize], &"the"));
     println!("Binary_search for {BL}'the'{UN} in range 0..24: {YL}{:?}{UN}", 
-        binary_find(0..24,|i|sorted[i], &"the"));
+        binary_find(0..24,|i|sorted[i as usize], &"the"));
     println!("Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}", 
-        binary_find(0..sorted.len(),|i|sorted[i], &"queen's"));
+        binary_find(0..sorted.len() as u128,|i|sorted[i as usize], &"queen's"));
     sorted.dedup();
     println!("Dedup:\n{}\n",sorted.gr());    
     let mut dsorted = v.sortm(false);
     println!("Sortm descending sorted:\n{}",dsorted.gr());
     // Binary search using implied alphabetic partial order
     println!("Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        binary_find(0..dsorted.len(),|i|dsorted[i], &"Humpty"));
+        binary_find(0..dsorted.len() as u128,|i|dsorted[i as usize], &"Humpty"));
     println!("Binary_search for {BL}'Humpty'{UN} in range 0..22: {YL}{:?}{UN}", 
-        binary_find(0..22,|i|dsorted[i], &"Humpty"));
+        binary_find(0..22,|i|dsorted[i as usize], &"Humpty"));
     println!("Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}", 
-        binary_find(0..dsorted.len(),|i|dsorted[i], &"the"));
+        binary_find(0..dsorted.len() as u128,|i|dsorted[i as usize], &"the"));
     println!("Binary_search for {BL}'the'{UN} in range 5..end: {YL}{:?}{UN}", 
-        binary_find(5..dsorted.len(),|i|dsorted[i], &"the"));
+        binary_find(5..dsorted.len() as u128,|i|dsorted[i as usize], &"the"));
     println!("Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}", 
-        binary_find(0..dsorted.len(),|i|dsorted[i], &"queen's"));
+        binary_find(0..dsorted.len() as u128,|i|dsorted[i as usize], &"queen's"));
     dsorted.dedup();
     println!("Dedup:\n{}\n",sorted.gr());
 }
@@ -145,25 +145,21 @@ fn text() {
 use core::ops::Range;
 #[test]
 fn roottest() { 
-    let num:f64 = 1.1;
-    let root:f64 = 5.;
-    match broot(num,root) {
-        Ok(rng) => { 
-            let r = rng.start as f64;
-            println!("Power {} of {} powf: {} binary_find: {}", 
-            (1./root).yl(), num.yl(), num.powf(1./root).gr(),
-            (num*r/(usize::MAX as f64)).gr()); 
-        },
-        Err(badend) => { 
-            println!{ "{RD}Extend the range limit: {}{UN}", badend };
-        }
-    }
+    let num:f64 = 1234567890.0;
+    let root:f64 = 5.3;
+    let range = broot(num,root);
+    println!("{} to the power of {YL}1/{}{UN}\nbinary_find:\t{} error: {}\npowf:\t\t{} error: {}", 
+    num.yl(), root, range.start.gr(), (num-range.start.powf(5.3)).gr(),
+    num.powf(1./root).gr(),(num-num.powf(1./root).powf(root)).gr()); 
 }
 
 ///Same as num.powf(1./root), using binary search
-fn broot(num:f64,root:f64) -> Result<Range<usize>,usize> {
-    let numf = num/(usize::MAX as f64); // scaling to better utilise the usize range
-    binary_find(1..usize::MAX, |i| { (numf*i as f64).powf(root) },&num)
+fn broot(num:f64,root:f64) -> Range<f64> {
+    let scale = num/(u128::MAX as f64);  
+    match binary_find(1..u128::MAX, |i| { (scale*i as f64).powf(root) },&num) {
+        Ok(rng) => scale*rng.start as f64..scale*rng.end as f64,
+        Err(badend) => { panic!("{RD}Extend the range limit: {}{UN}", badend); },
+    }
 }
 
 #[test]
