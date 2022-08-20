@@ -65,7 +65,7 @@ where
 
 /// General Binary Search
 /// Search only within the specified range, which is always ascending. 
-/// Probe obtains the data value T at key:usize, by any means, 
+/// Probe obtains the data value T at key:u128 by any means, 
 /// from any kind of sorted data or monotonic function.
 /// The sort order can be either ascending or descending (increasing/decreasing).
 /// PartialOrd has to be implemented separately for custom types T.
@@ -74,8 +74,8 @@ where
 /// Otherwise binary_find returns Range of all the consecutive values PartiallyEqual to the sought item:&T.
 /// When item was not found, then the returned_range will be empty and 
 /// returned_range.start (and end) will give the sort position where the item can be inserted.
-pub fn binary_find<T,F>(range:Range<u128>, probe: F, item:&T )  
-    -> Result<Range<u128>,u128> where T:PartialOrd, F:Fn(u128)->T { 
+pub fn binary_find<T,F>(range:Range<u128>, probe: F, item:&T ) -> Result<Range<u128>,u128> 
+    where T:PartialOrd, F:Fn(u128)->T { 
 
     // binary search lands possibly anywhere within several matching items
     // closure `last` finds the end of their range   
