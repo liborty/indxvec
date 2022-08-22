@@ -16,7 +16,7 @@ use std::io;
 use std::io::Write;
 use std::fs::File;
 use printing::*;
-use core::{ops::Range};
+use core::{ops::{Range,Add,Sub,Div},cmp::Ordering,cmp::Ordering::*};
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
@@ -64,72 +64,74 @@ where
 }
 
 /// General Binary Search
-/// Search only within the specified range, which is always ascending. 
-/// Probe obtains the data value T at key:u128 by any means, 
-/// from any kind of sorted data or monotonic function.
-/// The sort order can be either ascending or descending (increasing/decreasing).
-/// PartialOrd has to be implemented separately for custom types T.
-/// When item is in order before range.start, Err(range.start) is returned.
-/// When item is in order after range.end, Err(range.end) is returned.
-/// Otherwise binary_find returns Range of all the consecutive values PartiallyEqual to the sought item:&T.
-/// When item was not found, then the returned_range will be empty and 
-/// returned_range.start (and end) will give the sort position where the item can be inserted.
-pub fn binary_find<T,F>(range:Range<u128>, probe: F, item:&T ) -> Result<Range<u128>,u128> 
-    where T:PartialOrd, F:Fn(u128)->T { 
+/// Search within the specified Range<T>, which is always ascending.
+/// The (indexing) range values can be of any generic type T satisfying the listed bounds.
+/// Typically usize for searching efficiently in-memory, u128 for searching whole disks or internet,
+/// or f64 for solving equations.
+/// Comparator closure `cmpr` is comparing against a search item captured from its environment.
+/// The sort order reflected by `cmpr` can be either ascending or descending (increasing/decreasing).
+/// When item is in order before range.start, empty range range.start..range.start is returned.
+/// When item is in order after range.end, range.end..range.end is returned.
+/// Normally binary_find returns Range of all the consecutive values
+/// that are PartiallyEqual to the sought item.
+/// When item is not found, then the returned range will be empty and 
+/// its start (and end) will be the sort position where the item can be inserted.
+pub fn binary_find<T,F>(range: Range<T>,cmpr: F ) -> Range<T>
+    where T: PartialOrd+Copy+Add<Output=T>+Sub<Output=T>+Div<Output=T>+From::<u8>,
+          F: Fn(&T)->Ordering
+    {
+
+    let one = T::from(1); // generic one
+    let two = T::from(2); // generic two
+    let lasti = range.end-one;
 
     // binary search lands possibly anywhere within several matching items
     // closure `last` finds the end of their range   
-    let last = |idx:u128| -> u128 { 
-        let mut lastidx = idx+1;
-        for i in idx+1..range.end { // move end up
-            if item == &probe(i) { lastidx += 1; } else { break; }; 
-        }
-        lastidx
+    let last = |idx:T| -> T {         
+        let mut probe = idx+one;
+        while probe < range.end { 
+            if cmpr(&probe) == Greater { break; }
+            else { probe = probe+one; }; };
+        probe
     };
     // closure `first` finds the start of the range of the matching items  
-    let first = |idx:u128| -> u128 {
-        let mut firstidx = idx;
-        for i in (range.start..idx).rev() { // move start down
-            if item == &probe(i) { firstidx -= 1; } else { break; }; 
+    let first = |idx:T| -> T {
+        let mut probe = idx-one;
+        while cmpr(&probe) == Equal {
+            if probe == range.start { return range.start };
+            probe = probe-one;
         }
-        firstidx
+        probe+one
     }; 
-
-    // Checking for errors, special cases and sort order 
-    let firstval = probe(range.start); 
-    if range.is_empty() { 
-        if item == &firstval { return Ok(range.start..range.start+1); }
-        else { return Err(range.start); }  
+    // Checking end cases 
+    if range.is_empty() { return range; };
+    match cmpr(&range.start) {
+        Greater => { return range.start..range.start; }, // item is before the range
+        Equal => { 
+            if cmpr(&range.end) == Equal { return range }; // all match
+            return range.start..last(range.start); },
+        _ => ()
     };
-    let lastval = probe(range.end-1); // now have non-empty range
-    // when data is in descending order, reverse all comparisons
-    let ordered = if firstval < lastval { |a:&T,b:&T| a < b } 
-    else { |a:&T,b:&T| b < a }; // comparisons closure defined by the sort order
-    if ordered(item,&firstval) { return Err(range.start); }; // item is before the range.start
-    if ordered(&lastval,item) { return Err(range.end); }; // item is beyond the range.end 
-    // range data is all equal to item, return the full search range
-    if firstval == lastval { return Ok(range); }; 
-    if item == &firstval { // item is equal to the first data item
-        return Ok(range.start..last(range.start)); };
-    if item == &lastval { // item is equal to the last data item in range
-        return Ok(first(range.end-1)..range.end); };
-
+    match cmpr(&lasti) {
+        Less => { return range.end..range.end; }, // item is after the range
+        Equal => { return first(lasti)..range.end; },
+        _ => ()
+    }; 
     // Binary search
-    let mut hi = range.end - 1; // initial high index
+    let mut hi = lasti; // initial high index
     let mut lo = range.start; // initial low index
     loop {
-        let mid = lo + (hi-lo) / 2; // binary chop here with truncation
+        let mid = lo + (hi-lo)/two; // binary chop here with truncation
         if mid > lo { // still some range left
-            let midval = probe(mid);
-            if ordered(&midval,item) { lo = mid; continue; };
-            if ordered(item,&midval) { hi = mid; continue; }; 
-            // neither greater nor smaller, hence we found match(es) 
-            return Ok(first(mid)..last(mid));            
+            match cmpr(&mid) {
+                Less => lo = mid,
+                Greater => hi = mid,
+                Equal => return first(mid)..last(mid)
+            } 
         }
-        else { return Ok(hi..hi) }; // interval is exhausted, val not found
-    }
+        else { return hi..hi }; // interval is exhausted, val not found
+    }; 
 }
-
 
 /// Trait to serialize slices of generic items `&[T]` (vectors)
 /// and slices of Vecs of generic items `&[Vec<T>]` (matrices).

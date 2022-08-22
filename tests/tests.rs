@@ -4,7 +4,8 @@
 use indxvec::{ here, binary_find,printing::*, Indices, Printing, Vecops, Mutops};
 use ran::*;
 use times::*;
-use std::convert::From;
+use std::{cmp::Ord,convert::From};
+use core::cmp::Ordering::*;
 
 #[test]
 fn indices() {
@@ -114,32 +115,32 @@ fn text() {
     println!("Ascending sorted:\n{}",sorted.gr());
     // Binary search using implied alphabetic partial order
     println!("Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        binary_find(0..sorted.len() as u128,|i|sorted[i as usize], &"Humpty"));
+        binary_find(0..sorted.len(),|&probe| sorted[probe].cmp("Humpty")));
     println!("Binary_search for {BL}'Humpty'{UN} in range 5..end: {YL}{:?}{UN}", 
-        binary_find(5..sorted.len() as u128,|i|sorted[i as usize], &"Humpty"));
+        binary_find(5..sorted.len(),|&probe| sorted[probe].cmp("Humpty")));
     println!("Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}", 
-        binary_find(0..sorted.len() as u128,|i|sorted[i as usize], &"the"));
+        binary_find(0..sorted.len(),|&probe| sorted[probe].cmp("the")));
     println!("Binary_search for {BL}'the'{UN} in range 0..24: {YL}{:?}{UN}", 
-        binary_find(0..24,|i|sorted[i as usize], &"the"));
+        binary_find(0..24,|&probe| sorted[probe].cmp("the")));
     println!("Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}", 
-        binary_find(0..sorted.len() as u128,|i|sorted[i as usize], &"queen's"));
+        binary_find(0..sorted.len(),|&probe| sorted[probe].cmp("queen's")));
     sorted.dedup();
     println!("Dedup:\n{}\n",sorted.gr());    
     let mut dsorted = v.sortm(false);
-    println!("Sortm descending sorted:\n{}",dsorted.gr());
-    // Binary search using implied alphabetic partial order
+    println!("Sortm descending sorted:\n{}",dsorted.gr());   
     println!("Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        binary_find(0..dsorted.len() as u128,|i|dsorted[i as usize], &"Humpty"));
+        binary_find(0..dsorted.len(),|&probe| dsorted[probe].cmp("Humpty").reverse()));
     println!("Binary_search for {BL}'Humpty'{UN} in range 0..22: {YL}{:?}{UN}", 
-        binary_find(0..22,|i|dsorted[i as usize], &"Humpty"));
+        binary_find(0..22,|&probe| dsorted[probe].cmp("Humpty").reverse()));
     println!("Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}", 
-        binary_find(0..dsorted.len() as u128,|i|dsorted[i as usize], &"the"));
+        binary_find(0..dsorted.len(),|&probe| dsorted[probe].cmp("the").reverse()));
     println!("Binary_search for {BL}'the'{UN} in range 5..end: {YL}{:?}{UN}", 
-        binary_find(5..dsorted.len() as u128,|i|dsorted[i as usize], &"the"));
+        binary_find(5..dsorted.len(),|&probe| dsorted[probe].cmp("the").reverse()));
     println!("Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}", 
-        binary_find(0..dsorted.len() as u128,|i|dsorted[i as usize], &"queen's"));
+        binary_find(0..dsorted.len(),|&probe| dsorted[probe].cmp("queen's").reverse()));
     dsorted.dedup();
     println!("Dedup:\n{}\n",sorted.gr());
+
 }
 
 use core::ops::Range;
@@ -153,14 +154,13 @@ fn roottest() {
     num.powf(1./root).gr(),(num-num.powf(1./root).powf(root)).gr()); 
 }
 
-///Same as num.powf(1./root), using binary search
+///num.powf(1./root) using binary search
 fn broot(num:f64,root:f64) -> Range<f64> {
-    let scale = num/(u128::MAX as f64);  
-    match binary_find(1..u128::MAX, |i| { (scale*i as f64).powf(root) },&num) {
-        Ok(rng) => scale*rng.start as f64..scale*rng.end as f64,
-        Err(badend) => { panic!("{RD}Extend the range limit: {}{UN}", badend); },
-    }
-}
+    binary_find(1_f64..num,
+        |&probe| { 
+            if probe.powf(root) < num { Less }
+            else if probe.powf(root) > num { Greater }
+            else { Equal }})}
 
 #[test]
 fn printing() {

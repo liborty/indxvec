@@ -303,7 +303,7 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 ## Release Notes (Latest First)
 
-**Version 1.3.8** - Widened the range of input data and probe function of `binary_find` to u128.
+**Version 1.3.9** - Made search range of `binary_find` generic.
 
 **Version 1.3.7** - Tweaked `binary_find` and its test.
 
