@@ -78,8 +78,7 @@ where
 /// its start (and end) will be the sort position where the item can be inserted.
 pub fn binary_find<T,F>(range: Range<T>,cmpr: F ) -> Range<T>
     where T: PartialOrd+Copy+Add<Output=T>+Sub<Output=T>+Div<Output=T>+From::<u8>,
-          F: Fn(&T)->Ordering
-    {
+          F: Fn(&T)->Ordering {
 
     let one = T::from(1); // generic one
     let two = T::from(2); // generic two
