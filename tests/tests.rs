@@ -160,7 +160,8 @@ fn broot(num:f64,root:f64) -> Range<f64> {
         |&probe| { 
             if probe.powf(root) < num { Less }
             else if probe.powf(root) > num { Greater }
-            else { Equal }})}
+            else { Equal }})
+}
 
 #[test]
 fn printing() {

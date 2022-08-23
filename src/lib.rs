@@ -84,36 +84,31 @@ pub fn binary_find<T,F>(range: Range<T>,cmpr: F ) -> Range<T>
     let two = T::from(2); // generic two
     let lasti = range.end-one;
 
-    // binary search lands possibly anywhere within several matching items
-    // closure `last` finds the end of their range   
-    let last = |idx:T| -> T {         
-        let mut probe = idx+one;
-        while probe < range.end { 
-            if cmpr(&probe) == Greater { break; }
-            else { probe = probe+one; }; };
-        probe
+    // Closure to find the last matching item in direction up/down from idx 
+    // or till limit is reached. Equality is defined by `cmpr`.
+    let scan = |idx:&T, limit:&T, up:bool| -> T  { 
+        let mut probe = *idx;  
+        let step = |p:&mut T| if up { *p = *p+one } else { *p = *p-one }; 
+        step(&mut probe);
+        while cmpr(&probe) == Equal { // exits at first non-equal item
+            if probe == *limit { step(&mut probe); break; };
+            step(&mut probe);  
+        };
+        if up { probe } else { probe+one } // into Range limit 
     };
-    // closure `first` finds the start of the range of the matching items  
-    let first = |idx:T| -> T {
-        let mut probe = idx-one;
-        while cmpr(&probe) == Equal {
-            if probe == range.start { return range.start };
-            probe = probe-one;
-        }
-        probe+one
-    }; 
+
     // Checking end cases 
     if range.is_empty() { return range; };
     match cmpr(&range.start) {
         Greater => { return range.start..range.start; }, // item is before the range
         Equal => { 
-            if cmpr(&range.end) == Equal { return range }; // all match
-            return range.start..last(range.start); },
+            if cmpr(&range.end) == Equal { return range }; // all in range match
+            return range.start..scan(&range.start,&lasti,true); },
         _ => ()
     };
     match cmpr(&lasti) {
         Less => { return range.end..range.end; }, // item is after the range
-        Equal => { return first(lasti)..range.end; },
+        Equal => { return scan(&lasti,&range.start,false)..range.end; },
         _ => ()
     }; 
     // Binary search
@@ -125,7 +120,7 @@ pub fn binary_find<T,F>(range: Range<T>,cmpr: F ) -> Range<T>
             match cmpr(&mid) {
                 Less => lo = mid,
                 Greater => hi = mid,
-                Equal => return first(mid)..last(mid)
+                Equal => return scan(&mid,&range.start,false)..scan(&mid,&lasti,true)
             } 
         }
         else { return hi..hi }; // interval is exhausted, val not found
