@@ -78,7 +78,7 @@ where
 pub fn binary_find<T, F>(range: Range<T>, cmpr: &mut F) -> Range<T>
 where
     T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>,
-    F: FnMut(&T) -> Ordering + Clone
+    F: FnMut(&T) -> Ordering,
 {
     let one = T::from(1); // generic one
     let two = T::from(2); // generic two
@@ -119,7 +119,7 @@ where
             if cmpr(&range.end) == Equal {
                 return range;
             }; // all in range match
-            return range.start..scan(&range.start, &lasti,cmpr, true);
+            return range.start..scan(&range.start, &lasti, cmpr, true);
         }
         _ => (),
     };
@@ -128,7 +128,7 @@ where
             return range.end..range.end;
         } // item is after the range
         Equal => {
-            return scan(&lasti, &range.start, cmpr,false)..range.end;
+            return scan(&lasti, &range.start, cmpr, false)..range.end;
         }
         _ => (),
     };
@@ -142,8 +142,9 @@ where
             match cmpr(&mid) {
                 Less => lo = mid,
                 Greater => hi = mid,
-                Equal => return scan(&mid, &range.start, cmpr,false)
-                ..scan(&mid, &lasti, cmpr,true),
+                Equal => {
+                    return scan(&mid, &range.start, cmpr, false)..scan(&mid, &lasti, cmpr, true)
+                }
             }
         } else {
             return hi..hi;
