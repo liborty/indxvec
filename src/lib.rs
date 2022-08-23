@@ -82,8 +82,7 @@ where
 {
     let one = T::from(1); // generic one
     let two = T::from(2); // generic two
-    let lasti = range.end - one;
-    // let mut cmpr = cpr.clone(); // cloned copy as cannot reuse mutable F
+    let lasti = range.end - one; 
 
     // Closure to find the last matching item in direction up/down from idx
     // or till limit is reached. Equality is defined by `cmpr`.
