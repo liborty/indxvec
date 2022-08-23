@@ -1,22 +1,26 @@
 #![warn(missing_docs)]
-//! Vecs indexing, ranking, sorting, merging, searching, reversing, 
+//! Vecs indexing, ranking, sorting, merging, searching, reversing,
 //! intersecting, printing, etc.
 
 /// Implementation of trait Indices for `&[usize]`
-pub mod indices; 
+pub mod indices;
+/// Implementation of trait Mutops for `&mut[T]`
+pub mod mutops;
 /// Utilities for serializing, writing and printing (optionally in colours)
 /// generic vectors.
 pub mod printing;
-/// Implementation of trait Vecops for `&[T]` 
+/// Implementation of trait Vecops for `&[T]`
 pub mod vecops;
-/// Implementation of trait Mutops for `&mut[T]`
-pub mod mutops;
 
+use core::{
+    cmp::Ordering,
+    cmp::Ordering::*,
+    ops::{Add, Div, Range, Sub},
+};
+use printing::*;
+use std::fs::File;
 use std::io;
 use std::io::Write;
-use std::fs::File;
-use printing::*;
-use core::{ops::{Range,Add,Sub,Div},cmp::Ordering,cmp::Ordering::*};
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
@@ -27,9 +31,7 @@ macro_rules! here {
             std::any::type_name::<T>()
         }
         let name = type_name_of(f);
-        format!(
-            "\n{}:{} {}",file!(),line!(), &name[..name.len() - 3]
-        )
+        format!("\n{}:{} {}", file!(), line!(), &name[..name.len() - 3])
     }};
 }
 
@@ -55,10 +57,7 @@ where
         write!(
             f,
             "min: {GR}{}{UN}, minindex: {YL}{}{UN}, max: {GR}{}{UN}, maxindex: {YL}{}{UN}",
-            self.min,
-            self.minindex,
-            self.max,
-            self.maxindex
+            self.min, self.minindex, self.max, self.maxindex
         )
     }
 }
@@ -71,60 +70,85 @@ where
 /// Comparator closure `cmpr` is comparing against a search item captured from its environment.
 /// The sort order reflected by `cmpr` can be either ascending or descending (increasing/decreasing).
 /// When item is in order before range.start, empty range range.start..range.start is returned.
-/// When item is in order after range.end, range.end..range.end is returned.
+/// When item is in order after range.end-1, range.end..range.end is returned.
 /// Normally binary_find returns Range of all the consecutive values
 /// that are PartiallyEqual to the sought item.
-/// When item is not found, then the returned range will be empty and 
+/// When item is not found, then the returned range will be empty and
 /// its start (and end) will be the sort position where the item can be inserted.
-pub fn binary_find<T,F>(range: Range<T>,cmpr: F ) -> Range<T>
-    where T: PartialOrd+Copy+Add<Output=T>+Sub<Output=T>+Div<Output=T>+From::<u8>,
-          F: Fn(&T)->Ordering {
-
+pub fn binary_find<T, F>(range: Range<T>, cmpr: &mut F) -> Range<T>
+where
+    T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>,
+    F: FnMut(&T) -> Ordering + Clone
+{
     let one = T::from(1); // generic one
     let two = T::from(2); // generic two
-    let lasti = range.end-one;
+    let lasti = range.end - one;
+    // let mut cmpr = cpr.clone(); // cloned copy as cannot reuse mutable F
 
-    // Closure to find the last matching item in direction up/down from idx 
+    // Closure to find the last matching item in direction up/down from idx
     // or till limit is reached. Equality is defined by `cmpr`.
-    let scan = |idx:&T, limit:&T, up:bool| -> T  { 
-        let mut probe = *idx;  
-        let step = |p:&mut T| if up { *p = *p+one } else { *p = *p-one }; 
+    let scan = |idx: &T, limit: &T, cpr: &mut F, up: bool| -> T {
+        let mut probe = *idx;
+        let step = |p: &mut T| if up { *p = *p + one } else { *p = *p - one };
         step(&mut probe);
-        while cmpr(&probe) == Equal { // exits at first non-equal item
-            if probe == *limit { step(&mut probe); break; };
-            step(&mut probe);  
-        };
-        if up { probe } else { probe+one } // into Range limit 
+        while cpr(&probe) == Equal {
+            // exits at the first non-equal item
+            if probe == *limit {
+                step(&mut probe);
+                break;
+            };
+            step(&mut probe);
+        }
+        if up {
+            probe
+        } else {
+            probe + one
+        } // into Range limit
     };
 
-    // Checking end cases 
-    if range.is_empty() { return range; };
+    // Checking end cases
+    if range.is_empty() {
+        return range;
+    };
+
     match cmpr(&range.start) {
-        Greater => { return range.start..range.start; }, // item is before the range
-        Equal => { 
-            if cmpr(&range.end) == Equal { return range }; // all in range match
-            return range.start..scan(&range.start,&lasti,true); },
-        _ => ()
+        Greater => {
+            return range.start..range.start;
+        } // item is before the range
+        Equal => {
+            if cmpr(&range.end) == Equal {
+                return range;
+            }; // all in range match
+            return range.start..scan(&range.start, &lasti,cmpr, true);
+        }
+        _ => (),
     };
     match cmpr(&lasti) {
-        Less => { return range.end..range.end; }, // item is after the range
-        Equal => { return scan(&lasti,&range.start,false)..range.end; },
-        _ => ()
-    }; 
+        Less => {
+            return range.end..range.end;
+        } // item is after the range
+        Equal => {
+            return scan(&lasti, &range.start, cmpr,false)..range.end;
+        }
+        _ => (),
+    };
     // Binary search
     let mut hi = lasti; // initial high index
     let mut lo = range.start; // initial low index
     loop {
-        let mid = lo + (hi-lo)/two; // binary chop here with truncation
-        if mid > lo { // still some range left
+        let mid = lo + (hi - lo) / two; // binary chop here with truncation
+        if mid > lo {
+            // still some range left
             match cmpr(&mid) {
                 Less => lo = mid,
                 Greater => hi = mid,
-                Equal => return scan(&mid,&range.start,false)..scan(&mid,&lasti,true)
-            } 
-        }
-        else { return hi..hi }; // interval is exhausted, val not found
-    }; 
+                Equal => return scan(&mid, &range.start, cmpr,false)
+                ..scan(&mid, &lasti, cmpr,true),
+            }
+        } else {
+            return hi..hi;
+        }; // interval is exhausted, val not found
+    }
 }
 
 /// Trait to serialize slices of generic items `&[T]` (vectors)
@@ -132,53 +156,71 @@ pub fn binary_find<T,F>(range: Range<T>,cmpr: F ) -> Range<T>
 /// All are converted into printable strings and optionally coloured.
 /// Also, methods to serialize and render the resulting string
 /// in bold ANSI terminal colours.
-pub trait Printing<T> where Self: Sized {
-
+pub trait Printing<T>
+where
+    Self: Sized,
+{
     /// Printable in red
-    fn rd(self) -> String { format!("{RD}{}{UN}",self.to_str()) }
+    fn rd(self) -> String {
+        format!("{RD}{}{UN}", self.to_str())
+    }
     /// Printable in green
-    fn gr(self) -> String { format!("{GR}{}{UN}",self.to_str()) }
+    fn gr(self) -> String {
+        format!("{GR}{}{UN}", self.to_str())
+    }
     /// Printable in blue    
-    fn bl(self) -> String { format!("{BL}{}{UN}",self.to_str()) }
+    fn bl(self) -> String {
+        format!("{BL}{}{UN}", self.to_str())
+    }
     /// Printable in yellow
-    fn yl(self) -> String { format!("{YL}{}{UN}",self.to_str()) }
+    fn yl(self) -> String {
+        format!("{YL}{}{UN}", self.to_str())
+    }
     /// Printable in magenta
-    fn mg(self) -> String { format!("{MG}{}{UN}",self.to_str()) }
+    fn mg(self) -> String {
+        format!("{MG}{}{UN}", self.to_str())
+    }
     /// Printable in cyan
-    fn cy(self) -> String { format!("{CY}{}{UN}",self.to_str()) }        
+    fn cy(self) -> String {
+        format!("{CY}{}{UN}", self.to_str())
+    }
 
-    /// Method to write vector(s) to file f (space separated, without brackets). 
+    /// Method to write vector(s) to file f (space separated, without brackets).
     /// Passes up io errors
-    fn wvec(self,f:&mut File) -> Result<(), io::Error> { 
-        Ok(write!(*f,"{} ", self.to_plainstr())?) 
+    fn wvec(self, f: &mut File) -> Result<(), io::Error> {
+        Ok(write!(*f, "{} ", self.to_plainstr())?)
     }
 
     /// Method to print vector(s) to stdout (space separated,without brackets).
-    fn pvec(self)  { print!("{} ", self.to_plainstr()) }
-    
+    fn pvec(self) {
+        print!("{} ", self.to_plainstr())
+    }
+
     /// Method to serialize generic items, slices, and slices of Vecs.
     /// Adds square brackets around Vecs (prettier lists).
-    /// Implementation code is in `printing.rs`. 
+    /// Implementation code is in `printing.rs`.
     fn to_str(self) -> String;
 
     /// Method to serialize generic items, slices, and slices of Vecs.
     /// Implementation code is in `printing.rs`.
     fn to_plainstr(self) -> String;
-
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.
 pub trait Indices {
-
     /// Indices::newindex(n) creates a new index without reordering
-    fn newindex(n:usize) -> Vec<usize> { Vec::from_iter(0..n) }
+    fn newindex(n: usize) -> Vec<usize> {
+        Vec::from_iter(0..n)
+    }
     /// Invert an index - turns a sort order into rank order and vice-versa
     fn invindex(self) -> Vec<usize>;
     /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
-    fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T> where T:Clone;
-    /// Correlation coefficient of two &[usize] slices. 
+    fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T>
+    where
+        T: Clone;
+    /// Correlation coefficient of two &[usize] slices.
     /// Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
     /// Potentially useful clone-recast of &[usize] to Vec<f64>
@@ -186,107 +228,172 @@ pub trait Indices {
 }
 
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
-pub trait Vecops<T> {  
-
-    /// Helper function to copy and cast entire &[T] to `Vec<f64>`. 
-    fn tof64(self) -> Vec<f64> where T: Clone, f64: From<T>;
+pub trait Vecops<T> {
+    /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
+    fn tof64(self) -> Vec<f64>
+    where
+        T: Clone,
+        f64: From<T>;
     /// Maximum value in self
-    fn maxt(self) -> T where T: PartialOrd+Clone;
+    fn maxt(self) -> T
+    where
+        T: PartialOrd + Clone;
     /// Minimum value in self
-    fn mint(self) -> T where T: PartialOrd+Clone;
+    fn mint(self) -> T
+    where
+        T: PartialOrd + Clone;
     /// Minimum and maximum values in self
-    fn minmaxt(self) -> (T, T) where T: PartialOrd+Clone;
+    fn minmaxt(self) -> (T, T)
+    where
+        T: PartialOrd + Clone;
     /// Returns MinMax{min, minindex, max, maxindex}
-    fn minmax(self) -> MinMax<T> where T: PartialOrd+Clone;
+    fn minmax(self) -> MinMax<T>
+    where
+        T: PartialOrd + Clone;
     /// MinMax of n items starting at subscript i
-    fn minmax_slice(self,i:usize, n:usize) -> MinMax<T> where T: PartialOrd+Clone;
+    fn minmax_slice(self, i: usize, n: usize) -> MinMax<T>
+    where
+        T: PartialOrd + Clone;
     /// MinMax of a subset of self, defined by its idx subslice between i,i+n.
-    fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
-        where T: PartialOrd+Clone;
+    fn minmax_indexed(self, idx: &[usize], i: usize, n: usize) -> MinMax<T>
+    where
+        T: PartialOrd + Clone;
     /// Reversed copy of self
-    fn revs(self) -> Vec<T> where T:Clone;
+    fn revs(self) -> Vec<T>
+    where
+        T: Clone;
     /// Repeated items removed
-    fn sansrepeat(self) -> Vec<T> where T: PartialEq+Clone;
+    fn sansrepeat(self) -> Vec<T>
+    where
+        T: PartialEq + Clone;
     /// Some(subscript) of the first occurence of m, or None
-    fn member(self, m:T, forward:bool) -> Option<usize> where T: PartialEq+Clone;
+    fn member(self, m: T, forward: bool) -> Option<usize>
+    where
+        T: PartialEq + Clone;
     /// Binary search of a slice in ascending or descending order.
-    fn binsearch(self, val:&T) -> Range<usize> where T: PartialOrd;
-    /// Binary search of an index sorted slice in ascending or descending order. 
+    fn binsearch(self, val: &T) -> Range<usize>
+    where
+        T: PartialOrd;
+    /// Binary search of an index sorted slice in ascending or descending order.
     /// Like binsearch but using indirection via idx.
-    fn binsearch_indexed(self, idx:&[usize], val:&T) -> Range<usize> where T: PartialOrd;
+    fn binsearch_indexed(self, idx: &[usize], val: &T) -> Range<usize>
+    where
+        T: PartialOrd;
     /// Counts partially equal occurrences of val by simple linear search of an unordered set
-    fn occurs(self, val:T) -> usize where T: PartialOrd;
+    fn occurs(self, val: T) -> usize
+    where
+        T: PartialOrd;
     /// Unites (concatenates) two unsorted slices. For union of sorted slices, use `merge`
-    fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
+    fn unite_unsorted(self, v: &[T]) -> Vec<T>
+    where
+        T: Clone;
     /// Unites two ascending index-sorted slices.
     fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Clone; 
+    where
+        T: PartialOrd + Clone;
     /// Intersects two ascending explicitly sorted generic vectors.
-    fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
+    fn intersect(self, v2: &[T]) -> Vec<T>
+    where
+        T: PartialOrd + Clone;
     /// Intersects two ascending index sorted vectors.
     fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Clone;
+    where
+        T: PartialOrd + Clone;
     /// Removes items of sorted v2 from sorted self.
-    fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
+    fn diff(self, v2: &[T]) -> Vec<T>
+    where
+        T: PartialOrd + Clone;
     /// Removes items of v2 from self using their sort indices.
     fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Clone;
+    where
+        T: PartialOrd + Clone;
     /// Divides an unordered set into three: items smaller than pivot, equal, and greater
-    fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
-        where T: PartialOrd+Clone;
+    fn partition(self, pivot: T) -> (Vec<T>, Vec<T>, Vec<T>)
+    where
+        T: PartialOrd + Clone;
     /// Divides an unordered set into three by the pivot. The results are subscripts to self   
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
-        where T: PartialOrd+Clone;
+    where
+        T: PartialOrd + Clone;
     /// Merges (unites) two sorted sets, result is also sorted    
-    fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
+    fn merge(self, v2: &[T]) -> Vec<T>
+    where
+        T: PartialOrd + Clone;
     /// Merges (unites) two sets, using their sort indices, giving also the resulting sort index
     fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
-        where T: PartialOrd+Clone;
+    where
+        T: PartialOrd + Clone;
     /// Used by `merge_indexed`
     fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
-        where T: PartialOrd+Clone;
+    where
+        T: PartialOrd + Clone;
     /// Stable Merge sort main method, giving sort index
-    fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Clone;
+    fn mergesort_indexed(self) -> Vec<usize>
+    where
+        T: PartialOrd + Clone;
     /// Utility used by mergesort_indexed
     fn mergesortslice(self, i: usize, n: usize) -> Vec<usize>
-        where T: PartialOrd+Clone;
-    /// Stable Merge sort, explicitly sorted result obtained via mergesort_indexed 
-    fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Clone;
+    where
+        T: PartialOrd + Clone;
+    /// Stable Merge sort, explicitly sorted result obtained via mergesort_indexed
+    fn sortm(self, ascending: bool) -> Vec<T>
+    where
+        T: PartialOrd + Clone;
     /// Rank index obtained via mergesort_indexed
-    fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Clone;
+    fn rank(self, ascending: bool) -> Vec<usize>
+    where
+        T: PartialOrd + Clone;
     /// Utility, swaps any two items into ascending order
-    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool where T:PartialOrd;
+    fn isorttwo(self, idx: &mut [usize], i0: usize, i1: usize) -> bool
+    where
+        T: PartialOrd;
     /// Utility, sorts any three items into ascending order
-    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize) where T: PartialOrd; 
+    fn isortthree(self, idx: &mut [usize], i0: usize, i1: usize, i2: usize)
+    where
+        T: PartialOrd;
     /// Stable hash sort giving sort index
-    fn hashsort_indexed(self) -> Vec<usize> 
-        where T: PartialOrd+Clone,f64:From<T>;
+    fn hashsort_indexed(self) -> Vec<usize>
+    where
+        T: PartialOrd + Clone,
+        f64: From<T>;
     /// Utility used by hashsort_indexed
-    fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
-        where T: PartialOrd+Clone,f64:From<T>;
+    fn hashsortslice(self, idx: &mut [usize], i: usize, n: usize, min: T, max: T)
+    where
+        T: PartialOrd + Clone,
+        f64: From<T>;
     /// Stable hash sort. Returns new sorted data vector (ascending or descending)
-    fn sorth(self, ascending: bool) -> Vec<T> 
-        where T: PartialOrd+Clone,f64:From<T>;
+    fn sorth(self, ascending: bool) -> Vec<T>
+    where
+        T: PartialOrd + Clone,
+        f64: From<T>;
     /// Makes a sort index for self, using key generating closure `keyfn`
-    fn keyindex(self, keyfn:fn(&T) -> f64, ascending:bool) -> Vec<usize>;
+    fn keyindex(self, keyfn: fn(&T) -> f64, ascending: bool) -> Vec<usize>;
 }
 
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
-/// Sorts a mutable slice in place.
- fn mutquicksort(self) where T: PartialOrd;
-/// mutable reversal, general utility
-fn mutrevs(self);
-/// utility that mutably swaps two indexed items into ascending order
-fn mutsorttwo(self, i0:usize, i1:usize) -> bool
-    where T: PartialOrd;
-/// utility that mutably bubble sorts three indexed items into ascending order
-fn mutsortthree(self, i0:usize, i1:usize, i2:usize)
-    where T: PartialOrd;
-/// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
-fn muthashsort(self)
-    where T: PartialOrd+Clone, f64:From<T>;
-/// Sorts n items from i in self. Used by muthashsort.
-fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
-    where T: PartialOrd+Clone, f64:From<T>;
+    /// Sorts a mutable slice in place.
+    fn mutquicksort(self)
+    where
+        T: PartialOrd;
+    /// mutable reversal, general utility
+    fn mutrevs(self);
+    /// utility that mutably swaps two indexed items into ascending order
+    fn mutsorttwo(self, i0: usize, i1: usize) -> bool
+    where
+        T: PartialOrd;
+    /// utility that mutably bubble sorts three indexed items into ascending order
+    fn mutsortthree(self, i0: usize, i1: usize, i2: usize)
+    where
+        T: PartialOrd;
+    /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
+    fn muthashsort(self)
+    where
+        T: PartialOrd + Clone,
+        f64: From<T>;
+    /// Sorts n items from i in self. Used by muthashsort.
+    fn muthashsortslice(self, i: usize, n: usize, min: T, max: T)
+    where
+        T: PartialOrd + Clone,
+        f64: From<T>;
 }
