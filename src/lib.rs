@@ -62,6 +62,70 @@ where
     }
 }
 
+/// Generalised `binary_search` for any one target.
+/// Search within the specified Range<T>, which is always ascending.
+/// The (indexing) range values can be of any generic type T satisfying the listed bounds.
+/// Typically usize for searching efficiently in-memory, u128 for searching whole disks or internet,
+/// or f64 for solving equations.
+/// Comparator closure `cmpr` is comparing against search target captured from its environment.
+/// The sort order reflected by `cmpr` can be either ascending or descending (increasing/decreasing).
+/// When the target is in order before range.start, range.start is returned.
+/// When the target is in order after range.end-1, range.end is returned.
+/// Normally returns an index of the first hit target that is PartiallyEqual.
+/// When the target is not present, then its insert position is returned.
+pub fn binary_find_any<T, F>(range: Range<T>, cmpr: &mut F) -> T
+where
+    T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>,
+    F: FnMut(&T) -> Ordering,
+{
+    let one = T::from(1); // generic one
+    let two = T::from(2); // generic two
+    let lasti = range.end - one;
+
+    // Checking end cases
+    if range.is_empty() {
+        return range.start;
+    };
+
+    match cmpr(&range.start) {
+        Greater => {
+            return range.start;
+        }, // item is before the range
+        Equal => {  
+            return range.start;
+        }, 
+        _ => (),
+    };
+    match cmpr(&lasti) {
+        Less => {
+            return range.end;
+        } // item is after the range
+        Equal => {
+            return lasti;
+        }
+        _ => (),
+    };
+    // Binary search
+    let mut hi = lasti; // initial high index
+    let mut lo = range.start; // initial low index
+    loop {
+        let mid = lo + (hi - lo) / two; // binary chop here with truncation
+        if mid > lo {
+            // still some range left
+            match cmpr(&mid) {
+                Less => lo = mid,
+                Greater => hi = mid,
+                Equal => { 
+                    return mid;
+                }
+            }
+        } else {
+            return hi;
+        }; // interval is exhausted, val not found
+    }
+}
+
+
 /// General Binary Search
 /// Search within the specified Range<T>, which is always ascending.
 /// The (indexing) range values can be of any generic type T satisfying the listed bounds.
@@ -78,31 +142,24 @@ where
 pub fn binary_find<T, F>(range: Range<T>, cmpr: &mut F) -> Range<T>
 where
     T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>,
-    F: FnMut(&T) -> Ordering,
+    F: FnMut(&T) -> Ordering
 {
     let one = T::from(1); // generic one
     let two = T::from(2); // generic two
-    let lasti = range.end - one; 
-
-    // Closure to find the last matching item in direction up/down from idx
-    // or till limit is reached. Equality is defined by `cmpr`.
-    let scan = |idx: &T, limit: &T, cpr: &mut F, up: bool| -> T {
-        let mut probe = *idx;
-        let step = |p: &mut T| if up { *p = *p + one } else { *p = *p - one };
-        step(&mut probe);
-        while cpr(&probe) == Equal {
-            // exits at the first non-equal item
-            if probe == *limit {
-                step(&mut probe);
-                break;
-            };
-            step(&mut probe);
+    let lasti = range.end - one;
+    
+    let find_end = |rng: Range<T>, cpr: &mut F, up: bool| -> T {
+        if up { 
+            binary_find_any(rng, 
+                &mut |&probe| { let this = cpr(&probe);
+                if this == Equal { if cpr(&(probe+one)) == Greater { Equal } else { Less } }
+                else { this } }) + one } 
+        else { 
+            binary_find_any(rng, 
+                &mut |&probe| { let this = cpr(&probe);
+                if this == Equal { if cpr(&(probe-one)) == Less { Equal } else { Greater } }
+                else { this } })
         }
-        if up {
-            probe
-        } else {
-            probe + one
-        } // into Range limit
     };
 
     // Checking end cases
@@ -118,7 +175,8 @@ where
             if cmpr(&range.end) == Equal {
                 return range;
             }; // all in range match
-            return range.start..scan(&range.start, &lasti, cmpr, true);
+            // return range.start..scan(&range.start, &lasti, cmpr, true);
+            return range.start..find_end(range.start..lasti-one, cmpr, true);
         }
         _ => (),
     };
@@ -127,7 +185,8 @@ where
             return range.end..range.end;
         } // item is after the range
         Equal => {
-            return scan(&lasti, &range.start, cmpr, false)..range.end;
+            // return scan(&lasti, &range.start, cmpr, false)..range.end;
+            return find_end(range.start+one..lasti, cmpr, false)..range.end;
         }
         _ => (),
     };
@@ -142,7 +201,9 @@ where
                 Less => lo = mid,
                 Greater => hi = mid,
                 Equal => {
-                    return scan(&mid, &range.start, cmpr, false)..scan(&mid, &lasti, cmpr, true)
+                    // return scan(&mid, &range.start, cmpr, false)..scan(&mid, &lasti, cmpr, true)
+                    return find_end(lo+one..mid, cmpr, false)
+                    ..find_end(mid..hi-one, cmpr, true);
                 }
             }
         } else {

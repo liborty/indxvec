@@ -303,6 +303,8 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 ## Release Notes (Latest First)
 
+**Version 1.3.10** - Made search closure `FnMut`. Added `binary_find_any` used by `binary_find` to search for the end of the matching range.
+
 **Version 1.3.9** - Made search range of `binary_find` generic.
 
 **Version 1.3.7** - Tweaked `binary_find` and its test.
