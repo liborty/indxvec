@@ -2,8 +2,6 @@
 //! Vecs indexing, ranking, sorting, merging, searching, reversing,
 //! intersecting, printing, etc.
 
-/// Stand-alone search functions
-pub mod search;
 /// Implementation of trait Indices for `&[usize]`
 pub mod indices;
 /// Implementation of trait Mutops for `&mut[T]`
@@ -11,6 +9,8 @@ pub mod mutops;
 /// Utilities for serializing, writing and printing (optionally in colours)
 /// generic vectors.
 pub mod printing;
+/// Stand-alone search functions
+pub mod search;
 /// Implementation of trait Vecops for `&[T]`
 pub mod vecops;
 
