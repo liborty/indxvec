@@ -1,8 +1,8 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
-use core::cmp::Ordering::*;
 #[cfg(test)]
-use indxvec::{binary_find, here, printing::*, Indices, Mutops, Printing, Vecops};
+use core::cmp::Ordering::*;
+use indxvec::{here, printing::*, search::*, Indices, Mutops, Printing, Vecops};
 use ran::*;
 use std::{cmp::Ord, convert::From};
 use times::*;
@@ -208,23 +208,23 @@ fn text() {
     // Binary search using implied alphabetic partial order
     println!(
         "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        binary_find(0..sorted.len(), &mut |&probe| sorted[probe].cmp("Humpty"))
+        binary_all(&(0..sorted.len()),&mut |&probe| sorted[probe].cmp("Humpty"))
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 5..end: {YL}{:?}{UN}",
-        binary_find(5..sorted.len(), &mut |&probe| sorted[probe].cmp("Humpty"))
+        binary_all(&(5..sorted.len()),&mut |&probe| sorted[probe].cmp("Humpty"))
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        binary_find(0..sorted.len(), &mut |&probe| sorted[probe].cmp("the"))
+        binary_all(&(0..sorted.len()),&mut |&probe| sorted[probe].cmp("the"))
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 0..24: {YL}{:?}{UN}",
-        binary_find(0..24, &mut |&probe| sorted[probe].cmp("the"))
+        binary_all(&(0..24),&mut |&probe| sorted[probe].cmp("the"))
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        binary_find(0..sorted.len(), &mut |&probe| sorted[probe].cmp("queen's"))
+        binary_all(&(0..sorted.len()),&mut |&probe| sorted[probe].cmp("queen's"))
     );
     sorted.dedup();
     println!("Dedup:\n{}\n", sorted.gr());
@@ -232,29 +232,29 @@ fn text() {
     println!("Sortm descending sorted:\n{}", dsorted.gr());
     println!(
         "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        binary_find(0..dsorted.len(), &mut |&probe| dsorted[probe]
+        binary_all(&(0..dsorted.len()),&mut |&probe| dsorted[probe]
             .cmp("Humpty")
             .reverse())
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 0..22: {YL}{:?}{UN}",
-        binary_find(0..22, &mut |&probe| dsorted[probe].cmp("Humpty").reverse())
+        binary_all(&(0..22),&mut |&probe| dsorted[probe].cmp("Humpty").reverse())
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        binary_find(0..dsorted.len(), &mut |&probe| dsorted[probe]
+        binary_all(&(0..dsorted.len()),&mut |&probe| dsorted[probe]
             .cmp("the")
             .reverse())
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 5..end: {YL}{:?}{UN}",
-        binary_find(5..dsorted.len(), &mut |&probe| dsorted[probe]
+        binary_all(&(5..sorted.len()),&mut |&probe| dsorted[probe]
             .cmp("the")
             .reverse())
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        binary_find(0..dsorted.len(), &mut |&probe| dsorted[probe]
+        binary_all(&(0..dsorted.len()),&mut |&probe| dsorted[probe]
             .cmp("queen's")
             .reverse())
     );
@@ -267,21 +267,21 @@ use core::ops::Range;
 fn roottest() {
     let num: f64 = 1234567890.0;
     let root: f64 = 5.3;
-    let range = broot(num, root);
+    let (res,_) = broot(num, root);
     println!(
-        "{} to the power of {YL}1/{}{UN}\nbinary_find:\t{} error: {}\npowf:\t\t{} error: {}",
+        "{} to the power of {YL}1/{}{UN}\nbinary_any:\t{} error:  {RD}{:e}{UN}\npowf:\t\t{} error:{RD}{:e}{UN}",
         num.yl(),
         root,
-        range.start.gr(),
-        (num - range.start.powf(5.3)).gr(),
+        res.gr(), 
+        (num - res.powf(5.3)),       
         num.powf(1. / root).gr(),
-        (num - num.powf(1. / root).powf(root)).gr()
+        (num - num.powf(1. / root).powf(root))
     );
 }
 
 ///num.powf(1./root) using binary search
-fn broot(num: f64, root: f64) -> Range<f64> {
-    binary_find(1_f64..num, &mut |&probe| {
+fn broot(num: f64, root: f64) -> (f64,Range<f64>) {
+    binary_any(&(1_f64..num), &mut |&probe| {
         if probe.powf(root) < num {
             Less
         } else if probe.powf(root) > num {

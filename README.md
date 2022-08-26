@@ -11,7 +11,7 @@ intersecting, printing, etc.
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, binary_find, here, printing::*, Indices, Vecops, Mutops, Printing };
+use indxvec::{ MinMax, here, printing::*, search::*, Indices, Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -303,48 +303,4 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 ## Release Notes (Latest First)
 
-**Version 1.3.10** - Made search closure `FnMut`. Added `binary_find_any` used by `binary_find` to search for the end of the matching range.
-
-**Version 1.3.9** - Made search range of `binary_find` generic.
-
-**Version 1.3.7** - Tweaked `binary_find` and its test.
-
-**Version 1.3.6** - Added `binary_find`.
-
-**Version 1.3.5** - Relaxed all trait parameters from Copy to Clone and replaced all implicit copying of T with explicit cloning. This means that the methods are now more generally applicable to any type T that has Clone implemented. As demonstrated in test `text()`.
-
-**Version 1.3.4** - Removed the custom F64 type and automatic custom conversions. Hashsort now again requires strictly numerical types convertible to f64 by standard means. Replaced this with new `keyindex` in trait `Vecops`. It is able to apply `hashsort_indexed` to any (user) type T, using custom closure `keyfn:fn(&T) -> f64` to generate f64 keys. This is more easily extensible and not nearly so verbose.
-
-**Version 1.3.3** - Simplified `binsearch` and `binsearch_indexed`. It is no longer necessary to specify the sort order, it is detected automatically.
-
-**Version 1.3.2** - Some more code pruning, reducing the footprint.
-
-**Version 1.3.1** - Binary search methods now return standard rust type Range. 
-
-**Version 1.3.0** - Binary search that is superior to `std:slice:binary_search`. Two methods provided: `binsearch` and `binsearch_indexed`. Removed spurious newline from printing matrices. Updated `times` dependency.
-
-**Version 1.2.13** - Removed no longer needed `unindexf64` from trait `Indices`.
-
-**Version 1.2.12** - Improved some sort algorithms. Removed dev-dependence `devtimer` and updated other dependencies. Note that the `sorts()` benchmarking test needs to be run on its own. When run under `cargo test -- --nocapture`, together with all the other tests, its timings are unreliable.
-
-**Version 1.2.11** - Moved the benchmark timing function to its own new crate called `times`.
-
-**Version 1.2.10** - Moved `tof64` into `Vecops` trait to act as one of its methods: `v.tof64()`.  Added default Rust destructive sort `mutsort` to trait `Mutops`. Added benchmarking function `sorts()` into `tests.rs`. It also illustrates effective use of an index sort.
-
-**Version 1.2.9** - Added explicit conversion from f64 to f64, without which the methods needing `F64:From<T>` did not do work when T=f64. The primitive numeric types up to u64, i64, f64 varieties now all work, plus the custom lexical quantification of &str. It should be easy to add more custom ones. All this achieved without resorting to unstable `specialization` feature.
-
-**Version 1.2.8** - Enabled custom conversions of non-numeric end types, specifically &str. This is so that `hashsort` can compute its keys and sort them. Thus widening the applicability of superfast hashsort.
-
-**Version 1.2.6** - Renamed trait `Mutsort` to `Mutops`.  Renamed some `Vecops` methods for naming consistency. Made hashsort easier to use by removing the data range. Added `sorth`, equivalent to `sortm`, using hashsort instead of mergesort. Added a test.
-
-**Version 1.2.5** - Removed `revindex()` as its effect was a duplication of generic `revs()`. Added mutable version `mutrevs()`.
-
-**Version 1.2.4** - Clarified some comments and `indxvec` test in `tests/tests.rs`.
-
-**Version 1.2.3** - Added `binsearch_indexed` and `binsearchdesc_indexed` and their tests,  for symmetry with `memsearch` versions which only search for members, whereas `binsearch` finds order positions for non-members, too.
-
-**Version 1.2.2** - Minor test clarification. Expanded the glossary.
-
-**Version 1.2.1** - Removed the functions module `merge.rs`, it has been replaced by traits `Vecops` and `Mutsort`. Improved hashsorts. Added some more comments. Added short glossary.
-
-**Version 1.2.0** - Changed functions in module `merge.rs` to trait methods in two new traits: `Vecops` and `Mutsort`. Applying trait methods is more idiomatic and easier to read when chained. Narrowed down some trait constraints. Kept the old functions for now for backwards compatibility but they will be removed in the next version to save space.
+**Version 1.3.11** - Added module `search.rs`. Improved general `binary_any` and `binary_all` search algorithms now within.

@@ -2,6 +2,8 @@
 //! Vecs indexing, ranking, sorting, merging, searching, reversing,
 //! intersecting, printing, etc.
 
+/// Stand-alone search functions
+pub mod search;
 /// Implementation of trait Indices for `&[usize]`
 pub mod indices;
 /// Implementation of trait Mutops for `&mut[T]`
@@ -12,11 +14,7 @@ pub mod printing;
 /// Implementation of trait Vecops for `&[T]`
 pub mod vecops;
 
-use core::{
-    cmp::Ordering,
-    cmp::Ordering::*,
-    ops::{Add, Div, Range, Sub},
-};
+use core::ops::Range;
 use printing::*;
 use std::fs::File;
 use std::io;
@@ -59,173 +57,6 @@ where
             "min: {GR}{}{UN}, minindex: {YL}{}{UN}, max: {GR}{}{UN}, maxindex: {YL}{}{UN}",
             self.min, self.minindex, self.max, self.maxindex
         )
-    }
-}
-
-/// Generalised `binary_search` for any one target.
-/// Search within the specified Range<T>, which is always ascending.
-/// The (indexing) range values can be of any generic type T satisfying the listed bounds.
-/// Typically usize for searching efficiently in-memory, u128 for searching whole disks or internet,
-/// or f64 for solving equations.
-/// Comparator closure `cmpr` is comparing against search target captured from its environment.
-/// The sort order reflected by `cmpr` can be either ascending or descending (increasing/decreasing).
-/// When the target is in order before range.start, range.start is returned.
-/// When the target is in order after range.end-1, range.end is returned.
-/// Normally returns an index of the first hit target that is PartiallyEqual.
-/// When the target is not present, then its insert position is returned.
-pub fn binary_find_any<T, F>(range: Range<T>, cmpr: &mut F) -> T
-where
-    T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>,
-    F: FnMut(&T) -> Ordering,
-{
-    let two = T::from(2); // generic two
-    let lasti = range.end - T::from(1);
-
-    // Checking end cases
-    if range.is_empty() {
-        return range.start;
-    };
-
-    match cmpr(&range.start) {
-        Greater => {
-            return range.start;
-        } // item is before the range
-        Equal => {
-            return range.start;
-        }
-        _ => (),
-    };
-    match cmpr(&lasti) {
-        Less => {
-            return range.end;
-        } // item is after the range
-        Equal => {
-            return lasti;
-        }
-        _ => (),
-    };
-    // Binary search
-    let mut hi = lasti; // initial high index
-    let mut lo = range.start; // initial low index
-    loop {
-        let mid = lo + (hi - lo) / two; // binary chop here with truncation
-        if mid > lo {
-            // still some range left
-            match cmpr(&mid) {
-                Less => lo = mid,
-                Greater => hi = mid,
-                Equal => {
-                    return mid;
-                }
-            }
-        } else {
-            return hi;
-        }; // interval is exhausted, val not found
-    }
-}
-
-/// General Binary Search
-/// Search within the specified Range<T>, which is always ascending.
-/// The (indexing) range values can be of any generic type T satisfying the listed bounds.
-/// Typically usize for searching efficiently in-memory, u128 for searching whole disks or internet,
-/// or f64 for solving equations.
-/// Comparator closure `cmpr` is comparing against a target captured from its environment.
-/// The sort order, reflected by `cmpr`, can be either ascending or descending (increasing/decreasing).
-/// When the target is in order before range.start, empty range range.start..range.start is returned.
-/// When the target is in order after range.end-1, range.end..range.end is returned.
-/// Normally binary_find returns Range of all the consecutive values PartiallyEqual to the target.
-/// When item is not found, then the returned range will be empty and
-/// its start (and end) will be the sort position where the item can be inserted.
-pub fn binary_find<T, F>(range: Range<T>, cmpr: &mut F) -> Range<T>
-where
-    T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>,
-    F: FnMut(&T) -> Ordering,
-{
-    let one = T::from(1); // generic one
-    let two = T::from(2); // generic two
-    let lasti = range.end - one;
-
-    // closure that searches for the ends of the matching range,
-    // i.e. two adjacent items, where only one matches
-    let find_end = |rng: Range<T>, cpr: &mut F, up: bool| -> T {
-        if up {
-            binary_find_any(rng, &mut |&probe| {
-                let this = cpr(&probe);
-                if this == Equal {
-                    if cpr(&(probe + one)) == Greater {
-                        Equal
-                    } else {
-                        Less
-                    }
-                } else {
-                    this
-                }
-            }) + one
-        } else {
-            binary_find_any(rng, &mut |&probe| {
-                let this = cpr(&probe);
-                if this == Equal {
-                    if cpr(&(probe - one)) == Less {
-                        Equal
-                    } else {
-                        Greater
-                    }
-                } else {
-                    this
-                }
-            })
-        }
-    };
-
-    // Checking end cases
-    if range.is_empty() {
-        return range;
-    };
-
-    match cmpr(&range.start) {
-        Greater => {
-            return range.start..range.start;
-        } // item is before the range
-        Equal => {
-            if cmpr(&range.end) == Equal {
-                return range;
-            }; // all in range match
-               // return range.start..scan(&range.start, &lasti, cmpr, true);
-            return range.start..find_end(range.start..lasti - one, cmpr, true);
-        }
-        _ => (),
-    };
-    match cmpr(&lasti) {
-        Less => {
-            return range.end..range.end;
-        } // item is after the range
-        Equal => {
-            // return scan(&lasti, &range.start, cmpr, false)..range.end;
-            return find_end(range.start + one..lasti, cmpr, false)..range.end;
-        }
-        _ => (),
-    };
-    // Binary search
-    // We could just call `binary_find_any` here but this gives us the latest bounds
-    // which we use to restrict the binary searches for the ends of the matching range
-    let mut hi = lasti; // initial high index
-    let mut lo = range.start; // initial low index
-    loop {
-        let mid = lo + (hi - lo) / two; // binary chop here with truncation
-        if mid > lo {
-            // still some range left
-            match cmpr(&mid) {
-                Less => lo = mid,
-                Greater => hi = mid,
-                Equal => {
-                    // return scan(&mid, &range.start, cmpr, false)..scan(&mid, &lasti, cmpr, true)
-                    return find_end(lo + one..mid, cmpr, false)
-                        ..find_end(mid..hi - one, cmpr, true);
-                }
-            }
-        } else {
-            return hi..hi;
-        }; // interval is exhausted, val not found
     }
 }
 
