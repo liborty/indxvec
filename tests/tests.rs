@@ -140,16 +140,18 @@ fn vecops() {
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg());
     println!(
         "Binary_search for {BL}199{UN}: {GR}{:?}{UN}",
-        sorted.binsearch(&199)
-    );
+        (0..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp(&199)));
+
     println!(
         "Binsearch_indexed for {BL}{midval}{UN}: {GR}{:?}{UN}",
-        vm.binsearch_indexed(&vi, &midval)
+        vm.binsearch_indexed(&vi,&midval)
     ); // binsearch_indexed, ascending
+    
     println!(
         "Nearest equal or greater item from {BL}{midval}{UN} is: {GR}{:?}{UN}",
-        vm[vi[vm.binsearch_indexed(&vi, &midval).start]]
+        vm[vi[vm.binsearch_indexed(&vi,&midval).start]]
     );
+
     println!(
         "Member forwards for {BL}199{UN}, is in sorted at: {}",
         sorted
@@ -165,14 +167,15 @@ fn vecops() {
 
     let sorteddesc = vi.unindex(&vm, false);
     vi.mutrevs();
+
     println!(
         "\nThe above unindexed into descending order:\n{}",
         sorteddesc.mg()
     );
     println!(
-        "Binsearch for {BL}199{UN}: {GR}{:?}{UN}",
-        sorteddesc.binsearch(&199)
-    );
+        "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
+        (0..sorteddesc.len()).binary_all(&mut |&probe| sorteddesc[probe].cmp(&199).reverse()),
+        sorteddesc.binsearch(&199)); 
     println!(
         "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN}",
         vm.binsearch_indexed(&vi, &midval)

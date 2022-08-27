@@ -330,6 +330,8 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 
 ## Release Notes (Latest First)
 
+**Version 1.4.1** - Rewritten `binsearch` and `binsearch_indexed` from trait Vecops as encapsulations of the general purpose `binary_all` from trait Sort. Reduced the code size.
+
 **Version 1.4.0** - Introduced new trait Search: `impl<T> Search<T> for Range<T>`. The search algorithms can now be applied in 'builder style chained API's', filtering the ranges.
 
 **Version 1.3.11** - Added module `search.rs`. Improved general `binary_any` and `binary_all` search algorithms now within.

@@ -144,8 +144,7 @@ pub trait Indices {
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
     fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T>
-    where
-        T: Clone;
+    where T: Clone;
     /// Correlation coefficient of two &[usize] slices.
     /// Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
@@ -196,15 +195,6 @@ pub trait Vecops<T> {
     fn member(self, m: T, forward: bool) -> Option<usize>
     where
         T: PartialEq + Clone;
-    /// Binary search of a slice in ascending or descending order.
-    fn binsearch(self, val: &T) -> Range<usize>
-    where
-        T: PartialOrd;
-    /// Binary search of an index sorted slice in ascending or descending order.
-    /// Like binsearch but using indirection via idx.
-    fn binsearch_indexed(self, idx: &[usize], val: &T) -> Range<usize>
-    where
-        T: PartialOrd;
     /// Counts partially equal occurrences of val by simple linear search of an unordered set
     fn occurs(self, val: T) -> usize
     where
@@ -241,6 +231,12 @@ pub trait Vecops<T> {
     fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
     where
         T: PartialOrd + Clone;
+    /// Binary Search. Automatic descending order detection.
+    fn binsearch(self, target: &T) -> Range<usize>
+    where T: PartialOrd;
+    /// Binary Search via index. Automatic descending order detection
+    fn binsearch_indexed(self, idx: &[usize], target: &T) -> Range<usize>
+    where T: PartialOrd;
     /// Merges (unites) two sorted sets, result is also sorted    
     fn merge(self, v2: &[T]) -> Vec<T>
     where

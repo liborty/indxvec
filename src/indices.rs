@@ -1,4 +1,4 @@
-use crate::Indices;
+use crate::{Indices};
 
 impl Indices for &[usize] {
     /// Inverts an index, eg. from sort index to ranks.
