@@ -15,7 +15,7 @@ use indxvec::{ MinMax, here, printing::*, Search, Indices, Vecops, Mutops, Print
 
 ## Description
 
-This crate is lightweight and has no dependencies. The methods of all four traits can be functionally chained together to achieve numerous manipulations of vectors and their indices in compact form.
+This crate is lightweight and has no dependencies. The methods of all traits can be functionally chained to achieve numerous manipulations of Ranges, Vecs, and their indices in compact form.
 
 The facilities provided are:
 
