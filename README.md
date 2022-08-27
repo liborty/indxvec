@@ -28,7 +28,7 @@ The facilities provided are:
 * coloured pretty printing (ANSI terminal output, mainly for testing)
 * macro `here!()` for more informative errors reporting
 
-It is highly recommended to read and run `tests/tests.rs` to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order. It is also necessary to tun the timing benchmark `sorts()` on its own for meaningful results.
+It is highly recommended to read and run `tests/tests.rs` to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order. It is also necessary to run the timing benchmark `sorts()` on its own for meaningful results.
 
 ```bash
 cargo test --release -- --test-threads=1 --nocapture --color always
