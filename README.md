@@ -60,15 +60,15 @@ use indxvec::{MinMax,binary_find,here};
 
 ## Trait `Search`
 
-Contains general purpose binary search `binary_all`. As far as I know, this algorithm is new and unique. It is very  fast, especially over long ranges. It is also very general and capable of many varied applications. 
+Contains general purpose binary search `binary_all`. As far as I know, this algorithm is new and unique. It is very  fast, especially over long ranges. It is also very general and capable of many varied applications.
 
-The method is applied to a range of indices of any (unsigned) numeric type. Thus it can be used in a functionally chained 'builder style APIs', to select only the subrange matching the target.
+The method is applied to a range of indices of any numeric type. Thus it can be used in functionally chained 'builder style APIs', to select only the subrange matching the target.
 
 It takes a closure that captures the target. The closure fetches the sorted data item (from any source) for the index argument and compares it against the target. It returns `Ordering`, according to how it defines the logic of the match test. 
 
 The search algorithm itself uses this probing to steer the search range towards the match (by reducing the range appropriately). When the target is not present, its sorted insert position is returned instead, as an empty range.
 
-The first hit encountered will be anywhere within a range of matching partially equal items. The algorithm then conducts two more binary searches, in both directions away from the hit. These secondary searches are conducted only within the confines of the most reduced range supplied by the completed first search. First non-matching positions in both directions are found, giving the final result: the full matching range.
+The first hit encountered will be anywhere within a range of matching partially equal items. The algorithm then conducts two more binary searches, in both directions away from the hit. These secondary searches are applied only within the most reduced half ranges obtained from the completed first search. First non-matching positions in both directions are found, giving the final result: the full matching range.
 
 ```rust
 /// Search algoritms implemented on Range<T>

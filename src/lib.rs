@@ -121,12 +121,12 @@ where
 
 /// Search algoritms implemented on Range<T>
 pub trait Search<T> {
-    /// Unchecked first hit or sort order, used by `binary-all`
+    /// Unchecked first hit or sort order, and the final range. Used by `binary-all`
     fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>)
     where
         T: PartialOrd + Copy + From<u8> + Add<Output = T> + Sub<Output = T> + Div<Output = T>;
 
-    /// General Binary Search using a closure to sample its own data and target
+    /// General Binary Search using a closure to sample and test data
     fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>
     where
         T: PartialOrd + Copy + From<u8> + Add<Output = T> + Sub<Output = T> + Div<Output = T>;

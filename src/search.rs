@@ -6,10 +6,10 @@ use core::{
 };
 
 impl<T> Search<T> for Range<T> {
-    /// Binary search for index of any item matching the target.
-    /// Searches within the specified Range<T> index, which is always ascending.
+    /// Binary search for an index of any item matching the target.
+    /// Searches within the specified Range<T>, which is always ascending.
     /// The range should have been checked for trivial cases already, i.e.
-    /// it must satisfy the requirement that data[range.start()] < target < data[range.end()-1].
+    /// it must satisfy: data[range.start()] < target < data[range.end()-1].
     /// The (indexing) range values can be of any generic type T satisfying the listed trait bounds.
     /// Typically usize for searching efficiently in-memory, u128 for searching whole disks or internet,
     /// or f64 for solving equations.
@@ -17,7 +17,7 @@ impl<T> Search<T> for Range<T> {
     /// The sort order is reflected by `cmpr` and can be either ascending or descending (increasing/decreasing).
     /// Returns the index of the first hit that is PartiallyEqual to target and
     /// its closest enclosing interval (the last low bound .. the last high bound).
-    /// When the target is not found, then the mid value is its sort order position ( and is equal to the low bound ).
+    /// When the target is not found, then hit == high bound = the insert position.
     fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>)
     where
         T: PartialOrd + Copy + From<u8> 
@@ -49,14 +49,15 @@ impl<T> Search<T> for Range<T> {
     /// General Binary Search with very fast method for finding all the matches.
     /// Search within the specified Range<T> index, which is always ascending.
     /// The (indexing) range values can be of any generic type T satisfying the listed bounds.
-    /// Typically usize for searching efficiently in-memory, u128 for searching whole disks or internet.
+    /// Typically usize for indexing efficiently in-memory, u128 for searching whole disks or internet.
     /// Comparator closure `cmpr` is comparing against a target captured from its environment.
     /// The sort order, reflected by `cmpr`, can be either ascending or descending (increasing/decreasing).
     /// When the target is in order before self.start, empty self self.start..self.start range is returned.
-    /// When the target is in order after self.end, self.end+1..self.end+1 is returned.
-    /// Otherwise returns Range of all the consecutive values PartiallyEqual to the target.
-    /// When target is not found, then the returned range will be empty and
-    /// its start (and end) will be the sort order position.
+    /// When the target is in order after self.end, self.end..self.end is returned.
+    /// When target is not found, then an empty range with 
+    /// its start (and end) equal to the sort position is returned.
+    /// Otherwise returns the range of all the consecutive values PartiallyEqual to the target.
+
     fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>
     where
         T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>,
