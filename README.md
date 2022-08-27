@@ -5,13 +5,12 @@
 [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec)
 [<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec)
 
-Vecs indexing, ranking, sorting, merging, searching, reversing, 
-intersecting, printing, etc.
+Vecs indexing, ranking, sorting, merging, searching, reversing, intersecting, printing, etc.
 
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, here, printing::*, search::*, Indices, Vecops, Mutops, Printing };
+use indxvec::{ MinMax, here, printing::*, Search, Indices, Vecops, Mutops, Printing };
 ```
 
 ## Description
@@ -58,6 +57,34 @@ use indxvec::{MinMax,binary_find,here};
 * `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices.
 * `binary_find` is a general purpose binary search/solver.
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
+
+## Trait `Search`
+
+Contains general purpose binary search `binary_all`. As far as I know, this algorithm is new and unique. It is very  fast, especially over long ranges. It is also very general and capable of many varied applications. 
+
+The method is applied to a range of indices of any (unsigned) numeric type. Thus it can be used in a functionally chained 'builder style APIs', to select only the subrange matching the target.
+
+It takes a closure that captures the target. The closure fetches the sorted data item (from any source) for the index argument and compares it against the target. It returns `Ordering`, according to how it defines the logic of the match test. 
+
+The search algorithm itself uses this probing to steer the search range towards the match (by reducing the range appropriately). When the target is not present, its sorted insert position is returned instead, as an empty range.
+
+The first hit encountered will be anywhere within a range of matching partially equal items. The algorithm then conducts two more binary searches, in both directions away from the hit. These secondary searches are conducted only within the confines of the most reduced range supplied by the completed first search. First non-matching positions in both directions are found, giving the final result: the full matching range.
+
+```rust
+/// Search algoritms implemented on Range<T>
+pub trait Search<T> {
+
+/// Unchecked first hit or sort order, used by `binary-all`
+fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>)
+where
+    T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>;
+
+/// General Binary Search using a closure to sample its own data and target - gives full matching range, fast
+fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>
+where
+    T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>;
+}
+```
 
 ## Trait `Indices`
 
@@ -302,5 +329,7 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
 `memsearch` returns `Option(None)`, when `midval` is not found in `vm`. Here, `None` will be printed in red, while any found item will be printed in green. This is also an example of how to process `Option`s without the long-winded `match` statements.
 
 ## Release Notes (Latest First)
+
+**Version 1.4.0** - Introduced new trait Search: `impl<T> Search<T> for Range<T>`. The search algorithms can now be applied in 'builder style chained API's', filtering the ranges.
 
 **Version 1.3.11** - Added module `search.rs`. Improved general `binary_any` and `binary_all` search algorithms now within.

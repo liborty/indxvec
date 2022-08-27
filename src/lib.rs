@@ -14,7 +14,11 @@ pub mod search;
 /// Implementation of trait Vecops for `&[T]`
 pub mod vecops;
 
-use core::ops::Range;
+use core::{
+    cmp::Ordering,
+    ops::{Add, Div, Range, Sub},
+};
+
 use printing::*;
 use std::fs::File;
 use std::io;
@@ -113,6 +117,19 @@ where
     /// Method to serialize generic items, slices, and slices of Vecs.
     /// Implementation code is in `printing.rs`.
     fn to_plainstr(self) -> String;
+}
+
+/// Search algoritms implemented on Range<T>
+pub trait Search<T> {
+    /// Unchecked first hit or sort order, used by `binary-all`
+    fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>)
+    where
+        T: PartialOrd + Copy + From<u8> + Add<Output = T> + Sub<Output = T> + Div<Output = T>;
+
+    /// General Binary Search using a closure to sample its own data and target
+    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>
+    where
+        T: PartialOrd + Copy + From<u8> + Add<Output = T> + Sub<Output = T> + Div<Output = T>;
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.
