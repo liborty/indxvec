@@ -54,7 +54,7 @@ Contains general purpose binary search `binary_all`. As far as I know, this algo
 
 The method is applied to a range of indices of any numeric type. Thus it can be used in functionally chained 'builder style APIs', to select only the subrange matching the target.
 
-It takes a closure that captures the target. The closure fetches the sorted data item (from any source) for the index argument and compares it against the target. It returns `Ordering`, according to how it defines the logic of the match test. 
+It takes a closure that captures the target. The closure fetches the sorted data item (from any source) for the index argument and compares it against the target. It returns `Ordering`, according to how it defines the logic of the match test. Descending order of data is automatically detected and the ordering is automatically swapped.
 
 The search algorithm itself uses this probing to steer the search range towards the match (by reducing the range appropriately). When the target is not present, its sorted insert position is returned instead, as an empty range.
 
@@ -328,6 +328,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.4.2** - Introduced automatic sort order detection in `binary_all`, thus allowing more code simplification in methods `binsearch` and `binsearch_indexed` that depend on it.
 
 **Version 1.4.1** - Rewritten `binsearch` and `binsearch_indexed` from trait Vecops as encapsulations of the general purpose `binary_all` from trait Sort. Reduced the code size.
 

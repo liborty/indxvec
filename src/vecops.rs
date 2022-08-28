@@ -455,28 +455,15 @@ impl<T> Vecops<T> for &[T] {
     where
         T: PartialOrd,
     {
-        if self[0] > self[self.len() - 1] {
-            // descending
-            (0..self.len()).binary_all(&mut |&probe| {
-                if self[probe] < *target {
-                    Greater
-                } else if self[probe] > *target {
-                    Less
-                } else {
-                    Equal
-                }
-            })
-        } else {
-            (0..self.len()).binary_all(&mut |&probe| {
-                if self[probe] < *target {
-                    Less
-                } else if self[probe] > *target {
-                    Greater
-                } else {
-                    Equal
-                }
-            })
-        }
+        (0..self.len()).binary_all(&mut |&probe| {
+            if self[probe] < *target {
+                Less
+            } else if self[probe] > *target {
+                Greater
+            } else {
+                Equal
+            }
+        })
     }
 
     /// Binary Search via index. Encapsulation of `binary_all` from trait Search
@@ -486,28 +473,15 @@ impl<T> Vecops<T> for &[T] {
     where
         T: PartialOrd,
     {
-        if self[idx[0]] > self[idx[idx.len() - 1]] {
-            // descending order
-            (0..idx.len()).binary_all(&mut |&probe| {
-                if self[idx[probe]] < *target {
-                    Greater
-                } else if self[idx[probe]] > *target {
-                    Less
-                } else {
-                    Equal
-                }
-            })
-        } else {
-            (0..idx.len()).binary_all(&mut |&probe| {
-                if self[idx[probe]] < *target {
-                    Less
-                } else if self[idx[probe]] > *target {
-                    Greater
-                } else {
-                    Equal
-                }
-            })
-        }
+        (0..idx.len()).binary_all(&mut |&probe| {
+            if self[idx[probe]] < *target {
+                Less
+            } else if self[idx[probe]] > *target {
+                Greater
+            } else {
+                Equal
+            }
+        })
     }
 
     /// Merges two explicitly ascending sorted generic vectors,

@@ -25,7 +25,8 @@ impl<T> Search<T> for Range<T> {
     {
         // Binary search: lo and hi are never equal to target
         let mut hi = self.end; // initial high index
-        let mut lo = self.start; // initial low index
+        let mut lo = self.start; // initial low index 
+ 
         loop {
             let mid = lo + (hi - lo) / T::from(2); // binary chop here with truncation
             if mid > lo {
@@ -52,6 +53,7 @@ impl<T> Search<T> for Range<T> {
     /// Typically usize for indexing efficiently in-memory, u128 for searching whole disks or internet.
     /// Comparator closure `cmpr` is comparing against a target captured from its environment.
     /// The sort order, reflected by `cmpr`, can be either ascending or descending (increasing/decreasing).
+    /// It is automatically detected.
     /// When the target is in order before self.start, empty self self.start..self.start range is returned.
     /// When the target is in order after self.end, self.end..self.end is returned.
     /// When target is not found, then an empty range with 
@@ -67,6 +69,9 @@ impl<T> Search<T> for Range<T> {
         if self.is_empty() {
             return lo..hi;
         };
+        let descending = ( cmpr(&lo) == Greater ) && ( cmpr(&(hi - T::from(1))) == Less );
+        let mut comp = |x| { let c = cmpr(&x); if descending { c.reverse() } else { c } };
+ 
 
         fn upend(o: Ordering) -> Ordering {
             if o == Equal {
@@ -84,41 +89,41 @@ impl<T> Search<T> for Range<T> {
         }
 
         // Checking end cases
-        match cmpr(&lo) {
+        match comp(lo) {
             Greater => {
                 return lo..lo;
             } // item is before the self
             Equal => {
-                if cmpr(&hi) == Equal {
+                if comp(hi) == Equal {
                     // all in range match
                     return lo..hi + T::from(1);
                 };
-                let (lor, _) = self.binary_any(&mut |&probe| upend(cmpr(&probe)));
+                let (lor, _) = self.binary_any(&mut |&probe| upend(comp(probe)));
                 return lo..lor + T::from(1);
             }
             _ => (),
         };
 
-        match cmpr(&(hi - T::from(1))) {
+        match comp(hi - T::from(1)) {
             // must not check beyond the range
             Less => {
                 return self.end..self.end;
             } // item is after the self
             Equal => {
-                let (lor, _) = self.binary_any(&mut |&probe| downend(cmpr(&probe)));
+                let (lor, _) = self.binary_any(&mut |&probe| downend(comp(probe)));
                 return lor + T::from(1)..hi;
             }
             _ => (),
         };
         // Now lo and hi will never be equal to target
         // Binary search for first match
-        let (hit, rrange) = self.binary_any(cmpr);
+        let (hit, rrange) = self.binary_any(&mut |&probe| comp(probe));
         // If no hit, return empty range with sort position
         if hit == rrange.end { return hit..hit }; 
         // Binary search in the narrowest interval for the start of the matching range
-        let (lowend, _) = (rrange.start..hit).binary_any(&mut |&probe| downend(cmpr(&probe)));
+        let (lowend, _) = (rrange.start..hit).binary_any(&mut |&probe| downend(comp(probe)));
         // Binary search in the narrowest interval for the end of the matching range
-        let (highend, _) = (hit..rrange.end).binary_any(&mut |&probe| upend(cmpr(&probe)));
+        let (highend, _) = (hit..rrange.end).binary_any(&mut |&probe| upend(comp(probe)));
         lowend..highend
     }
 }
