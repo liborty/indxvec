@@ -12,7 +12,6 @@ keywords = ["merge-sort","hash-sort","set-operations","ranking-searching","print
 categories = ["algorithms","data-structures","mathematics","rust-patterns","simulation"]
 include = [
     "src/*.rs",
-    "tests/*.rs",
     "Cargo.toml",
     "README.md", 
     "LICENSE"
