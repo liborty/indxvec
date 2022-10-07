@@ -67,7 +67,8 @@ where T: std::fmt::Display,
     fn to_str(self) -> String {
         if self.is_empty() { return "[]".to_string() };
         self.iter().fold("[\n".to_string(),
-        |mut s, item| { writeln!(s," {}",item.to_str()).ok();  s  }) + "]"
+        |mut s, item| { 
+            writeln!(s," {}",item.to_str()).ok();  s  }) + "]"
     } 
 
     fn to_plainstr(self) -> String {
