@@ -12,10 +12,10 @@ fn indices() {
     let midval: u8 = 128;
     set_seeds(98777777);
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).getvu8();
+    let v1 = rn.ranv(20).unwrap().getvu8().unwrap();
     let mut vm = v1.clone();
     println!("{GR}\nv1: {}", v1.bl());
-    let v2 = rn.ranv(20).getvu8();
+    let v2 = rn.ranv(20).unwrap().getvu8().unwrap();
     println!("{GR}v2: {}", v2.bl());
     println!("minmax v1: {}", v1.minmax());
     println!("minmaxt v1: {GR}{:?}{UN}", v1.minmaxt());
@@ -112,9 +112,9 @@ fn indices() {
 fn vecops() {
     let midval: u8 = 128;
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).getvu8();
+    let v1 = rn.ranv(20).unwrap().getvu8().unwrap();
     println!("{GR}\nv1: {}", v1.bl());
-    let v2 = rn.ranv(20).getvu8();
+    let v2 = rn.ranv(20).unwrap().getvu8().unwrap();
     println!("{GR}v2: {}", v2.bl());
     let (vm, mut vi) = v1.merge_indexed(
         // merge two vecs using their sort indices
@@ -300,7 +300,7 @@ fn broot(num: f64, root: f64) -> (f64,Range<f64>) {
 fn printing() {
     set_seeds(123456789);
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).getvu8();
+    let v1 = rn.ranv(20).unwrap().getvu8().unwrap();
     println!("\n{}", v1.rd());
     println!("\n{}", v1.gr());
     println!("\n{}", v1.yl());
@@ -357,5 +357,5 @@ fn sorts() {
 
     set_seeds(7777777777_u64); // intialise the random numbers generator
     let rn = Rnum::newu8(); // specifies the type of data items
-    mutbenchu8(rn, 4, 10, &NAMES, &closures);
+    mutbenchu8(rn, 10..3000, 1000, 10, &NAMES, &closures);
 }
