@@ -3,10 +3,9 @@
 [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github">](https://github.com/liborty/indxvec)
 [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec)
 [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec)
-[<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec)
-[![Actions Status](https://github.com/liborty/indxvec/workflows/test.yml/badge.svg)](https://github.com/liborty/indxvec/actions)
+[<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test.yml/badge.svg)](https://github.com/liborty/indxvec/actions)
 
-Vecs indexing, ranking, sorting, merging, searching, reversing, intersecting, printing, etc.
+Vecs searching, indexing, ranking, sorting, merging, reversing, intersecting, printing, etc.
 
 ## The following will import everything
 
@@ -34,6 +33,8 @@ It is highly recommended to read and run [`tests/tests.rs`](https://github.com/l
 ```bash
 cargo test --release -- --test-threads=1 --nocapture --color always
 ```
+
+or you can just unclick the above `test` badge and then click your way to  the automated test logs.
 
 ## Glossary
 
