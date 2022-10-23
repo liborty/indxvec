@@ -4,7 +4,7 @@
 [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec)
 [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec)
 [<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec)
-[![Actions Status](https://github.com/liborty/indxvec/workflows/compilation/badge.svg)](https://github.com/liborty/indxvec/actions)
+[![Actions Status](https://github.com/liborty/indxvec/workflows/test.yml/badge.svg)](https://github.com/liborty/indxvec/actions)
 
 Vecs indexing, ranking, sorting, merging, searching, reversing, intersecting, printing, etc.
 
