@@ -331,7 +331,9 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.4.3** - Updated dev dependency `ran 1.0.4`. Added github action `cargo check`.
+**Version 1.4.4** - No change to functionality. Added fully automated github action testing, outputs can be found by clicking the test badge at the top of this document.
+
+**Version 1.4.3** - Updated dev dependency `ran`. Added github action.
 
 **Version 1.4.2** - Introduced automatic sort order detection in `binary_all`, thus allowing more code simplification in methods `binsearch` and `binsearch_indexed` that depend on it.
 
