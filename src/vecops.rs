@@ -455,15 +455,18 @@ impl<T> Vecops<T> for &[T] {
     where
         T: PartialOrd,
     {
-        (0..self.len()).binary_all(&mut |&probe| {
-            if self[probe] < *target {
-                Less
-            } else if self[probe] > *target {
-                Greater
-            } else {
-                Equal
-            }
-        })
+        (0..self.len()).binary_all(
+            &mut |&probe| {
+                if self[probe] < *target {
+                    Less
+                } else if self[probe] > *target {
+                    Greater
+                } else {
+                    Equal
+                }
+            },
+            self.last() >= self.first()
+        )
     }
 
     /// Binary Search via index. Encapsulation of `binary_all` from trait Search
@@ -481,7 +484,9 @@ impl<T> Vecops<T> for &[T] {
             } else {
                 Equal
             }
-        })
+        },
+        self[idx[idx.len()-1]] >= self[idx[0]]
+    )
     }
 
     /// Merges two explicitly ascending sorted generic vectors,

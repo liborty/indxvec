@@ -10,11 +10,11 @@ use indxvec::{ MinMax, here, printing::*, Search, Indices, Vecops, Mutops, Print
 
 ## Description
 
-Indxvec is lightweight and has no dependencies. The methods of all traits can be functionally chained to achieve numerous manipulations of Ranges, Vecs, and their indices, in compact form.
+`Indxvec` is lightweight and has no dependencies. The methods of all traits can be functionally chained to achieve numerous manipulations of `Ranges`, `Vec`s, and their indices, in compact form.
 
 The facilities provided are:
 
-* powerful binary search
+* general binary search
 * ranking, sorting (merge sort and hash sort), merging, indexing, selecting, partitioning
 * many useful operations on generic vectors and their indices
 * set operations
@@ -30,7 +30,7 @@ It is highly recommended to read and run [`tests/tests.rs`](https://github.com/l
 cargo test --release -- --test-threads=1 --nocapture --color always
 ```
 
-or you can just unclick the above `test` badge and then click your way to  the automated test logs.
+or you can just click the above `test` badge and then click your way to  the latest automated test log.
 
 ## Glossary
 
@@ -48,29 +48,26 @@ or you can just unclick the above `test` badge and then click your way to  the a
 
 ## Trait `Search`
 
-Offers general purpose binary search method: `binary_all`. As far as I know, this algorithm is new and unique. It is very  fast, especially over long ranges. It is also very general and capable of varied applications.
+Offers general purpose binary search method: `binary_all`. As far as I know, this algorithm is new and unique, in its generality. It is very  fast, especially over long ranges. It is capable of varied applications.
 
 The method is applied to a range of indices of any numeric type. Thus it can be used in functionally chained 'builder style APIs', to select only the subrange closer bracketing the target.
 
-It takes a closure that captures the target. The closure fetches the sorted data item (from any source) for the index argument and compares it against the target. It returns `Ordering`, according to how it defines the logic of the match test. Descending order of data is automatically detected and the ordering is automatically swapped.
+It takes a closure that captures the target. The closure fetches the sorted data item (from any source) for the index argument and compares it against the target. It returns `Ordering`, according to how it defines the logic of the match test. Descending order of data is also allowed. The sort order is indicated by the last argument.
 
-The search algorithm itself uses this probing to steer the search range towards the match (by reducing the range appropriately). When the target is not found, its sorted insert position is returned instead.
+The search algorithm itself uses the data probing to steer the search range towards the match (by reducing the range appropriately). When the target is not found, its sorted insert position is returned instead.
 
-The first hit encountered will be anywhere within a range of matching partially equal items. The algorithm then conducts two more binary searches, in both directions away from the first hit. These secondary searches are applied only within the most reduced half ranges obtained from the completed main search. First non-matching positions in both directions are found, giving the final result: the full matching range.
+The first hit encountered will be anywhere within some number of matching partially equal items. The algorithm then conducts two more binary searches, in both directions away from the first hit. These secondary searches are applied only within the most reduced half ranges obtained from the completed first search. First non-matching positions in both directions are found, giving the final result: the complete matching range.
 
 ```rust
 /// Search algoritms implemented on Range<T>
 pub trait Search<T> {
 
-/// Unchecked first hit or sort order, used by `binary-all`
-fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>)
-where
-    T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>;
-
-/// General Binary Search using a closure to sample its own data and target - gives full matching range, fast
-fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>
-where
-    T: PartialOrd + Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>;
+/// Unchecked first hit or sort order, and the final range. Used by `binary_all`
+fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
+/// General Binary Search using a closure to sample data
+fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering, ascending: bool) -> Range<T>;
+/// Binary Search Nonlinear Equation Solver with accuracy range
+fn solve(&self, function: impl Fn(&T) -> T) -> (T, Range<T>);
 }
 ```
 
@@ -326,6 +323,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.4.5** - Improved `binary_all` usage. Added `solve` to trait `Search` for solving equations (with guaranteed convergence, unlike secant methods). Added demonstration to `tests.rs`.
 
 **Version 1.4.4** - No change to functionality. Added fully automated github action testing, outputs can be found by clicking the test badge at the top of this document.
 

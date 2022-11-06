@@ -140,7 +140,7 @@ fn vecops() {
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg());
     println!(
         "Binary_search for {BL}199{UN}: {GR}{:?}{UN}",
-        (0..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp(&199)));
+        (0..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp(&199),true));
 
     println!(
         "Binsearch_indexed for {BL}{midval}{UN}: {GR}{:?}{UN}",
@@ -174,11 +174,11 @@ fn vecops() {
     );
     println!(
         "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
-        (0..sorteddesc.len()).binary_all(&mut |&probe| sorteddesc[probe].cmp(&199)),
+        (0..sorteddesc.len()).binary_all(&mut |&probe| sorteddesc[probe].cmp(&199),false),
         sorteddesc.binsearch(&199)); 
     println!(
-        "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN}",
-        // (0..sorteddesc.len()).binary_all(&mut |&probe| sorteddesc[probe].cmp(&midval))
+        "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN} = {GR}{:?}{UN}",
+        (0..sorteddesc.len()).binary_all(&mut |&probe| vm[vi[probe]].cmp(&midval),false),
         vm.binsearch_indexed(&vi, &midval)
     ); // binsearch_indexed, descending
     println!(
@@ -212,88 +212,71 @@ fn text() {
     // Binary search using implied alphabetic partial order
     println!(
         "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        (0..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp("Humpty"))
+        (0..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp("Humpty"),true)
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 5..end: {YL}{:?}{UN}",
-        (5..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp("Humpty"))
+        (5..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp("Humpty"),true)
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        (0..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp("the"))
+        (0..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp("the"),true)
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 0..24: {YL}{:?}{UN}",
-        (0..24).binary_all(&mut |&probe| sorted[probe].cmp("the"))
+        (0..24).binary_all(&mut |&probe| sorted[probe].cmp("the"),true)
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        (0..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp("queen's"))
+        (0..sorted.len()).binary_all(&mut |&probe| sorted[probe].cmp("queen's"),true)
     );
     sorted.dedup();
-    println!("Dedup:\n{}\n", sorted.gr());
+    println!("Ascending deduplicated:\n{}\n", sorted.gr());
+
     let mut dsorted = v.sortm(false);
-    println!("Sortm descending sorted:\n{}", dsorted.gr());
+    println!("Descending sorted:\n{}", dsorted.gr());
     println!(
         "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
         (0..dsorted.len()).binary_all(&mut |&probe| dsorted[probe]
-            .cmp("Humpty")
-            .reverse())
+            .cmp("Humpty"),false) 
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 0..22: {YL}{:?}{UN}",
-        (0..22).binary_all(&mut |&probe| dsorted[probe].cmp("Humpty").reverse())
+        (0..22).binary_all(&mut |&probe| dsorted[probe].cmp("Humpty"),false)
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        (0..dsorted.len()).binary_all(&mut |&probe| dsorted[probe]
-            .cmp("the")
-            .reverse())
+        (0..dsorted.len()).binary_all(&mut |&probe| dsorted[probe].cmp("the"),false) 
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 5..end: {YL}{:?}{UN}",
-        (5..sorted.len()).binary_all(&mut |&probe| dsorted[probe]
-            .cmp("the")
-            .reverse())
+        (5..sorted.len()).binary_all(&mut |&probe| dsorted[probe].cmp("the"),false)
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        (0..dsorted.len()).binary_all(&mut |&probe| dsorted[probe]
-            .cmp("queen's")
-            .reverse())
+        (0..dsorted.len()).binary_all(&mut |&probe| dsorted[probe].cmp("queen's"),false) 
     );
     dsorted.dedup();
-    println!("Dedup:\n{}\n", sorted.gr());
+    println!("Descending deduplicated:\n{}\n", sorted.gr());
 }
 
 use core::ops::Range;
 #[test]
-fn roottest() {
+fn solvetest() {
     let num: f64 = 1234567890.0;
     let root: f64 = 5.3;
-    let (res,_) = broot(num, root);
+    let (res,rng) = (1_f64..num).solve(|&x| x.powf(root) - num);
     println!(
-        "{} to the power of {YL}1/{}{UN}\nbinary_any:\t{} error:  {RD}{:e}{UN}\npowf:\t\t{} error:{RD}{:e}{UN}",
+        "{} to the power of {YL}1/({}){UN}\nsolve:\t{} error: {RD}{:e}{UN}\npowf:\t{} error:{RD}{:e}{UN}\n",
         num.yl(),
         root,
         res.gr(), 
-        (num - res.powf(5.3)),       
+        rng.end-rng.start,    
         num.powf(1. / root).gr(),
         (num - num.powf(1. / root).powf(root))
     );
-}
-
-///num.powf(1./root) using binary search
-fn broot(num: f64, root: f64) -> (f64,Range<f64>) {
-    (1_f64..num).binary_any(&mut |&probe| {
-        if probe.powf(root) < num {
-            Less
-        } else if probe.powf(root) > num {
-            Greater
-        } else {
-            Equal
-        }
-    })
+    let (quarterpi,rng) = (0_f64..1_f64).solve(|&x| 1. - x.tan());
+    println!("pi:\t{GR}{}{UN} err:  {RD}{:e}{UN}", 4.0*quarterpi, rng.end-rng.start);
 }
 
 #[test]
