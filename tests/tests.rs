@@ -257,7 +257,7 @@ fn text() {
         (0..dsorted.len()).binary_all(&mut |&probe| dsorted[probe].cmp("queen's"),false) 
     );
     dsorted.dedup();
-    println!("Descending deduplicated:\n{}\n", sorted.gr());
+    println!("Descending deduplicated:\n{}\n", dsorted.gr());
 }
 
 use core::ops::Range;
