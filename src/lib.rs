@@ -15,8 +15,8 @@ pub mod search;
 pub mod vecops;
 
 use core::{
-    cmp::Ordering,
-    ops::Range
+    cmp::{Ordering, Ordering::*},
+    ops::{Range,Add,Sub,Div,Mul}
 };
 
 use printing::*;
@@ -35,6 +35,51 @@ macro_rules! here {
         let name = type_name_of(f);
         format!("\n{}:{} {}", file!(), line!(), &name[..name.len() - 3])
     }};
+}
+
+/// Partial cmp that does not require T to be an iterator
+pub fn compare<T>(a: &T, b: &T) -> Ordering
+where
+    T: PartialOrd,
+{
+    if b > a {
+        Greater
+    } else if b < a {
+        Less
+    } else {
+        Equal
+    }
+}
+/// General Binary Search with fast method for finding all the matches.  
+/// Search within the specified Range<T> index, which is always ascending.  
+/// The (indexing) range values can be of any generic type T satisfying the listed bounds.
+/// Typically usize for indexing efficiently in-memory, u128 for searching whole disks or internet,
+/// f64 for solving equations which might not converge using secant and other methods.  
+/// Closure samples the (sorted) data source.  
+/// Target is the value to be found.  
+/// The sort order of the data can be either ascending or descending (increasing/decreasing) and is
+/// automatically detected.   
+/// When the target is in order before self.start, empty self self.start..self.start range is returned.
+/// When the target is in order after self.end, self.end..self.end is returned.
+/// When target is not found, then an empty range with
+/// its start (and end) equal to the sort position is returned.
+/// Otherwise returns the range of all the consecutive values PartiallyEqual to the target.
+pub fn search_all<T, U>(rng: Range<T>, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>
+where
+    T: PartialOrd
+        + Copy
+        + From<u8>
+        + Add<Output = T>
+        + Sub<Output = T>
+        + Div<Output = T>
+        + Mul<Output = T>,
+    U: PartialOrd,
+{
+    if sample(&rng.start) <= sample(&(rng.end-T::from(1))) {
+        rng.binary_all(&mut |&probe| compare(&target,&sample(&probe)), true)
+    } else {
+        rng.binary_all(&mut |&probe| compare(&target,&sample(&probe)), false)
+    }
 }
 
 /// struct for minimum value, its index, maximum value, its index
@@ -126,7 +171,7 @@ pub trait Search<T> {
     /// General Binary Search using a closure to sample data
     fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering, ascending: bool) -> Range<T>;
     /// Binary Search Nonlinear Equation Solver with accuracy range
-    fn solve(&self, function: impl Fn(&T) -> T) -> (T, Range<T>);
+    fn solve(self, function: impl Fn(&T) -> T) -> (T, Range<T>);
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.
@@ -141,7 +186,8 @@ pub trait Indices {
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
     fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T>
-    where T: Clone;
+    where
+        T: Clone;
     /// Correlation coefficient of two &[usize] slices.
     /// Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
@@ -229,11 +275,13 @@ pub trait Vecops<T> {
     where
         T: PartialOrd + Clone;
     /// Binary Search. Automatic descending order detection.
-    fn binsearch(self, target: &T) -> Range<usize>
-    where T: PartialOrd;
+    fn binsearch(self, target: T) -> Range<usize>
+    where
+        T: PartialOrd + Copy;
     /// Binary Search via index. Automatic descending order detection
     fn binsearch_indexed(self, idx: &[usize], target: &T) -> Range<usize>
-    where T: PartialOrd;
+    where
+        T: PartialOrd;
     /// Merges (unites) two sorted sets, result is also sorted    
     fn merge(self, v2: &[T]) -> Vec<T>
     where

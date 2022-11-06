@@ -1,5 +1,4 @@
-use crate::Search;
-
+use crate::{compare, Search};
 use core::{
     cmp::{Ordering, Ordering::*},
     ops::{Add, Div, Range, Sub},
@@ -32,7 +31,6 @@ where
         // Binary search: lo and hi are never equal to target
         let mut hi = self.end; // initial high index
         let mut lo = self.start; // initial low index
-
         loop {
             let mid = lo + (hi - lo) / T::from(2); // binary chop here with truncation
             if mid > lo {
@@ -82,7 +80,8 @@ where
             }
         }
         let lo = self.start; // initial low index
-        let hi = self.end; // initial high index
+        let hi = self.end;   // initial high index
+        let one = T::from(1);
         if self.is_empty() {
             return lo..hi;
         };
@@ -102,21 +101,21 @@ where
             Equal => {
                 if comp(hi) == Equal {
                     // all in range match
-                    return lo..hi + T::from(1);
+                    return lo..hi+one;
                 };
                 let (lor, _) = self.binary_any(&mut |&probe| upend(comp(probe)));
-                return lo..lor + T::from(1);
+                return lo..lor+one;
             }
             _ => (),
         };
-        match comp(hi - T::from(1)) {
+        match comp(hi-one) {
             // must not check beyond the range
             Less => {
                 return hi..hi;
             } // item is after the range
             Equal => {
                 let (lor, _) = self.binary_any(&mut |&probe| downend(comp(probe)));
-                return lor + T::from(1)..hi;
+                return lor+one..hi;
             }
             _ => (),
         };
@@ -137,32 +136,22 @@ where
     /// Nonlinear equation solver using binary search
     /// Finds a root in the input range, such that function(root) == 0
     /// Function can be supplied as a simple closure and can be increasing or decreasing
-    fn solve(&self, function: impl Fn(&T) -> T) -> (T, Range<T>) {       
+    fn solve(self, function: impl Fn(&T) -> T) -> (T, Range<T>) {   
+        let zero = T::from(0); 
+        // let rn = search_all(self, &mut |probe| function(probe), zero);
+        // (rn.start,rn)
+          
         if function(&self.start) < function(&self.end) { 
-            self.binary_any(&mut |probe| {
-                let zero = T::from(0);
+            self.binary_any(&mut |probe| { 
                 let fnval = function(probe);
-                if fnval < zero {
-                    Less
-                } else if fnval > zero {
-                    Greater
-                } else {
-                    Equal
-                }
-            }) 
+                compare(&zero,&fnval)        
+            })
         } 
         else { 
             self.binary_any(&mut |probe| { 
-                let zero = T::from(0);
                 let fnval = function(probe);
-                if fnval < zero {
-                    Greater
-                } else if fnval > zero {
-                    Less
-                } else {
-                    Equal
-                }
+                compare(&fnval,&zero)
             })
-        }  
+        } 
     } 
 }

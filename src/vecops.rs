@@ -1,4 +1,4 @@
-use crate::{Indices, MinMax, Mutops, Search, Vecops};
+use crate::{search_all, Indices, MinMax, Mutops, Search, Vecops};
 use core::{cmp::Ordering::*, ops::Range};
 
 impl<T> Vecops<T> for &[T] {
@@ -450,22 +450,13 @@ impl<T> Vecops<T> for &[T] {
     }
 
     /// Binary Search with automatic descending order detection.
-    /// Easy encapsulation of `binary_all` from trait Search
-    fn binsearch(self, target: &T) -> Range<usize>
+    /// Easy encapsulation of function `search_all`
+    fn binsearch(self, target: T) -> Range<usize>
     where
-        T: PartialOrd,
+        T: PartialOrd + Copy
     {
-        (0..self.len()).binary_all(
-            &mut |&probe| {
-                if self[probe] < *target {
-                    Less
-                } else if self[probe] > *target {
-                    Greater
-                } else {
-                    Equal
-                }
-            },
-            self.last() >= self.first()
+        search_all(0..self.len(),
+            &mut |probe| self[*probe], target
         )
     }
 

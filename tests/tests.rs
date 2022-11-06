@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 #[cfg(test)]
 use core::cmp::Ordering::*;
-use indxvec::{here, printing::*, search::*, Search, Indices, Mutops, Printing, Vecops};
+use indxvec::{here, compare, search_all, printing::*, search::*, Search, Indices, Mutops, Printing, Vecops};
 use ran::*;
 use std::{cmp::Ord, convert::From};
 use times::*;
@@ -175,7 +175,7 @@ fn vecops() {
     println!(
         "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
         (0..sorteddesc.len()).binary_all(&mut |&probe| sorteddesc[probe].cmp(&199),false),
-        sorteddesc.binsearch(&199)); 
+        sorteddesc.binsearch(199)); 
     println!(
         "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN} = {GR}{:?}{UN}",
         (0..sorteddesc.len()).binary_all(&mut |&probe| vm[vi[probe]].cmp(&midval),false),
@@ -237,12 +237,11 @@ fn text() {
     println!("Descending sorted:\n{}", dsorted.gr());
     println!(
         "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        (0..dsorted.len()).binary_all(&mut |&probe| dsorted[probe]
-            .cmp("Humpty"),false) 
+        search_all(0..dsorted.len(),&mut |&probe| dsorted[probe],"Humpty") 
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 0..22: {YL}{:?}{UN}",
-        (0..22).binary_all(&mut |&probe| dsorted[probe].cmp("Humpty"),false)
+        search_all(0..22,&mut |&probe| dsorted[probe],"Humpty")
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
