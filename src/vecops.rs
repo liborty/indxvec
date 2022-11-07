@@ -1,5 +1,5 @@
-use crate::{search_all, Indices, MinMax, Mutops, Search, Vecops};
-use core::{cmp::Ordering::*, ops::Range};
+use crate::{search_all, Indices, MinMax, Mutops, Vecops};
+use core::ops::Range;
 
 impl<T> Vecops<T> for &[T] {
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
@@ -451,33 +451,23 @@ impl<T> Vecops<T> for &[T] {
 
     /// Binary Search with automatic descending order detection.
     /// Easy encapsulation of function `search_all`
-    fn binsearch(self, target: T) -> Range<usize>
+    fn binsearch(self, target: &T) -> Range<usize>
     where
         T: PartialOrd + Copy
     {
         search_all(0..self.len(),
-            &mut |probe| self[*probe], target
+            &mut |&probe| self[probe], *target
         )
     }
 
-    /// Binary Search via index. Encapsulation of `binary_all` from trait Search
-    /// Manual comparison to avoid Iterator trait bound demanded by `cmp`
-    /// Automatic sort order detection
+    /// Binary Search via index. Encapsulation of `search_all`
     fn binsearch_indexed(self, idx: &[usize], target: &T) -> Range<usize>
     where
-        T: PartialOrd,
+        T: PartialOrd + Copy,
     {
-        (0..idx.len()).binary_all(&mut |&probe| {
-            if self[idx[probe]] < *target {
-                Less
-            } else if self[idx[probe]] > *target {
-                Greater
-            } else {
-                Equal
-            }
-        },
-        self[idx[idx.len()-1]] >= self[idx[0]]
-    )
+        search_all(0..idx.len(),
+            &mut |&probe| self[idx[probe]], *target   
+        )
     }
 
     /// Merges two explicitly ascending sorted generic vectors,

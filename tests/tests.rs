@@ -175,7 +175,7 @@ fn vecops() {
     println!(
         "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
         (0..sorteddesc.len()).binary_all(&mut |&probe| sorteddesc[probe].cmp(&199),false),
-        sorteddesc.binsearch(199)); 
+        sorteddesc.binsearch(&199)); 
     println!(
         "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN} = {GR}{:?}{UN}",
         (0..sorteddesc.len()).binary_all(&mut |&probe| vm[vi[probe]].cmp(&midval),false),

@@ -1,11 +1,11 @@
-# Indxvec  [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github">](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions) [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec) 
+# Indxvec  [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github">](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions) [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec)
 
-Vecs searching, indexing, ranking, sorting, merging, reversing, intersecting, printing, etc.
+Vectors searching, indexing, ranking, sorting, merging, reversing, intersecting, printing, etc.
 
 ## The following will import everything
 
 ```rust
-use indxvec::{ MinMax, here, printing::*, Search, Indices, Vecops, Mutops, Printing };
+use indxvec::{ here, compare, search_all, MinMax, Search, Indices, Vecops, Mutops, Printing, printing::* };
 ```
 
 ## Description
@@ -62,9 +62,11 @@ The first hit encountered will be anywhere within some number of matching partia
 /// Search algoritms implemented on Range<T>
 pub trait Search<T> {
 
-/// Unchecked first hit or sort order, and the final range. Used by `binary_all`
+/// Unchecked first hit or insert order, and the final search range. 
+/// The comparator must take into account the data order.
+/// Used by `binary_all` and `solve`
 fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
-/// General Binary Search using a closure to sample data
+/// General Binary Search using a closure to sample and compare data, data order specified
 fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering, ascending: bool) -> Range<T>;
 /// Binary Search Nonlinear Equation Solver with accuracy range
 fn solve(&self, function: impl Fn(&T) -> T) -> (T, Range<T>);
@@ -323,6 +325,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.4.7** - General tidying up, mostly just of the documentation.
 
 **Version 1.4.6** - Added function `search_all` which is a kind of easier wrapper for `binary_all`, without the need to specify the sort order.
 

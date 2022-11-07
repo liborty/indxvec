@@ -23,10 +23,10 @@ where
     /// Typically usize for searching efficiently in-memory, u128 for searching whole disks or internet,
     /// or f64 for solving equations.
     /// Comparator closure `cmpr` is comparing against search target captured from its environment.
-    /// The sort order is reflected by `cmpr` and can be either ascending or descending (increasing/decreasing).
+    /// The sort order must be reflected by `cmpr` and can be either ascending or descending (increasing/decreasing).
     /// Returns the index of the first hit that is PartiallyEqual to target and
     /// its closest enclosing interval (the last low bound .. the last high bound).
-    /// When the target is not found, then hit == high bound = the insert position.
+    /// When the target is not found, then the returned insert position == high bound.
     fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>) {
         // Binary search: lo and hi are never equal to target
         let mut hi = self.end; // initial high index
@@ -51,7 +51,7 @@ where
         }
     }
 
-    /// General Binary Search with very fast method for finding all the matches.
+    /// General Binary Search for finding all the matches.
     /// Search within the specified Range<T> index, which is always ascending.
     /// The (indexing) range values can be of any generic type T satisfying the listed bounds.
     /// Typically usize for indexing efficiently in-memory, u128 for searching whole disks or internet,
@@ -61,9 +61,8 @@ where
     /// The order must be specified by the `ascending` argument.
     /// When the target is in order before self.start, empty self self.start..self.start range is returned.
     /// When the target is in order after self.end, self.end..self.end is returned.
-    /// When target is not found, then an empty range with
-    /// its start (and end) equal to the sort position is returned.
-    /// Otherwise returns the range of all the consecutive values PartiallyEqual to the target.
+    /// When target is not found, then ip..ip is returned, where ip is its insert position.
+    /// Otherwise the range of all consecutive values PartiallyEqual to the target is returned.
     fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering, ascending: bool) -> Range<T> {
         fn upend(ord: Ordering) -> Ordering {
             if ord == Equal {
@@ -80,7 +79,7 @@ where
             }
         }
         let lo = self.start; // initial low index
-        let hi = self.end;   // initial high index
+        let hi = self.end; // initial high index
         let one = T::from(1);
         if self.is_empty() {
             return lo..hi;
@@ -101,21 +100,21 @@ where
             Equal => {
                 if comp(hi) == Equal {
                     // all in range match
-                    return lo..hi+one;
+                    return lo..hi + one;
                 };
                 let (lor, _) = self.binary_any(&mut |&probe| upend(comp(probe)));
-                return lo..lor+one;
+                return lo..lor + one;
             }
             _ => (),
         };
-        match comp(hi-one) {
+        match comp(hi - one) {
             // must not check beyond the range
             Less => {
                 return hi..hi;
             } // item is after the range
             Equal => {
                 let (lor, _) = self.binary_any(&mut |&probe| downend(comp(probe)));
-                return lor+one..hi;
+                return lor + one..hi;
             }
             _ => (),
         };
@@ -133,25 +132,21 @@ where
         lowend..highend
     }
 
-    /// Nonlinear equation solver using binary search
-    /// Finds a root in the input range, such that function(root) == 0
-    /// Function can be supplied as a simple closure and can be increasing or decreasing
-    fn solve(self, function: impl Fn(&T) -> T) -> (T, Range<T>) {   
-        let zero = T::from(0); 
-        // let rn = search_all(self, &mut |probe| function(probe), zero);
-        // (rn.start,rn)
-          
-        if function(&self.start) < function(&self.end) { 
-            self.binary_any(&mut |probe| { 
+    /// Nonlinear equation solver using binary search  
+    /// Finds a root in the input range, such that function(root) == 0.  
+    /// Function is supplied as a simple closure and can be increasing or decreasing.
+    fn solve(self, function: impl Fn(&T) -> T) -> (T, Range<T>) {
+        let zero = T::from(0);
+        if function(&self.start) < function(&self.end) {
+            self.binary_any(&mut |probe| {
                 let fnval = function(probe);
-                compare(&zero,&fnval)        
+                compare(&zero, &fnval)
             })
-        } 
-        else { 
-            self.binary_any(&mut |probe| { 
+        } else {
+            self.binary_any(&mut |probe| {
                 let fnval = function(probe);
-                compare(&fnval,&zero)
+                compare(&fnval, &zero)
             })
-        } 
-    } 
+        }
+    }
 }
