@@ -46,30 +46,46 @@ or you can just click the above `test` badge and then click your way to  the lat
 
 * **Unindexing** - given a sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1,..data_n`, not explicitly joined together in some bulky Struct elements. The sort index obtained by: `let indx = keys.sort_indexed()` can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
 
-## Trait `Search`
+## Search
 
-Offers general purpose binary search method: `binary_all`. As far as I know, this algorithm is new and unique, in its generality. It is very  fast, especially over long ranges. It is capable of varied applications.
+**`fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>;`**
 
-The method is applied to a range of indices of any numeric type. Thus it can be used in functionally chained 'builder style APIs', to select only the subrange closer bracketing the target.
+is the main general purpose binary search method. This algorithm is new and unique  in its generality. It is very fast, especially over long ranges and is capable of many varied applications.
 
-It takes a closure that captures the target. The closure fetches the sorted data item (from any source) for the index argument and compares it against the target. It returns `Ordering`, according to how it defines the logic of the match test. Descending order of data is also allowed. The sort order is indicated by the last argument.
+The method is applied to an *inclusive* range of indices of any numeric type (self). Thus it can be used in functionally chained 'builder style APIs', to select only the subrange closer bracketing the target.
 
-The search algorithm itself uses the data probing to steer the search range towards the match (by reducing the range appropriately). When the target is not found, its sorted insert position is returned instead.
+It takes a closure that samples some sorted data source in the given range. Descending order of data is also allowed and is detected automatically. The target is specified by the last argument. 
 
-The first hit encountered will be anywhere within some number of matching partially equal items. The algorithm then conducts two more binary searches, in both directions away from the first hit. These secondary searches are applied only within the most reduced half ranges obtained from the completed first search. First non-matching positions in both directions are found, giving the final result: the complete matching range.
+When the target is not found, an empty range `(idx..idx)` is returned, where `idx` is the target's sorted order insert position. This can be just before or just after the given range, if the target lies outside it.
+
+The first hit encountered will be anywhere within some number of matching partially equal items. The algorithm then conducts two more binary searches, in both directions away from the first hit. These secondary searches are applied only within the narrowest half ranges obtained by the first search. First non-matching positions in both directions are found, giving the complete matching range within.
+
+`find_any` is similar but it finds and returns only the first hit. It can be used for example to solve non-linear equations, using range values of `f64` type. The following example finds pi/4 by solving the equation tan(x) = 1 for x (and also gives its error range). Of course, some care has to be taken to choose the right bracketing interval for the expected root:
 
 ```rust
-/// Search algoritms implemented on Range<T>
-pub trait Search<T> {
+let (quarterpi,rng) = (0.5..=1_f64).find_any(&mut |&x| x.tan(),1_f64);
+println!("pi:\t{} error: {:e}", 4.0*quarterpi, rng.end-rng.start);
+```
+There are two traits dedicated to the search. The first one is safer and easier to use. 
 
-/// Unchecked first hit or insert order, and the final search range. 
-/// The comparator must take into account the data order.
-/// Used by `binary_all` and `solve`
-fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
-/// General Binary Search using a closure to sample and compare data, data order specified
-fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering, ascending: bool) -> Range<T>;
-/// Binary Search Nonlinear Equation Solver with accuracy range
-fn solve(&self, function: impl Fn(&T) -> T) -> (T, Range<T>);
+```rust
+/// Binary search algoritms implemented on RangeInclusive<T>
+pub trait Binarysearch<T, U> {
+    /// Binary search for target, returns first match and last range
+    fn find_any(self, sample: &mut impl FnMut(&T) -> U, target: U) -> (T, Range<T>);
+    /// Binary search for target, returns full range of all matches
+    fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>;
+}
+
+/// Lower level binary search algoritms implemented on RangeInclusive<T>
+pub trait Search<T> {
+    /// Unchecked first hit or insert order, and the final search range.
+    /// The comparator must take into account the data order.
+    /// Used internally by `binary_all`
+    fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
+    /// General Binary Search using a closure to sample and compare data,
+    /// data order must be explicitly specified
+    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering, ascending: bool) -> Range<T>;
 }
 ```
 
@@ -325,6 +341,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.4.8** - Added trait `Binarysearch` with two convenient and safer wrapper methods for the previously introduced methods. Now using RangeInclusive<T> for the input range.
 
 **Version 1.4.7** - General tidying up, mostly just of the documentation.
 

@@ -14,10 +14,10 @@ pub mod vecops;
 
 use core::{
     cmp::{Ordering, Ordering::*},
-    ops::{Add, Div, Mul, Range, Sub},
+    ops::Range
 };
-use std::{fs::File, io, io::Write};
 use printing::*;
+use std::{fs::File, io, io::Write};
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
@@ -43,36 +43,6 @@ where
         Less
     } else {
         Equal
-    }
-}
-
-/// General Binary Search. Fast method for finding all the matches of target (the last argument).  
-/// Search within the specified `Range<T>` index, which must be always ascending.  
-/// The (indexing) `Range<T>` values can be of any generic type satisfying the listed bounds.
-/// Typically `usize` for indexing efficiently in-memory, `u128` for searching whole disks or internet,
-/// `f64` for solving equations which might not converge when using secant and other methods, etc.  
-/// Closure `sample` fetches individual items from the (sorted) data source.  
-/// The sort order of the data can be either ascending or descending (increasing or decreasing).
-/// It is automatically detected. 
-/// When the target is in sort order before self.start, empty self.start..self.start range is returned.
-/// When the target is in sort order after self.end, self.end..self.end is returned.
-/// When target is not found, then an ip..ip is returned, where ip is its insert position.
-/// Otherwise the range of all consecutive values PartiallyEqual to the target is returned.
-pub fn search_all<T, U>(rng: Range<T>, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>
-where
-    T: PartialOrd
-        + Copy
-        + From<u8>
-        + Add<Output = T>
-        + Sub<Output = T>
-        + Div<Output = T>
-        + Mul<Output = T>,
-    U: PartialOrd,
-{
-    if sample(&rng.start) <= sample(&(rng.end - T::from(1))) {
-        rng.binary_all(&mut |&probe| compare(&target, &sample(&probe)), true)
-    } else {
-        rng.binary_all(&mut |&probe| compare(&target, &sample(&probe)), false)
     }
 }
 
@@ -158,17 +128,23 @@ where
     fn to_plainstr(self) -> String;
 }
 
-/// Search algoritms implemented on Range<T>
+/// Binary search algoritms implemented on RangeInclusive<T>
+pub trait Binarysearch<T, U> {
+    /// Binary search for target, returns first match and last range
+    fn find_any(self, sample: &mut impl FnMut(&T) -> U, target: U) -> (T, Range<T>);
+    /// Binary search for target, returns full range of all matches
+    fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>;
+}
+
+/// Lower level binary search algoritms implemented on RangeInclusive<T>
 pub trait Search<T> {
-    /// Unchecked first hit or insert order, and the final search range. 
+    /// Unchecked first hit or insert order, and the final search range.
     /// The comparator must take into account the data order.
-    /// Used internally by `binary_all` and `solve`
+    /// Used internally by `binary_all`
     fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
     /// General Binary Search using a closure to sample and compare data,
     /// data order must be explicitly specified
     fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering, ascending: bool) -> Range<T>;
-    /// Binary Search Nonlinear Equation Solver with accuracy range
-    fn solve(self, function: impl Fn(&T) -> T) -> (T, Range<T>);
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.

@@ -1,4 +1,4 @@
-use crate::{search_all, Indices, MinMax, Mutops, Vecops};
+use crate::{Binarysearch, Indices, MinMax, Mutops, Vecops};
 use core::ops::Range;
 
 impl<T> Vecops<T> for &[T] {
@@ -457,7 +457,7 @@ impl<T> Vecops<T> for &[T] {
     where
         T: PartialOrd + Copy,
     {
-        search_all(0..self.len(), &mut |&probe| self[probe], *target)
+        (0..=self.len()-1).find_all(&mut |&probe| self[probe], *target)
     }
 
     /// Binary Search via index. Encapsulation of `search_all`
@@ -465,7 +465,7 @@ impl<T> Vecops<T> for &[T] {
     where
         T: PartialOrd + Copy,
     {
-        search_all(0..idx.len(), &mut |&probe| self[idx[probe]], *target)
+        (0..=idx.len()-1).find_all(&mut |&probe| self[idx[probe]], *target)
     }
 
     /// Merges two explicitly ascending sorted generic vectors,
