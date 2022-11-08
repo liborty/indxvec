@@ -5,7 +5,7 @@ Vectors searching, indexing, ranking, sorting, merging, reversing, intersecting,
 ## The following will import everything
 
 ```rust
-use indxvec::{ here, compare, search_all, MinMax, Search, Indices, Vecops, Mutops, Printing, printing::* };
+use indxvec::{ here, compare, MinMax, Binarysearch, Indices, Vecops, Mutops, Printing, printing::* };
 ```
 
 ## Description
