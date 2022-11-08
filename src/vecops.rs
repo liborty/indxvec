@@ -47,13 +47,15 @@ impl<T> Vecops<T> for &[T] {
     {
         let mut x1 = &self[0];
         let mut x2 = x1;
-        self.iter().skip(1).for_each(|s| {
+        for s in self.iter().skip(1) {
+            if s > x2 {
+                x2 = s;
+                continue;
+            };
             if s < x1 {
                 x1 = s
-            } else if s > x2 {
-                x2 = s
             };
-        });
+        }
         (x1.clone(), x2.clone())
     }
 
@@ -453,11 +455,9 @@ impl<T> Vecops<T> for &[T] {
     /// Easy encapsulation of function `search_all`
     fn binsearch(self, target: &T) -> Range<usize>
     where
-        T: PartialOrd + Copy
+        T: PartialOrd + Copy,
     {
-        search_all(0..self.len(),
-            &mut |&probe| self[probe], *target
-        )
+        search_all(0..self.len(), &mut |&probe| self[probe], *target)
     }
 
     /// Binary Search via index. Encapsulation of `search_all`
@@ -465,9 +465,7 @@ impl<T> Vecops<T> for &[T] {
     where
         T: PartialOrd + Copy,
     {
-        search_all(0..idx.len(),
-            &mut |&probe| self[idx[probe]], *target   
-        )
+        search_all(0..idx.len(), &mut |&probe| self[idx[probe]], *target)
     }
 
     /// Merges two explicitly ascending sorted generic vectors,
