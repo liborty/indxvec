@@ -1,6 +1,6 @@
 [package]
 name = "indxvec"
-version = "1.4.8"
+version = "1.4.9"
 authors = ["Libor Spacek"]
 edition = "2021"
 description = "Vecs sorting, merging, indexing, ranking, searching, reversing, intersecting, printing, etc."

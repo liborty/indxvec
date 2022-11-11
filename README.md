@@ -48,25 +48,9 @@ or you can just click the above `test` badge and then click your way to  the lat
 
 ## Search
 
-**`fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>;`**
+There are two traits dedicated to search: `Binarysearch` and `Search`. `Binarysearch` is safer and easier to use:
 
-is the main general purpose binary search method. This algorithm is new and unique  in its generality. It is very fast, especially over long ranges and is capable of many varied applications.
-
-The method is applied to an *inclusive* range of indices of any numeric type (self). Thus it can be used in functionally chained 'builder style APIs', to select only the subrange closer bracketing the target.
-
-It takes a closure that samples some sorted data source in the given range. Descending order of data is also allowed and is detected automatically. The target is specified by the last argument. 
-
-When the target is not found, an empty range `(idx..idx)` is returned, where `idx` is the target's sorted order insert position. This can be just before or just after the given range, if the target lies outside it.
-
-The first hit encountered will be anywhere within some number of matching partially equal items. The algorithm then conducts two more binary searches, in both directions away from the first hit. These secondary searches are applied only within the narrowest half ranges obtained by the first search. First non-matching positions in both directions are found, giving the complete matching range within.
-
-`find_any` is similar but it finds and returns only the first hit. It can be used for example to solve non-linear equations, using range values of `f64` type. The following example finds pi/4 by solving the equation tan(x) = 1 for x (and also gives its error range). Of course, some care has to be taken to choose the right bracketing interval for the expected root:
-
-```rust
-let (quarterpi,rng) = (0.5..=1_f64).find_any(&mut |&x| x.tan(),1_f64);
-println!("pi:\t{} error: {:e}", 4.0*quarterpi, rng.end-rng.start);
-```
-There are two traits dedicated to the search. The first one is safer and easier to use. 
+### Trait Binarysearch
 
 ```rust
 /// Binary search algoritms implemented on RangeInclusive<T>
@@ -76,7 +60,30 @@ pub trait Binarysearch<T, U> {
     /// Binary search for target, returns full range of all matches
     fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>;
 }
+```
 
+**`find_all`** is the main general purpose method. This algorithm is new and unique  in its generality. It is very fast, especially over long ranges and is capable of many varied uses.
+
+The method is applied to a `RangeInclusive` of indices of any numeric type (self). Thus it can be used in functionally chained 'builder style APIs', to select only the subrange closer bracketing the target. 
+
+It takes a closure that samples some sorted data source in the given range. Descending order of data is also allowed and is detected automatically. The target is specified by the last argument. 
+
+When the target is not found, an empty `Range` `(idx..idx)` is returned, where `idx` is the target's sorted order insert position. This can be at the beginning or just after the given range, if the target lies outside it.
+
+The first hit encountered will be anywhere within some number of matching partially equal items. The algorithm then conducts two more binary searches in both directions away from the first hit. These secondary searches are applied only within the last (narrowest) range found dusring the first search. First non-matching positions in both directions are found, giving the full enclosed matching range.
+
+**`find_any`** is similar but it finds and returns only the first hit. It can be used for example to solve non-linear equations, using range values of `f64` type. The following example finds pi/4 by solving the equation tan(x) = 1 (it also gives error range for the found root). Of course, some care has to be taken to choose the right initial bracketing interval.
+
+```rust
+let (quarterpi,rng) = (0.5..=1_f64).find_any(&mut |&x| x.tan(),1_f64);
+println!("pi:\t{} error: {:e}", 4.0*quarterpi, rng.end-rng.start);
+```
+
+### Trait Search
+
+is used by the above. It can also be used directly in special situations where custom comparisons are needed. The closure fetches the sample as before but now additionally define an ordering test on it as well. An example use of custom ordering is when `binary_all` calls `binary_any` to look for the first non-matching item.
+
+```rust
 /// Lower level binary search algoritms implemented on RangeInclusive<T>
 pub trait Search<T> {
     /// Unchecked first hit or insert order, and the final search range.
@@ -120,103 +127,7 @@ pub trait Indices {
 ```rust
 use indxvec::{Vecops};
 ```
-
-The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all  Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Clone`, are  implemented for `T`.
-
-```rust
-pub trait Vecops<T> {
-    /// Helper function to copy and cast entire &[T] to `Vec<f64>`. 
-    fn tof64(self) -> Vec<f64> where T: Clone, f64: From<T>;
-    /// Maximum value in self
-    fn maxt(self) -> T where T: PartialOrd+Clone;
-    /// Minimum value in self
-    fn mint(self) -> T where T: PartialOrd+Clone;
-    /// Minimum and maximum values in self
-    fn minmaxt(self) -> (T, T) where T: PartialOrd+Clone;
-    /// Returns MinMax{min, minindex, max, maxindex}
-    fn minmax(self) -> MinMax<T> where T: PartialOrd+Clone;
-    /// MinMax of n items starting at subscript i
-    fn minmax_slice(self,i:usize, n:usize) -> MinMax<T>
-        where T: PartialOrd+Clone;
-    /// MinMax of a subset of self in range i..n
-    fn minmax_indexed(self, idx:&[usize], i:usize, n:usize) -> MinMax<T>
-        where T: PartialOrd+Clone;
-    /// Reversed copy of self
-    fn revs(self) -> Vec<T> where T:Clone;
-    /// Repeated items removed
-    fn sansrepeat(self) -> Vec<T> where T: PartialEq+Clone;
-    /// Some(subscript) of the first occurence of m, or None
-    fn member(self, m:T, forward:bool) -> Option<usize>
-        where T: PartialEq+Clone;
-    /// Binary search of a slice in ascending or descending order.
-    fn binsearch(self, val:&T) -> Range<usize> 
-        where T: PartialOrd;
-    /// Binary search of an index sorted slice in ascending or descending order. 
-    /// Like binsearch but using indirection via idx.
-    fn binsearch_indexed(self, idx:&[usize], val:&T) -> Range<usize> 
-        where T: PartialOrd;
-    /// Counts partially equal occurrences of val 
-    /// by simple linear search of an unordered set
-    fn occurs(self, val:T) -> usize where T: PartialOrd;
-    /// Unites (concatenates) two unsorted slices. For union of sorted slices, use `merge`
-    fn unite_unsorted(self, v: &[T]) -> Vec<T> where T: Clone;
-    /// Unites two ascending index-sorted slices.
-    fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Clone; 
-    /// Intersects two ascending explicitly sorted generic vectors.
-    fn intersect(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
-    /// Intersects two ascending index sorted vectors.
-    fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Clone;
-    /// Removes items of sorted v2 from sorted self.
-    fn diff(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
-    /// Removes items of v2 from self using their sort indices.
-    fn diff_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
-        where T: PartialOrd+Clone;
-    /// Divides an unordered set into three: items smaller than pivot, equal, and greater
-    fn partition(self, pivot:T) -> (Vec<T>, Vec<T>, Vec<T>)
-        where T: PartialOrd+Clone;
-    /// Divides an unordered set into three by the pivot. 
-    /// The results are subscripts to self.   
-    fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
-        where T: PartialOrd+Clone;
-    /// Merges (unites) two sorted sets, result is also sorted    
-    fn merge(self, v2: &[T]) -> Vec<T> where T: PartialOrd+Clone;
-    /// Merges (unites) two sets, using their sort indices,
-    /// giving also the resulting sort index
-    fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize])
-        -> (Vec<T>, Vec<usize>) where T: PartialOrd+Clone;
-        /// Used by `merge_indexed`
-    fn merge_indices(self, idx1: &[usize], idx2: &[usize]) -> Vec<usize>
-        where T: PartialOrd+Clone;
-    /// Stable Merge sort main method, giving sort index
-    fn mergesort_indexed(self) -> Vec<usize> where T:PartialOrd+Clone;
-    /// Utility used by mergesort_indexed
-    fn mergesortslice(self, i: usize, n: usize) -> Vec<usize>
-        where T: PartialOrd+Clone;
-    /// Stable Merge sort, explicitly sorted result obtained via mergesort_indexed 
-    fn sortm(self, ascending: bool) -> Vec<T> where T: PartialOrd+Clone;
-    /// Rank index obtained via mergesort_indexed
-    fn rank(self, ascending: bool) -> Vec<usize> where T: PartialOrd+Clone;
-    /// Utility, swaps any two items into ascending order
-    fn isorttwo(self,  idx: &mut[usize], i0: usize, i1: usize) -> bool
-        where T:PartialOrd;
-    /// Utility, sorts any three items into ascending order
-    fn isortthree(self, idx: &mut[usize], i0: usize, i1:usize, i2:usize)
-        where T: PartialOrd; 
-    /// Stable Hash sort
-    fn hashsort_indexed(self) -> Vec<usize> 
-        where T: PartialOrd+Clone,f64:From<T>;
-    /// Utility used by hashsort_indexed
-    fn hashsortslice(self, idx: &mut[usize], i: usize, n: usize, min:T, max:T) 
-        where T: PartialOrd+Clone,f64:From<T>;
-    /// Stable hash sort. Returns new sorted data vector (ascending or descending)
-    fn sorth(self, ascending: bool) -> Vec<T> 
-        where T: PartialOrd+Clone,f64:From<T>;
-    /// Makes a sort index for self, using key generating closure `keyfn`
-    fn keyindex(self, keyfn:fn(&T)->f64, ascending:bool) -> Vec<usize>;
-}
-```
+The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Clone`, are  implemented for `T`. The methods are too numerous to list here, please see the documentation.
 
 ## Trait Mutops
 
@@ -224,29 +135,42 @@ pub trait Vecops<T> {
 use indxvec::{Mutops};
 ```
 
-This trait contains `muthashsort`, which overwrites `self` with sorted data. When we do not need to keep the original order, this is the most efficient way to sort.
+This trait contains `muthashsort`, which overwrites `self` with sorted data. When we do not need to keep the original order, this is the most efficient way to sort. A non-destructive version `sorth` in in trait `Vecops`.
 
 **Nota bene:** `muthashsort` really wins on longer Vecs. For about one thousand items upwards, it is on average about 25%-30% faster than the default Rust (Quicksort) `sort_unstable`.
 
 ```rust
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
-/// Sorts a mutable slice in place.
- fn mutsort(self) where T:PartialOrd;
-/// mutable reversal, general utility
-fn mutrevs(self);
-/// utility that mutably swaps two indexed items into ascending order
-fn mutsorttwo(self, i0:usize, i1:usize) -> bool
-    where T: PartialOrd;
-/// utility that mutably bubble sorts three indexed items into ascending order
-fn mutsortthree(self, i0:usize, i1:usize, i2:usize)
-    where T: PartialOrd;
-/// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
-fn muthashsort(self)
-    where T: PartialOrd+Clone, F64:From<T>;
-/// Sorts n items from i in self. Used by muthashsort.
-fn muthashsortslice(self, i:usize, n:usize, min:T, max:T) 
-    where T: PartialOrd+Clone, F64:From<T>;
+    /// Sorts a mutable slice in place.
+    fn mutquicksort(self)
+    where
+        T: PartialOrd;
+    /// mutable reversal, general utility
+    fn mutrevs(self);
+    /// utility that mutably swaps two indexed items into ascending order
+    fn mutsorttwo(self, i0: usize, i1: usize) -> bool
+    where
+        T: PartialOrd;
+    /// utility that mutably bubble sorts three indexed items into ascending order
+    fn mutsortthree(self, i0: usize, i1: usize, i2: usize)
+    where
+        T: PartialOrd;
+    /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
+    fn muthashsort(self, quantify: &mut impl FnMut(&T) -> f64)
+    where
+        T: PartialOrd + Clone;
+
+    /// Sorts n items from i in self. Used by muthashsort.
+    fn muthashsortslice(
+        self,
+        i: usize,
+        n: usize,
+        min: f64,
+        max: f64,
+        quantify: &mut impl FnMut(&T) -> f64,
+    ) where
+        T: PartialOrd + Clone;
 }
 ```
 
@@ -342,7 +266,9 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.4.8** - Added trait `Binarysearch` with two convenient and safer wrapper methods for the previously introduced methods. Now using RangeInclusive<T> for the input range.
+**Version 1.4.9** - Breaking change of hash sort methods. They now require a closure `quantify` for converting any user type T to f64 (it defines how to build an `f64` sort key from any type). This makes prerequisite for `sorth` explicit and gives more power to the user. It is no longer necessary to implement `From` trait for every such user type and its methods of quantification, of which there could be many. It is not reasonable to expect the users to have to do that. This new capability is demonstrated at the beginning of test `text()` (fast sorting of words by their length with a simple closure).
+
+**Version 1.4.8** - Added trait `Binarysearch` with two convenient and safer wrapper methods for the previously introduced methods in `Search`. Now using `RangeInclusive<T>` for safe input range.
 
 **Version 1.4.7** - General tidying up, mostly just of the documentation.
 

@@ -137,7 +137,8 @@ where
         }
         let one = T::from(1);
         let lo = *self.start(); // initial low index
-        let hi = *self.end(); // initial high index
+        let ihi = *self.end(); // initial high index
+        let hi = ihi + one;
         if self.is_empty() {
             return lo..hi;
         };
@@ -155,22 +156,22 @@ where
                 return lo..lo;
             } // item is before the range
             Equal => {
-                if comp(hi) == Equal {
+                if comp(ihi) == Equal {
                     // all in range match
-                    return lo..hi + one;
+                    return lo..hi;
                 };
                 let (lor, _) = self.binary_any(&mut |&probe| upend(comp(probe)));
-                return lo..lor + one;
+                return lo..lor+one;
             }
             _ => (),
         };
-        match comp(hi) {
+        match comp(ihi) {
             Less => {
-                return hi + one..hi + one;
+                return hi..hi;
             } // item is after the range
             Equal => {
                 let (lor, _) = self.binary_any(&mut |&probe| downend(comp(probe)));
-                return lor + one..hi + one;
+                return lor..hi;
             }
             _ => (),
         };

@@ -457,7 +457,7 @@ impl<T> Vecops<T> for &[T] {
     where
         T: PartialOrd + Copy,
     {
-        (0..=self.len()-1).find_all(&mut |&probe| self[probe], *target)
+        (0..=self.len() - 1).find_all(&mut |&probe| self[probe], *target)
     }
 
     /// Binary Search via index. Encapsulation of `search_all`
@@ -465,7 +465,7 @@ impl<T> Vecops<T> for &[T] {
     where
         T: PartialOrd + Copy,
     {
-        (0..=idx.len()-1).find_all(&mut |&probe| self[idx[probe]], *target)
+        (0..=idx.len() - 1).find_all(&mut |&probe| self[idx[probe]], *target)
     }
 
     /// Merges two explicitly ascending sorted generic vectors,
@@ -700,23 +700,28 @@ impl<T> Vecops<T> for &[T] {
     /// Input data are read only. Output is sort index.
     /// Requires min,max, the data range, that must enclose all its values.
     /// The range is often known. If not, it can be obtained with `minmaxt()`.
-    fn hashsort_indexed(self) -> Vec<usize>
+    fn hashsort_indexed(self, quantify: &mut impl FnMut(&T) -> f64) -> Vec<usize>
     where
         T: PartialOrd + Clone,
-        f64: From<T>,
     {
         let n = self.len();
         let (min, max) = self.minmaxt();
         // create a mutable index for the result
         let mut idx = Vec::from_iter(0..n);
-        self.hashsortslice(&mut idx, 0, n, min, max); // sorts idx
+        self.hashsortslice(&mut idx, 0, n, quantify(&min), quantify(&max), quantify); // sorts idx
         idx
     }
 
-    fn hashsortslice(self, idx: &mut [usize], i: usize, n: usize, min: T, max: T)
-    where
+    fn hashsortslice(
+        self,
+        idx: &mut [usize],
+        i: usize,
+        n: usize,
+        fmin: f64,
+        fmax: f64,
+        quantify: &mut impl FnMut(&T) -> f64,
+    ) where
         T: PartialOrd + Clone,
-        f64: From<T>,
     {
         // Recursion termination conditions
         match n {
@@ -737,14 +742,12 @@ impl<T> Vecops<T> for &[T] {
             }
             _ => (), // carry on below
         };
-        let fmin = f64::from(min);
-        let fmax = f64::from(max);
         // hash is a constant s.t. (x-min)*hash is in [0,n]
         let hash = (n as f64) / (fmax - fmin);
         let mut buckets: Vec<Vec<usize>> = vec![Vec::new(); n];
         // group current index items into buckets by their associated self[] values
         for &xi in idx.iter().skip(i).take(n) {
-            let mut hashsub = (hash * (f64::from(self[xi].clone()) - fmin)).floor() as usize;
+            let mut hashsub = (hash * (quantify(&self[xi]) - fmin)).floor() as usize;
             if hashsub == n {
                 hashsub -= 1
             }; // reduce subscripts to [0,n-1]
@@ -783,7 +786,14 @@ impl<T> Vecops<T> for &[T] {
                         self.isorttwo(idx, isub, mx.minindex); // swap minindex to the front
                         self.isorttwo(idx, mx.maxindex, isub + n - 1); // swap maxindex to the end
                                                                        // recurse to sort the rest
-                        self.hashsortslice(idx, i + 1, blen - 2, mx.min, mx.max);
+                        self.hashsortslice(
+                            idx,
+                            i + 1,
+                            blen - 2,
+                            quantify(&mx.min),
+                            quantify(&mx.max),
+                            quantify,
+                        );
                     };
                     return; // all items were equal, or are now sorted
                 }
@@ -799,8 +809,15 @@ impl<T> Vecops<T> for &[T] {
                         // else are all equal
                         self.isorttwo(idx, isubprev, mx.minindex); // swap minindex to the front
                         self.isorttwo(idx, mx.maxindex, isub - 1); // swap maxindex to the end
-                                                                   // recurse to sort the rest
-                        self.hashsortslice(idx, isubprev + 1, blen - 2, mx.min, mx.max);
+                        self.hashsortslice(
+                            idx,
+                            isubprev + 1,
+                            blen - 2,
+                            quantify(&mx.min),
+                            quantify(&mx.max),
+                            quantify,
+                        );
+                        // recurse to sort the rest
                     };
                 }
             }
@@ -811,29 +828,29 @@ impl<T> Vecops<T> for &[T] {
     /// Wraps mergesortslice.
     /// Mergesortslice and mergesort_indexed produce only an ascending index.
     /// Sortm will produce descending data order with ascending == false.
-    fn sorth(self, ascending: bool) -> Vec<T>
+    fn sorth(self, quantify: &mut impl FnMut(&T) -> f64, ascending: bool) -> Vec<T>
     where
         T: PartialOrd + Clone,
-        f64: From<T>,
     {
         let mut sorted = self.to_vec();
-        sorted.muthashsort();
+        sorted.muthashsort(quantify);
         if !ascending {
             sorted.mutrevs()
         };
         sorted
     }
-
+    /*
     /// Makes a sort index for self, using key generating closure `keyfn`
     fn keyindex(self, keyfn: fn(&T) -> f64, ascending: bool) -> Vec<usize> {
         let mut index = self
             .iter()
             .map(keyfn)
             .collect::<Vec<f64>>()
-            .hashsort_indexed();
+            .hashsort_indexed(&mut |&x| x ); // f64 already
         if !ascending {
             index.mutrevs();
         };
         index
     }
+    */
 }

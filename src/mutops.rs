@@ -43,35 +43,21 @@ impl<T> Mutops<T> for &mut [T] {
         };
     }
 
-    /// N recursive hash sort.
-    /// Sorts mutable first argument in place
-    fn muthashsort(self)
-    where
-        T: PartialOrd + Clone,
-        f64: From<T>,
-    {
-        let n = self.len();
-        if n < 120 {
-            // use default Rust sort for short Vecs
-            self.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
-            return;
-        };
-        let (min, max) = self.minmaxt();
-        self.muthashsortslice(0, n, min, max);
-    }
-
     /// Does the work for `muthashsort`
     /// Requires [min,max], the data range, that must enclose all its values.
     /// If the range is known in advance, use this in preference to `muthashsort`
     /// to save finding it
-    fn muthashsortslice(self, i: usize, n: usize, min: T, max: T)
-    where
+    fn muthashsortslice(
+        self,
+        i: usize,
+        n: usize,
+        fmin: f64,
+        fmax: f64,
+        quantify: &mut impl FnMut(&T) -> f64,
+    ) where
         T: PartialOrd + Clone,
-        f64: From<T>,
     {
         // convert limits to f64 for accurate hash calculations
-        let fmax = f64::from(max);
-        let fmin = f64::from(min);
         // hash is a precomputed factor, s.t. ((x-min)*hash).floor() subscripts will be in [0,n]
         // this is then reduced to [0,n-1]
         let hash = n as f64 / (fmax - fmin);
@@ -79,7 +65,7 @@ impl<T> Mutops<T> for &mut [T] {
 
         // group data items into buckets, subscripted by the data hash values
         for xi in self.iter().skip(i).take(n) {
-            let mut hashsub = (hash * (f64::from(xi.clone()) - fmin)).floor() as usize;
+            let mut hashsub = (hash * (quantify(xi) - fmin)).floor() as usize;
             if hashsub == n {
                 hashsub -= 1;
             };
@@ -130,7 +116,13 @@ impl<T> Mutops<T> for &mut [T] {
                         self.mutsorttwo(isub, mx.minindex); // swap min to the front
                         self.mutsorttwo(mx.maxindex, isub + n - 1); // and swap max to the end
                                                                     // recurse to sort the rest, within the new reduced range
-                        self.muthashsortslice(isub + 1, blen - 2, mx.min, mx.max);
+                        self.muthashsortslice(
+                            isub + 1,
+                            blen - 2,
+                            quantify(&mx.min),
+                            quantify(&mx.max),
+                            quantify,
+                        );
                     };
                     return; // all items in this single bucket were equal, or are now sorted
                 }
@@ -147,10 +139,33 @@ impl<T> Mutops<T> for &mut [T] {
                         self.mutsorttwo(isubprev, mx.minindex); // swap min to the front
                         self.mutsorttwo(mx.maxindex, isub - 1); // and swap max to the end
                                                                 // recurse to sort the rest in between, with reduced data range
-                        self.muthashsortslice(isubprev + 1, blen - 2, mx.min, mx.max);
+                        self.muthashsortslice(
+                            isubprev + 1,
+                            blen - 2,
+                            quantify(&mx.min),
+                            quantify(&mx.max),
+                            quantify,
+                        );
                     };
                 } // items in this bucket were equal or are now sorted
             } // end of match (this bucket) but there may be more
         } // end of for (all buckets)
+    }
+
+    /// N recursive hash sort.
+    /// Sorts mutable first argument in place
+    /// Takes closure `quantify` for converting user type T to f64
+    fn muthashsort(self, quantify: &mut impl FnMut(&T) -> f64)
+    where
+        T: PartialOrd + Clone,
+    {
+        let n = self.len();
+        if n < 120 {
+            // use default Rust sort for short Vecs
+            self.sort_unstable_by(|a, b| quantify(a).partial_cmp(&quantify(b)).unwrap());
+            return;
+        };
+        let (min, max) = self.minmaxt();
+        self.muthashsortslice(0, n, quantify(&min), quantify(&max), quantify);
     }
 }

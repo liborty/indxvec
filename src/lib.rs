@@ -14,7 +14,7 @@ pub mod vecops;
 
 use core::{
     cmp::{Ordering, Ordering::*},
-    ops::Range
+    ops::Range,
 };
 use printing::*;
 use std::{fs::File, io, io::Write};
@@ -292,22 +292,24 @@ pub trait Vecops<T> {
     where
         T: PartialOrd;
     /// Stable hash sort giving sort index
-    fn hashsort_indexed(self) -> Vec<usize>
+    fn hashsort_indexed(self, quantify: &mut impl FnMut(&T) -> f64) -> Vec<usize>
     where
-        T: PartialOrd + Clone,
-        f64: From<T>;
+        T: PartialOrd + Clone; 
     /// Utility used by hashsort_indexed
-    fn hashsortslice(self, idx: &mut [usize], i: usize, n: usize, min: T, max: T)
-    where
-        T: PartialOrd + Clone,
-        f64: From<T>;
+    fn hashsortslice(
+        self,
+        idx: &mut [usize],
+        i: usize,
+        n: usize,
+        min: f64,
+        max: f64,
+        quantify: &mut impl FnMut(&T) -> f64,
+    ) where
+        T: PartialOrd + Clone; 
     /// Stable hash sort. Returns new sorted data vector (ascending or descending)
-    fn sorth(self, ascending: bool) -> Vec<T>
+    fn sorth(self, quantify: &mut impl FnMut(&T) -> f64, ascending: bool) -> Vec<T>
     where
-        T: PartialOrd + Clone,
-        f64: From<T>;
-    /// Makes a sort index for self, using key generating closure `keyfn`
-    fn keyindex(self, keyfn: fn(&T) -> f64, ascending: bool) -> Vec<usize>;
+        T: PartialOrd + Clone;
 }
 
 /// Mutable Operators on `&mut[T]`
@@ -327,13 +329,18 @@ pub trait Mutops<T> {
     where
         T: PartialOrd;
     /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
-    fn muthashsort(self)
+    fn muthashsort(self, quantify: &mut impl FnMut(&T) -> f64)
     where
-        T: PartialOrd + Clone,
-        f64: From<T>;
+        T: PartialOrd + Clone;
+
     /// Sorts n items from i in self. Used by muthashsort.
-    fn muthashsortslice(self, i: usize, n: usize, min: T, max: T)
-    where
-        T: PartialOrd + Clone,
-        f64: From<T>;
+    fn muthashsortslice(
+        self,
+        i: usize,
+        n: usize,
+        min: f64,
+        max: f64,
+        quantify: &mut impl FnMut(&T) -> f64,
+    ) where
+        T: PartialOrd + Clone;
 }

@@ -13,7 +13,6 @@ fn indices() {
     set_seeds(98777777);
     let rn = Rnum::newu8();
     let v1 = rn.ranv(20).unwrap().getvu8().unwrap();
-    let mut vm = v1.clone();
     println!("{GR}\nv1: {}", v1.bl());
     let v2 = rn.ranv(20).unwrap().getvu8().unwrap();
     println!("{GR}v2: {}", v2.bl());
@@ -28,7 +27,8 @@ fn indices() {
         gset.gr()
     );
     println!("Sorted by merge sort:\n{}", v1.sortm(true).gr()); // sorted data but index lost
-    vm.muthashsort(); // destructive (mutable) sort of wm
+    let mut vm = v1.clone();
+    vm.muthashsort(&mut |&t| t as f64); // destructive (mutable) sort of vm
     println!("Sorted by muthashsort:\n{}", vm.gr()); // hashsorted
     let v1ranks = v1.rank(true); // ascending ranks
     let v1ranksd = v1.rank(false); // descending ranks
@@ -38,7 +38,7 @@ fn indices() {
     );
     println!("Ranks:        {}", v1ranks.gr()); // how to get ranks
     println!("Ranks:        {}", v1ranks.complindex().complindex().gr()); // symmetry
-    println!("Ranks:        {}", v1.hashsort_indexed().invindex().gr()); // simplest ranks from sortindex
+    println!("Ranks:        {}", v1.hashsort_indexed(&mut |&t| t as f64).invindex().gr()); // simplest ranks from sortindex
     println!("Ranks rev:    {}", v1ranks.revs().gr()); // revindex() reverses any index
     println!(
         "Ranks rev:    {}",
@@ -46,20 +46,20 @@ fn indices() {
     ); // via mergesort_indexed()  and complindex()
     println!(
         "Ranks rev:    {}",
-        v1.hashsort_indexed().invindex().revs().gr()
+        v1.hashsort_indexed(&mut |&t| t as f64).invindex().revs().gr()
     ); // via revindex()
     println!("Ranks desc:   {}", v1.rank(false).gr()); // descending ranks are not the same as ranks reversed!!
     println!("Ranks desc:   {}", v1ranks.complindex().gr()); // to make ranks descending, use complindex() instead
     println!(
         "Ranks desc:   {}",
-        v1.hashsort_indexed().invindex().complindex().gr()
+        v1.hashsort_indexed(&mut |&t| t as f64).invindex().complindex().gr()
     ); // descending ranks from sortindex
     println!(
         "Ranks desc:   {}",
-        v1.hashsort_indexed().revs().invindex().gr()
+        v1.hashsort_indexed(&mut |&t| t as f64).revs().invindex().gr()
     ); // descending ranks from descending sort
     println!("Mergeort idx: {}", v1.mergesort_indexed().gr()); // can be unindexed at anytime
-    println!("Hashsort idx: {}", v1.hashsort_indexed().gr());
+    println!("Hashsort idx: {}", v1.hashsort_indexed(&mut |&t| t as f64).gr());
     println!("Sortix rev:   {}", v1.mergesort_indexed().revs().gr());
     println!("Sortix rev:   {}", v1ranksd.invindex().gr()); // descending sort index from desc ranks
     println!("Sortix rev:   {}", v1ranks.complindex().invindex().gr()); // descending sort index from desc ranks
@@ -68,14 +68,14 @@ fn indices() {
     println!("Idx to ranks: {}", v1.mergesort_indexed().invindex().gr());
     println!("Sortm naively reversed:\n{}", v1.sortm(true).revs().gr()); // the above simply reversed
     println!("Sortm false:\n{}", v1.sortm(false).gr()); // descending sort, index lost
-    println!("Sorth false:\n{}", v1.sorth(false).gr());
+    println!("Sorth false:\n{}", v1.sorth(&mut |&t| t as f64,false).gr());
     println!(
         "mergesort_indexed unindex false:\n{}",
         v1.mergesort_indexed().unindex(&v1, false).gr()
     ); // more efficient reversal
     println!(
         "hashsort_indexed unindex false:\n{}",
-        v1.hashsort_indexed().unindex(&v1, false).gr()
+        v1.hashsort_indexed(&mut |&t| t as f64).unindex(&v1, false).gr()
     ); // more efficient reversal
     println!(
         "Revindex:\n{}",
@@ -118,9 +118,9 @@ fn vecops() {
     println!("{GR}v2: {}", v2.bl());
     let (vm, mut vi) = v1.merge_indexed(
         // merge two vecs using their sort indices
-        &v1.hashsort_indexed(),
+        &v1.hashsort_indexed(&mut |&t| t as f64),
         &v2,
-        &v2.hashsort_indexed(),
+        &v2.hashsort_indexed(&mut |&t| t as f64),
     );
     println!("\nv1 and v2 appended:\n{}", vm.gr());
     println!(
@@ -207,11 +207,17 @@ fn text() {
     let v = sentence.split(' ').collect::<Vec<_>>();
     println!("{}", v.gr()); // Display
                             // using cloning mergesort with implied alphabetic partial order
-    let mut sorted = v.sortm(true);
-    println!("Ascending sorted:\n{}", sorted.gr());
-    // Binary search using implied alphabetic partial order
+    let mut sorted = v.sorth(&mut |&s| s.len() as f64, true);
+    println!("Ascending sorted by word length:\n{}", sorted.gr());
+    // Binary search 
     println!(
-        "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
+        "Binary_search for {BL}word length 8{UN}: {YL}{:?}{UN}",
+        (0..=sorted.len()-1).find_all(&mut |&probe| sorted[probe].len(),8)
+    );
+    sorted = v.sortm(true);
+    println!("Ascending sorted by lexicon:\n{}", sorted.gr());
+    println!(
+        "Binary_search for {BL}Humpty{UN}: {YL}{:?}{UN}",
         (0..=sorted.len()-1).find_all(&mut |&probe| sorted[probe],"Humpty")
     );
     println!(
@@ -322,19 +328,19 @@ fn sorts() {
             v.sortm(true);
         },
         |v: &mut [u8]| {
-            v.sorth(true);
+            v.sorth(&mut |&t| t as f64, true);
         },
         |v: &mut [u8]| {
             v.mergesort_indexed();
         },
         |v: &mut [u8]| {
-            v.hashsort_indexed();
+            v.hashsort_indexed(&mut |&t| t as f64);
         },
         |v: &mut [u8]| {
             v.mutquicksort();
         },
         |v: &mut [u8]| {
-            v.muthashsort();
+            v.muthashsort(&mut |&t| t as f64);
         },
     ];
 
