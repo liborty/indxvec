@@ -130,7 +130,7 @@ where
 
 /// Binary search algoritms implemented on RangeInclusive<T>
 pub trait Binarysearch<T, U> {
-    /// Binary search for target, returns first match and last range
+    /// Binary search for target, returns the index of the first match and its bounds
     fn find_any(self, sample: &mut impl FnMut(&T) -> U, target: U) -> (T, Range<T>);
     /// Binary search for target, returns full range of all matches
     fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>;
