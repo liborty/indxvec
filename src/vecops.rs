@@ -839,18 +839,4 @@ impl<T> Vecops<T> for &[T] {
         };
         sorted
     }
-    /*
-    /// Makes a sort index for self, using key generating closure `keyfn`
-    fn keyindex(self, keyfn: fn(&T) -> f64, ascending: bool) -> Vec<usize> {
-        let mut index = self
-            .iter()
-            .map(keyfn)
-            .collect::<Vec<f64>>()
-            .hashsort_indexed(&mut |&x| x ); // f64 already
-        if !ascending {
-            index.mutrevs();
-        };
-        index
-    }
-    */
 }
