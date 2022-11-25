@@ -452,7 +452,7 @@ impl<T> Vecops<T> for &[T] {
     }
 
     /// Binary Search with automatic descending order detection.
-    /// Easy encapsulation of function `search_all`
+    /// Easy encapsulation of function `find_all`
     fn binsearch(self, target: &T) -> Range<usize>
     where
         T: PartialOrd + Copy,
