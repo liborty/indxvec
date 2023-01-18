@@ -112,7 +112,7 @@ fn indices() {
 fn vecops() {
     let midval: u8 = 128;
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).unwrap().getvu8().unwrap();
+    let v1 = rn.ranv(20).unwrap().getvu8().unwrap();    
     println!("{GR}\nv1: {}", v1.bl());
     let v2 = rn.ranv(20).unwrap().getvu8().unwrap();
     println!("{GR}v2: {}", v2.bl());
@@ -123,6 +123,8 @@ fn vecops() {
         &v2.hashsort_indexed(&mut |&t| t as f64),
     );
     println!("\nv1 and v2 appended:\n{}", vm.gr());
+    println!("20 smallest items:\n{BL} {:?}{UN}", vm.smallest_k_heap(20));
+    println!("21 smallest items:\n{BL} {:?}{UN}", vm.smallest_k_heap(21));
     println!(
         "Number of occurrences of {BL}89{UN}: {GR}{}{UN}",
         vm.occurs(89)

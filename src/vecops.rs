@@ -1,4 +1,4 @@
-use crate::{Binarysearch, Indices, MinMax, Mutops, Vecops};
+use crate::{Binarysearch, BinaryHeap, Indices, MinMax, Mutops, Vecops};
 use core::ops::Range;
 
 impl<T> Vecops<T> for &[T] {
@@ -673,25 +673,22 @@ impl<T> Vecops<T> for &[T] {
     }
 
     /// swap any two index items, if their data items (self) are not in ascending order
-    fn isorttwo(self, idx: &mut [usize], i0: usize, i1: usize) -> bool
+    fn isorttwo(self, idx: &mut [usize], i0: usize, i1: usize)
     where
-        T: PartialOrd,
+        T: PartialOrd
     {
         if self[idx[i0]] > self[idx[i1]] {
-            idx.swap(i0, i1);
-            true
-        } else {
-            false
-        }
+        idx.swap(i0, i1); };
     }
 
     /// sort three index items if their self items are out of ascending order
     fn isortthree(self, idx: &mut [usize], i0: usize, i1: usize, i2: usize)
     where
-        T: PartialOrd,
-    {
+        T: PartialOrd
+    {        
         self.isorttwo(idx, i0, i1);
-        if self.isorttwo(idx, i1, i2) {
+        if self[idx[i1]] > self[idx[i2]] {
+            idx.swap(i1, i2);
             self.isorttwo(idx, i0, i1);
         };
     }
@@ -839,4 +836,19 @@ impl<T> Vecops<T> for &[T] {
         };
         sorted
     }
+
+    /// Max heap of k smallest items
+    fn smallest_k_heap(self, k: usize) -> BinaryHeap<T> 
+    where 
+        T: Ord + Sized + Copy
+    {
+        let mut heap = BinaryHeap::from(self[0..k].to_vec());
+        for item in &self[k..] {
+        let mut root = heap.peek_mut().unwrap();
+        if item < &root {
+            *root = *item;
+        }
+    }
+    heap
+}
 }

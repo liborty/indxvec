@@ -17,7 +17,7 @@ use core::{
     ops::Range,
 };
 use printing::*;
-use std::{fs::File, io, io::Write};
+use std::{fs::File, io, io::Write, collections::BinaryHeap};
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
@@ -284,7 +284,7 @@ pub trait Vecops<T> {
     where
         T: PartialOrd + Clone;
     /// Utility, swaps any two items into ascending order
-    fn isorttwo(self, idx: &mut [usize], i0: usize, i1: usize) -> bool
+    fn isorttwo(self, idx: &mut [usize], i0: usize, i1: usize)
     where
         T: PartialOrd;
     /// Utility, sorts any three items into ascending order
@@ -294,7 +294,7 @@ pub trait Vecops<T> {
     /// Stable hash sort giving sort index
     fn hashsort_indexed(self, quantify: &mut impl FnMut(&T) -> f64) -> Vec<usize>
     where
-        T: PartialOrd + Clone; 
+        T: PartialOrd + Clone;
     /// Utility used by hashsort_indexed
     fn hashsortslice(
         self,
@@ -305,11 +305,15 @@ pub trait Vecops<T> {
         max: f64,
         quantify: &mut impl FnMut(&T) -> f64,
     ) where
-        T: PartialOrd + Clone; 
+        T: PartialOrd + Clone;
     /// Stable hash sort. Returns new sorted data vector (ascending or descending)
     fn sorth(self, quantify: &mut impl FnMut(&T) -> f64, ascending: bool) -> Vec<T>
     where
         T: PartialOrd + Clone;
+    /// Max heap of k smallest items of self
+    fn smallest_k_heap(self, k: usize) -> BinaryHeap<T> 
+    where 
+        T: Ord + Sized + Copy;    
 }
 
 /// Mutable Operators on `&mut[T]`

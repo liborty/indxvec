@@ -36,6 +36,8 @@ or you can just click the above `test` badge and then click your way to  the lat
 
 * **Sort Index** - is obtained by stable merge sort `sort_indexed`  or by `hashsort_indexed`. The original data is immutable (unchanged). The sort index produced is a list of subscripts to the data, such that the first subscript identifies the smallest item in the data, and so on (in ascending order). Suitable for bulky data that are not easily moved. It answers the question: 'what data item occupies a given sort position?'.
 
+* **K-Sort Index** - allows more efficient sort implementation when only the first k items of the Sort Index are needed.
+
 * **Reversing an index** - sort index can be reversed by generic reversal operation `revs()`, or `mutrevs()`. This has the effect of changing between ascending/descending sort orders without re-sorting or even reversing the (possibly bulky) actual data.
 
 * **Rank Index** - corresponds to the given data order, listing the sort positions (ranks) for the data items, e.g.the third entry in the rank index gives the rank of the third data item. Some statistical measures require ranks of data. It answers the question: 'what is the sort position of a given data item?'.
@@ -265,6 +267,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.4.10** - Added method `smallest_k_heap(self, k: usize) -> BinaryHeap<T>`. It efficiently returns max heap of k smallest items.
 
 **Version 1.4.9** - Breaking change of hash sort methods. They now require a closure `quantify` for converting any user type T to f64 (it defines how to build an `f64` sort key from any type). This makes prerequisite for `sorth` explicit and gives more power to the user. It is no longer necessary to implement `From` trait for every such user type and its methods of quantification, of which there could be many. It is not reasonable to expect the users to have to do that. This new capability is demonstrated at the beginning of test `text()` (fast sorting of words by their length with a simple closure).
 
