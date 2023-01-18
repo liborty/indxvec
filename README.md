@@ -57,7 +57,7 @@ There are two traits dedicated to search: `Binarysearch` and `Search`. `Binaryse
 ```rust
 /// Binary search algoritms implemented on RangeInclusive<T>
 pub trait Binarysearch<T, U> {
-    /// Binary search for target, returns first match and last range
+    /// Binary search for target: returns the first match and its enclosing range
     fn find_any(self, sample: &mut impl FnMut(&T) -> U, target: U) -> (T, Range<T>);
     /// Binary search for target, returns full range of all matches
     fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>;
@@ -66,13 +66,13 @@ pub trait Binarysearch<T, U> {
 
 **`find_all`** is the main general purpose method. This algorithm is new and unique  in its generality. It is very fast, especially over long ranges and is capable of many varied uses.
 
-The method is applied to a `RangeInclusive` of indices of any numeric type (self). Thus it can be used in functionally chained 'builder style APIs', to select only the subrange closer bracketing the target. 
+The method is applied to a `RangeInclusive` of indices of any numeric type (self). Thus it can be used in functionally chained 'builder style APIs', to select only the subrange closer bracketing the target.
 
-It takes a closure that samples some sorted data source in the given range. Descending order of data is also allowed and is detected automatically. The target is specified by the last argument. 
+It takes a closure that samples some sorted data source in the given range. Descending order of data is also allowed and is detected automatically. The target is specified by the last argument.
 
 When the target is not found, an empty `Range` `(idx..idx)` is returned, where `idx` is the target's sorted order insert position. This can be at the beginning or just after the given range, if the target lies outside it.
 
-The first hit encountered will be anywhere within some number of matching partially equal items. The algorithm then conducts two more binary searches in both directions away from the first hit. These secondary searches are applied only within the last (narrowest) range found dusring the first search. First non-matching positions in both directions are found, giving the full enclosed matching range.
+The first hit encountered will be anywhere within some number of matching partially equal items. The algorithm then conducts two more binary searches in both directions away from the first hit. These secondary searches are applied only within the last (narrowest) range found during the first search. First non-matching positions in both directions are found, giving the full enclosed matching range.
 
 **`find_any`** is similar but it finds and returns only the first hit. It can be used for example to solve non-linear equations, using range values of `f64` type. The following example finds pi/4 by solving the equation tan(x) = 1 (it also gives error range for the found root). Of course, some care has to be taken to choose the right initial bracketing interval.
 
@@ -83,7 +83,7 @@ println!("pi:\t{} error: {:e}", 4.0*quarterpi, rng.end-rng.start);
 
 ### Trait Search
 
-is used by the above. It can also be used directly in special situations where custom comparisons are needed. The closure fetches the sample as before but now additionally define an ordering test on it as well. An example use of custom ordering is when `binary_all` calls `binary_any` to look for the first non-matching item.
+is used by the above. It can also be used directly in special situations, where custom comparisons are needed. The closure fetches the sample internally only and now additionally defines an ordering test on it. An example use of custom ordering is when `binary_all` calls `binary_any` to look for the first non-matching item.
 
 ```rust
 /// Lower level binary search algoritms implemented on RangeInclusive<T>
@@ -268,7 +268,9 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.4.10** - Added method `smallest_k_heap(self, k: usize) -> BinaryHeap<T>`. It efficiently returns max heap of k smallest items.
+**Version 1.4.10** - Added method  
+`smallest_k_heap(self, k: usize) -> BinaryHeap<T>`  
+to Vecops. It efficiently returns max heap of k smallest items.
 
 **Version 1.4.9** - Breaking change of hash sort methods. They now require a closure `quantify` for converting any user type T to f64 (it defines how to build an `f64` sort key from any type). This makes prerequisite for `sorth` explicit and gives more power to the user. It is no longer necessary to implement `From` trait for every such user type and its methods of quantification, of which there could be many. It is not reasonable to expect the users to have to do that. This new capability is demonstrated at the beginning of test `text()` (fast sorting of words by their length with a simple closure).
 
