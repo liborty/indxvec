@@ -268,6 +268,8 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.4.11** - Added to `Vecops` `smallest_k` method, similar to `smallest_k_heap`, except it avoids unnecessary copying (is suitable for complex types T). It returns just the final Vec of k smallest items. Also added `max_1_min_k` and `max_2_min_k`, to be used in crate `medians`. The point of these methods is that they find these values in the most efficient manner, using BinaryHeap. Added here because there may be also other uses for them. Typically picking a group to qualify to 'the final' and some overall winners.
+
 **Version 1.4.10** - Added method  
 `smallest_k_heap(self, k: usize) -> BinaryHeap<T>`  
 to Vecops. It efficiently returns max heap of k smallest items.

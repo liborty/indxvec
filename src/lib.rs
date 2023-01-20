@@ -310,10 +310,22 @@ pub trait Vecops<T> {
     fn sorth(self, quantify: &mut impl FnMut(&T) -> f64, ascending: bool) -> Vec<T>
     where
         T: PartialOrd + Clone;
-    /// Max heap of k smallest items of self
-    fn smallest_k_heap(self, k: usize) -> BinaryHeap<T> 
-    where 
-        T: Ord + Sized + Copy;    
+    /// Vec of k smallest items
+    fn smallest_k(self, k: usize) -> Vec<T>
+    where
+        T: Ord + Clone;
+    /// Maximum of k smallest items
+    fn max_1_min_k(self, k: usize) -> T
+    where
+        T: Ord + Clone;
+    /// Maximum two of k smallest items
+    fn max_2_min_k(self, k: usize) -> (T,T)
+        where
+            T: Ord+Clone;
+    /// Max heap of k smallest items
+    fn smallest_k_heap(self, k: usize) -> BinaryHeap<T>
+    where
+        T: Ord + Clone;
 }
 
 /// Mutable Operators on `&mut[T]`
