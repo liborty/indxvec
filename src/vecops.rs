@@ -870,7 +870,7 @@ impl<T> Vecops<T> for &[T] {
     }
 
     /// Maximum two of k smallest items
-        fn max_2_min_k(self, k: usize) -> (T,T)
+        fn max_2_min_k(self, k: usize) -> [T;2]
         where
             T: Ord+Clone,
         {
@@ -880,9 +880,11 @@ impl<T> Vecops<T> for &[T] {
                 if item < *root {
                     *root = item;
                 }
-            }
-            let max = (*heap.pop().unwrap()).clone();
-            ( (*heap.peek().unwrap()).clone(),max )
+            } 
+            // pop() must precede peek(). It rearranges the heap,
+            // so that the next max value is at the root and can be peeked.
+            let maxmax = (*heap.pop().unwrap()).clone();           
+            [(*heap.peek().unwrap()).clone(),maxmax]
         }
 
 

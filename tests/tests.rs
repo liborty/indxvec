@@ -126,8 +126,7 @@ fn vecops() {
     println!("20 smallest items:\n{}", vm.smallest_k(20).bl());
     println!("21 smallest items:\n{BL} {:?}{UN}", vm.smallest_k_heap(21));
     println!("Max 1 of 5 smallest items: {}",vm.max_1_min_k(5).bl());
-    let (m1,m2) = vm.max_2_min_k(5);
-    println!("Max 2 of 5 smallest items: {BL}{m1} {m2}{UN}");
+    println!("Max 2 of 9 smallest items: {}", vm.max_2_min_k(9).bl());
     println!(
         "Number of occurrences of {BL}89{UN}: {GR}{}{UN}",
         vm.occurs(89)
@@ -292,6 +291,9 @@ fn solvetest() {
 
 #[test]
 fn printing() {
+    println!("\n{}", &("pair","tuple").gr());
+    println!("\n{}", &(1,2,3).mg()); 
+    println!("\n{}", &("plain","triplet","tuple").to_plainstr().yl());  
     set_seeds(123456789);
     let rn = Rnum::newu8();
     let v1 = rn.ranv(20).unwrap().getvu8().unwrap();

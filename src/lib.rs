@@ -73,11 +73,13 @@ where
     }
 }
 
-/// Trait to serialize slices of generic items `&[T]` (vectors)
-/// and slices of Vecs of generic items `&[Vec<T>]` (matrices).
-/// All are converted into printable strings and optionally coloured.
-/// Also, methods to serialize and render the resulting string
-/// in bold ANSI terminal colours.
+/// Trait to serialize tuples `&(T,T)` and `&(T,T,T)` and 
+/// slices `&[T]`, `&[&[T]]`, `&[Vec<T>]`.
+/// Suitable for printing or writing to files pairs, triplets,
+/// all kinds of Vecs and slices and irregularly shaped 2D matrices.  
+/// All are converted into Strings and optionally decorated and coloured.
+/// Included are methods and constants to render the resulting String
+/// in six primary bold ANSI terminal colours.
 pub trait Printing<T>
 where
     Self: Sized,
@@ -118,12 +120,12 @@ where
         print!("{} ", self.to_plainstr())
     }
 
-    /// Method to serialize generic items, slices, and slices of Vecs.
-    /// Adds square brackets around Vecs (prettier lists).
-    /// Implementation code is in `printing.rs`.
+    /// Method to serialize.
+    /// Decorates Vecs with square brackets and tuples with round ones.
+    /// Implementation code is in `printing.rs`. 
     fn to_str(self) -> String;
 
-    /// Method to serialize generic items, slices, and slices of Vecs.
+    /// Method to serialize in minimal form (space separated, no brackets) 
     /// Implementation code is in `printing.rs`.
     fn to_plainstr(self) -> String;
 }
@@ -319,7 +321,7 @@ pub trait Vecops<T> {
     where
         T: Ord + Clone;
     /// Maximum two of k smallest items
-    fn max_2_min_k(self, k: usize) -> (T,T)
+    fn max_2_min_k(self, k: usize) -> [T;2]
         where
             T: Ord+Clone;
     /// Max heap of k smallest items

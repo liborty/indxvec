@@ -180,54 +180,71 @@ pub trait Mutops<T> {
 
 ```rust
 use indxvec::Printing;    // the trait methods
-use indxvec::printing::*; // the colour constants
+use indxvec::printing::*; // the ANSI colour constants
 ```
 
-This trait provides utility methods to 'stringify' (serialise) generic slices and slices of `Vec`s. Also, methods for writing or printing them. Optionally, it enables printing them in bold ANSI terminal colours for adding emphasis. See `tests/tests.rs` for examples of usage.
+See `tests/tests.rs` for examples of usage.
 
 ```rust
-pub trait Printing<T> {
+/// Trait to serialize tuples `&(T,T)` and `&(T,T,T)` and 
+/// slices `&[T]`, `&[&[T]]`, `&[Vec<T>]`.
+/// Suitable for printing or writing to files pairs, triplets,
+/// all kinds of Vecs and slices and irregularly shaped 2D matrices.  
+/// All are converted into Strings and optionally decorated and coloured.
+/// Included are methods and constants to render the resulting String
+/// in six primary bold ANSI terminal colours.
+pub trait Printing<T>
+where
+    Self: Sized,
+{
+    /// Printable in red
+    fn rd(self) -> String {
+        format!("{RD}{}{UN}", self.to_str())
+    }
+    /// Printable in green
+    fn gr(self) -> String {
+        format!("{GR}{}{UN}", self.to_str())
+    }
+    /// Printable in blue    
+    fn bl(self) -> String {
+        format!("{BL}{}{UN}", self.to_str())
+    }
+    /// Printable in yellow
+    fn yl(self) -> String {
+        format!("{YL}{}{UN}", self.to_str())
+    }
+    /// Printable in magenta
+    fn mg(self) -> String {
+        format!("{MG}{}{UN}", self.to_str())
+    }
+    /// Printable in cyan
+    fn cy(self) -> String {
+        format!("{CY}{}{UN}", self.to_str())
+    }
 
-    /// Methods to serialize and render the resulting string
-    /// in bold ANSI terminal colours.
-    fn rd(self) -> String where Self: Sized { 
-        format!("{RD}{}{UN}",self.to_str()) }
-    fn gr(self) -> String where Self: Sized { 
-        format!("{GR}{}{UN}",self.to_str()) }
-    fn yl(self) -> String where Self: Sized { 
-        format!("{YL}{}{UN}",self.to_str()) }    
-    fn bl(self) -> String where Self: Sized { 
-        format!("{BL}{}{UN}",self.to_str()) }
-    fn mg(self) -> String where Self: Sized { 
-        format!("{MG}{}{UN}",self.to_str()) }
-    fn cy(self) -> String where Self: Sized { 
-        format!("{CY}{}{UN}",self.to_str()) }        
-
-    /// Method to write vector(s) to file f (without brackets). 
+    /// Method to write vector(s) to file f (space separated, without brackets).
     /// Passes up io errors
-    fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized { 
-        Ok(write!(*f,"{} ", self.to_plainstr())?) 
+    fn wvec(self, f: &mut File) -> Result<(), io::Error> {
+        Ok(write!(*f, "{} ", self.to_plainstr())?)
     }
 
-    /// Method to print vector(s) to stdout (without brackets).
-    fn pvec(self) where Self: Sized { 
-        print!("{} ", self.to_plainstr()) 
+    /// Method to print vector(s) to stdout (space separated,without brackets).
+    fn pvec(self) {
+        print!("{} ", self.to_plainstr())
     }
-    
-    /// Method to serialize generic items, slices, and slices of Vecs.
-    /// Adds square brackets around Vecs (prettier lists).
-    /// Implementation code is in `printing.rs`. 
+
+    /// Method to serialize.
+    /// Decorates Vecs with square brackets and tuples with round ones.
+    /// Implementation code is in `printing.rs`.
     fn to_str(self) -> String;
 
-    /// Method to serialize generic items, slices, and slices of Vecs.
+    /// Method to serialize in plain form: space separated, no brackets 
     /// Implementation code is in `printing.rs`.
     fn to_plainstr(self) -> String;
 }
 ```
 
-The methods of this trait are implemented for generic individual items `T`, for slices `&[T]` for slices of slices `&[&[T]]` and for slices of Vecs `&[Vec<T>]`. Note that these types are normally unprintable in Rust (do not have `Display` implemented).
-
-The following methods: `.to_plainstr`, `.to_str()`, `.gr()`, `.rd()`, `.yl()` `.bl()`, `.mg()`, `.cy()` convert all these types to printable strings. The colouring methods just add the relevant colouring to the formatted output of `.to_str()`.
+Note that all these types are unprintable in Rust (they do not have `Display` implemented). Which is a big stumbling block for beginners. These methods convert all these types to printable (writeable) strings. The colouring methods add the relevant colouring to the stringified output. This makes testing output much prettier and avoids reliance on Debug mode in production code.
 
 `fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized;`  
 writes plain space separated values (`.ssv`) to files, possibly raising io::Error(s).
@@ -235,7 +252,7 @@ writes plain space separated values (`.ssv`) to files, possibly raising io::Erro
 `fn pvec(self) where Self: Sized;`  
 prints to stdout.
 
-For finer control of the colouring, import the colour constants from module `printing` and use them in any formatting strings manually. For example,
+For finer control of the colouring, import the colour constants from  `printing::*` and use them in formatting strings manually. For example,
 switching colours:
 
 ```rust  
@@ -267,6 +284,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.4.12** Added to trait Printing the capability to print pairs `&(T,T)` and triples `&(T,T,T)`, to avoid reliance on Debug mode in common situations (passing simple tuple results). Nonetheless changed the output of `max_2_min_k` to array `[T;2]`, to make the same type more explicit.
 
 **Version 1.4.11** - Added to `Vecops` `smallest_k` method, similar to `smallest_k_heap`, except it avoids unnecessary copying (is suitable for complex types T). It returns just the final Vec of k smallest items. Also added `max_1_min_k` and `max_2_min_k`, to be used in crate `medians`. The point of these methods is that they find these values in the most efficient manner, using BinaryHeap. Added here because there may be also other uses for them. Typically picking a group to qualify to 'the final' and some overall winners.
 
