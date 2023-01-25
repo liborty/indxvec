@@ -285,7 +285,7 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.4.12** Added to trait Printing the capability to print pairs `&(T,T)` and triples `&(T,T,T)`, to avoid reliance on Debug mode in common situations (passing simple tuple results). Nonetheless changed the output of `max_2_min_k` to array `[T;2]`, to make the same type more explicit.
+**Version 1.4.13** Added to trait Printing the capability to print pairs `&(T,T)` and triples `&(T,T,T)`, to avoid reliance on Debug mode in common situations (passing simple uniform tuple results).
 
 **Version 1.4.11** - Added to `Vecops` `smallest_k` method, similar to `smallest_k_heap`, except it avoids unnecessary copying (is suitable for complex types T). It returns just the final Vec of k smallest items. Also added `max_1_min_k` and `max_2_min_k`, to be used in crate `medians`. The point of these methods is that they find these values in the most efficient manner, using BinaryHeap. Added here because there may be also other uses for them. Typically picking a group to qualify to 'the final' and some overall winners.
 

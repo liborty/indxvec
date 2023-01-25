@@ -316,12 +316,12 @@ pub trait Vecops<T> {
     fn smallest_k(self, k: usize) -> Vec<T>
     where
         T: Ord + Clone;
-    /// Maximum of k smallest items
+    /// Maximum of k smallest items (odd median when k = size/2 + 1)
     fn max_1_min_k(self, k: usize) -> T
     where
         T: Ord + Clone;
-    /// Maximum two of k smallest items
-    fn max_2_min_k(self, k: usize) -> [T;2]
+    /// Maximum two of k smallest items (even medians when k = size/2 + 1)
+    fn max_2_min_k(self, k: usize) -> (T,T)
         where
             T: Ord+Clone;
     /// Max heap of k smallest items
