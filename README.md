@@ -287,7 +287,7 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.4.14** Pruning: moved `max_1_min_k` and `max_2_min_k`, specific to medians, to `medians` crate code.
+**Version 1.4.14** Pruning: removed `max_1_min_k` and `max_2_min_k`, specific to medians, to `medians` crate code.
 
 **Version 1.4.13** Added to trait Printing the capability to print pairs `&(T,T)` and triples `&(T,T,T)`, to avoid reliance on Debug mode in common situations (passing simple uniform tuple results).
 
