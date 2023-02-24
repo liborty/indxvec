@@ -1,5 +1,7 @@
 # Indxvec  [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github">](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions) [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec)
 
+Author: Libor Spacek
+
 Vectors searching, indexing, ranking, sorting, merging, reversing, intersecting, printing, etc.
 
 ## The following will import everything
@@ -284,6 +286,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.4.14** Pruning: moved `max_1_min_k` and `max_2_min_k`, specific to medians, to `medians` crate code.
 
 **Version 1.4.13** Added to trait Printing the capability to print pairs `&(T,T)` and triples `&(T,T,T)`, to avoid reliance on Debug mode in common situations (passing simple uniform tuple results).
 

@@ -838,67 +838,20 @@ impl<T> Vecops<T> for &[T] {
         sorted
     }
 
-    /// Vec of k smallest items in no particular order,
+    /// Heap of k smallest items in no particular order,
     /// except the first one is maximum
-    fn smallest_k(self, k: usize) -> Vec<T>
-    where
-        T: Ord + Clone,
+    fn smallest_k(&self, k: usize) -> BinaryHeap<&T>
+    where T: Ord,
     {
-        let mut heap = BinaryHeap::from_iter(&self[0..k]);
-        for item in &self[k..] {
+        assert!(k > 0); 
+        let mut datiter = self.iter();
+        let mut heap: BinaryHeap<&T> = datiter.by_ref().take(k).collect::<Vec<&T>>().into(); 
+        for item in datiter {
             let mut root = heap.peek_mut().unwrap();
             if item < *root {
                 *root = item;
-            }
-        }
-        heap.iter().map(|&x| x.clone()).collect()
-    }
-
-    /// Maximum of k smallest items
-    fn max_1_min_k(self, k: usize) -> T
-    where
-        T: Ord+Clone,
-    {
-        let mut heap = BinaryHeap::from_iter(&self[0..k]);
-        for item in &self[k..] {
-            let mut root = heap.peek_mut().unwrap();
-            if item < *root {
-                *root = item;
-            }
-        }
-        (*heap.peek().unwrap()).clone()
-    }
-
-    /// Maximum two of k smallest items
-        fn max_2_min_k(self, k: usize) -> (T,T)
-        where
-            T: Ord+Clone,
-        {
-            let mut heap = BinaryHeap::from_iter(&self[0..k]);
-            for item in &self[k..] {
-                let mut root = heap.peek_mut().unwrap();
-                if item < *root {
-                    *root = item;
-                }
-            } 
-            // pop() must precede peek(). It rearranges the heap,
-            // so that the next max value is at the root and can be peeked.
-            let maxmax = (*heap.pop().unwrap()).clone();           
-            ((*heap.peek().unwrap()).clone(),maxmax)
-        }
-
-    /// Max heap of k smallest items
-    fn smallest_k_heap(self, k: usize) -> BinaryHeap<T>
-    where
-        T: Ord + Clone,
-    {
-        let mut heap = BinaryHeap::from(self[0..k].to_vec());
-        for item in &self[k..] {
-            let mut root = heap.peek_mut().unwrap();
-            if item < &root {
-                *root = item.clone();
             }
         }
         heap
-    } 
+    }
 }

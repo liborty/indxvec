@@ -123,10 +123,8 @@ fn vecops() {
         &v2.hashsort_indexed(&mut |&t| t as f64),
     );
     println!("\nv1 and v2 appended:\n{}", vm.gr());
-    println!("20 smallest items:\n{}", vm.smallest_k(20).bl());
-    println!("21 smallest items:\n{BL} {:?}{UN}", vm.smallest_k_heap(21));
-    println!("Max 1 of 5 smallest items: {}",vm.max_1_min_k(5).bl());
-    println!("Max 2 of 9 smallest items: {}", vm.max_2_min_k(9).bl());
+    println!("20 smallest items:\n{BL}{:?}{UN}", vm.as_slice().smallest_k(20));
+    println!("21 smallest items:\n{BL} {:?}{UN}",vm.as_slice().smallest_k(21));
     println!(
         "Number of occurrences of {BL}89{UN}: {GR}{}{UN}",
         vm.occurs(89)
