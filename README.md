@@ -240,7 +240,7 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.4.15** Pair `&(T,U)` and triplet `&(T,U,V)` tuples with items of different types now also print.
+**Version 1.4.15** Tuples with items of different types now also print.
 
 **Version 1.4.14** Pruning: removed `max_1_min_k` and `max_2_min_k`, specific to medians, to `medians` crate code.
 
