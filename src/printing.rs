@@ -63,9 +63,10 @@ where
     }
 }
 
-impl<T> Printing<T> for &(T,T)
+impl<T,U> Printing<T> for &(T,U)
 where
     T: std::fmt::Display,
+    U: std::fmt::Display
 {
     fn to_str(self) -> String {
         format!("({},{})", self.0, self.1)   
@@ -76,9 +77,11 @@ where
     }
 }
 
-impl<T> Printing<T> for &(T,T,T)
+impl<T,U,V> Printing<T> for &(T,U,V)
 where
     T: std::fmt::Display,
+    U: std::fmt::Display,
+    V: std::fmt::Display
 {
     fn to_str(self) -> String {
         format!("({},{},{})", self.0, self.1, self.2)   
@@ -86,6 +89,22 @@ where
 
     fn to_plainstr(self) -> String {
         format!("{} {} {}", self.0, self.1, self.2)   
+    }
+}
+
+impl<T,U,V,W> Printing<T> for &(T,U,V,W)
+where
+    T: std::fmt::Display,
+    U: std::fmt::Display,
+    V: std::fmt::Display,
+    W: std::fmt::Display
+{
+    fn to_str(self) -> String {
+        format!("({},{},{},{})", self.0, self.1, self.2, self.3)   
+    }
+
+    fn to_plainstr(self) -> String {
+        format!("{} {} {} {}", self.0, self.1, self.2, self.3)   
     }
 }
 

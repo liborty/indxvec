@@ -841,17 +841,18 @@ impl<T> Vecops<T> for &[T] {
     /// Heap of k smallest items in no particular order,
     /// except the first one is maximum
     fn smallest_k(&self, k: usize) -> BinaryHeap<&T>
-    where T: Ord,
+    where
+        T: Ord,
     {
-        assert!(k > 0); 
+        assert!(k > 0);
         let mut datiter = self.iter();
-        let mut heap: BinaryHeap<&T> = datiter.by_ref().take(k).collect::<Vec<&T>>().into(); 
+        let mut heap: BinaryHeap<&T> = datiter.by_ref().take(k).collect::<Vec<&T>>().into();
         for item in datiter {
             let mut root = heap.peek_mut().unwrap();
             if item < *root {
                 *root = item;
             }
-        }
+        };
         heap
     }
 }

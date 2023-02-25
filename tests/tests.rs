@@ -288,10 +288,10 @@ fn solvetest() {
 }
 
 #[test]
-fn printing() {
-    println!("\n{}", &("pair","tuple").gr());
-    println!("\n{}", &(1,2,3).mg()); 
-    println!("\n{}", &("plain","triplet","tuple").to_plainstr().yl());  
+fn printing() { 
+    println!("\n{}", &("this_was_a_triple".rd(),[0,1].gr(),"tuple".bl()).to_plainstr());
+    println!("\n{}", &("now prints","upto",4,"tuples").to_plainstr().yl());    
+
     set_seeds(123456789);
     let rn = Rnum::newu8();
     let v1 = rn.ranv(20).unwrap().getvu8().unwrap();

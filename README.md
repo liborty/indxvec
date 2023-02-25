@@ -1,10 +1,10 @@
-# Indxvec  [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github">](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions) [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="crates.io" src="https://img.shields.io/crates/d/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="docs.rs" src="https://img.shields.io/docsrs/indxvec?logo=rust">](https://docs.rs/indxvec)
+# Indxvec [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github">](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions)
 
-Author: Libor Spacek
+**Author: Libor Spacek**
 
-Vectors searching, indexing, ranking, sorting, merging, reversing, intersecting, printing, etc.
+Vectors searching, indexing, ranking, sorting, merging, reversing, intersecting, printing, ..
 
-## The following will import everything
+Usage: The following will import everything
 
 ```rust
 use indxvec::{ here, compare, MinMax, Binarysearch, Indices, Vecops, Mutops, Printing, printing::* };
@@ -32,7 +32,7 @@ It is highly recommended to read and run [`tests/tests.rs`](https://github.com/l
 cargo test --release -- --test-threads=1 --nocapture --color always
 ```
 
-or you can just click the above `test` badge and then click your way to  the latest automated test log.
+or you can just click the above `test` badge and then click your way to  the latest automated test run output log.
 
 ## Glossary
 
@@ -187,94 +187,47 @@ use indxvec::printing::*; // the ANSI colour constants
 
 See `tests/tests.rs` for examples of usage.
 
+Suitable for printing or writing to files up to 4-tuples of differing type items, all kinds of Vecs and slices and irregularly shaped 2D matrices.
+
+Serializes tuples: `&(T,U)`, `&(T,U,V)`, `&(T,U,V,W)`   
+and slices: `&[T]`, `&[&[T]]`, `&[Vec<T>]`. 
+
+Additionally, `wvec` writes contents of self as plain space separated values (`.ssv`) to File, possibly raising io::Error(s):
+
 ```rust
-/// Trait to serialize tuples `&(T,T)` and `&(T,T,T)` and 
-/// slices `&[T]`, `&[&[T]]`, `&[Vec<T>]`.
-/// Suitable for printing or writing to files pairs, triplets,
-/// all kinds of Vecs and slices and irregularly shaped 2D matrices.  
-/// All are converted into Strings and optionally decorated and coloured.
-/// Included are methods and constants to render the resulting String
-/// in six primary bold ANSI terminal colours.
-pub trait Printing<T>
-where
-    Self: Sized,
-{
-    /// Printable in red
-    fn rd(self) -> String {
-        format!("{RD}{}{UN}", self.to_str())
-    }
-    /// Printable in green
-    fn gr(self) -> String {
-        format!("{GR}{}{UN}", self.to_str())
-    }
-    /// Printable in blue    
-    fn bl(self) -> String {
-        format!("{BL}{}{UN}", self.to_str())
-    }
-    /// Printable in yellow
-    fn yl(self) -> String {
-        format!("{YL}{}{UN}", self.to_str())
-    }
-    /// Printable in magenta
-    fn mg(self) -> String {
-        format!("{MG}{}{UN}", self.to_str())
-    }
-    /// Printable in cyan
-    fn cy(self) -> String {
-        format!("{CY}{}{UN}", self.to_str())
-    }
-
-    /// Method to write vector(s) to file f (space separated, without brackets).
-    /// Passes up io errors
-    fn wvec(self, f: &mut File) -> Result<(), io::Error> {
-        Ok(write!(*f, "{} ", self.to_plainstr())?)
-    }
-
-    /// Method to print vector(s) to stdout (space separated,without brackets).
-    fn pvec(self) {
-        print!("{} ", self.to_plainstr())
-    }
-
-    /// Method to serialize.
-    /// Decorates Vecs with square brackets and tuples with round ones.
-    /// Implementation code is in `printing.rs`.
-    fn to_str(self) -> String;
-
-    /// Method to serialize in plain form: space separated, no brackets 
-    /// Implementation code is in `printing.rs`.
-    fn to_plainstr(self) -> String;
-}
+fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized;
 ```
 
-Note that all these types are unprintable in Rust (they do not have `Display` implemented). Which is a big stumbling block for beginners. These methods convert all these types to printable (writeable) strings. The colouring methods add the relevant colouring to the stringified output. This makes testing output much prettier and avoids reliance on Debug mode in production code.
+Similarly, `pvec` prints to `stdout`:
 
-`fn wvec(self,f:&mut File) -> Result<(), io::Error> where Self: Sized;`  
-writes plain space separated values (`.ssv`) to files, possibly raising io::Error(s).
+```rust
+fn pvec(self) where Self: Sized;
+```
 
-`fn pvec(self) where Self: Sized;`  
-prints to stdout.
+All above listed types are converted to Strings and optionally decorated and coloured. Included are methods and constants to render the resulting String in six primary bold ANSI terminal colours.
 
-For finer control of the colouring, import the colour constants from  `printing::*` and use them in formatting strings manually. For example,
-switching colours:
+Note that all these types are unprintable in standard Rust (they do not have `Display` implemented). Which is a big stumbling block for beginners. The methods of this trait convert all these types to printable (writeable) strings. 
+
+The colouring methods add the relevant colouring to the stringified output. This makes testing output much prettier and avoids reliance on Debug mode in production code. For finer control of the colouring, import the colour constants from  `printing::*` and use them in formatting strings manually. For example, switching colours:
 
 ```rust  
 use indxvec::printing::*; // ANSI colours constants
 println!("{GR}green text, {RD}red warning, {BL}feeling blue{UN}");
 ```
 
-Note that all of these methods and interpolations set their own new colour regardless of the previous settings. Interpolating `{UN}` resets the terminal to its default foreground rendering.
-`UN` is automatically appended at the end of strings produced by the colouring methods `rd()..cy()`. Be careful to always close with one of these, or explicit `{UN}`, otherwise all the following output will continue with the last selected colour foreground rendering.
+Note that all of these colouring interpolations set their own new colour regardless of the previous settings. Interpolating `{UN}` resets the terminal to its default foreground rendering.
+`UN` is automatically appended at the end of strings produced by the colouring methods `rd()..cy()`. Be careful to always close with one of these, or explicit `{UN}`. Otherwise all the following output will continue with the last selected colour foreground rendering!
 
 Example from `tests/tests.rs`:
 
 ```rust
-println!("Memsearch for {BL}{midval}{UN}, found at: {}", vm
-    .memsearch(midval)
+println!("Memsearch for {BL}{midval}{UN}, found at: {}", 
+    vm.memsearch(midval)
     .map_or_else(||"None".rd(),|x| x.gr())
 );
 ```
 
-`memsearch` returns `Option(None)`, when `midval` is not found in `vm`. Here, `None` will be printed in red, while any found item will be printed in green. This is also an example of how to process `Option`s without the long-winded `match` statements.
+`memsearch` returns `Option(None)`, when `midval` is not found in `vm`. Here, `None` will be printed in red, while any found item will be printed in green. Since x has been 'stringified' by `.gr()`, both closures return the same types, as required by `map_or_else`.
 
 ## Struct and Utility Functions
 
@@ -286,6 +239,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.4.15** Pair `&(T,U)` and triplet `&(T,U,V)` tuples with items of different types now also print.
 
 **Version 1.4.14** Pruning: removed `max_1_min_k` and `max_2_min_k`, specific to medians, to `medians` crate code.
 
@@ -316,5 +271,3 @@ to Vecops. It efficiently returns max heap of k smallest items.
 **Version 1.4.1** - Rewritten `binsearch` and `binsearch_indexed` from trait Vecops as encapsulations of the general purpose `binary_all` from trait Sort. Reduced the code size.
 
 **Version 1.4.0** - Introduced new trait Search: `impl<T> Search<T> for Range<T>`. The search algorithms can now be applied in 'builder style chained API's', filtering the ranges.
-
-**Version 1.3.11** - Added module `search.rs`. Improved general `binary_any` and `binary_all` search algorithms now within.
