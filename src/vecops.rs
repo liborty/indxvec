@@ -1,5 +1,7 @@
 use crate::{BinaryHeap, Binarysearch, Indices, MinMax, Mutops, Vecops};
 use core::ops::Range;
+// use std::collections::binary_heap::PeekMut;
+use core::cmp::Reverse;
 
 impl<T> Vecops<T> for &[T] {
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
@@ -845,14 +847,43 @@ impl<T> Vecops<T> for &[T] {
         T: Ord,
     {
         assert!(k > 0);
+        assert!(k <= self.len());
         let mut datiter = self.iter();
         let mut heap: BinaryHeap<&T> = datiter.by_ref().take(k).collect::<Vec<&T>>().into();
         for item in datiter {
-            let mut root = heap.peek_mut().unwrap();
+            let mut root = heap
+                .peek_mut()
+                .expect("smallest_k: attempt to peek failed"); 
             if item < *root {
                 *root = item;
             }
-        };
+        }
+        heap
+    }
+
+    /// Heap of k biggest items in no particular order,
+    /// except the first one is minimum
+    fn biggest_k(&self, k: usize) -> BinaryHeap<Reverse<&T>>
+    where
+        T: Ord
+    {
+        assert!(k > 0);
+        assert!(k <= self.len()); 
+        let mut datiter = self.iter();
+        let mut heap: BinaryHeap<Reverse<&T>> = datiter
+            .by_ref() 
+            .take(k)
+            .map(Reverse)
+            .collect::<Vec<Reverse<&T>>>()
+            .into();
+        for item in datiter {
+            let mut root = heap
+                .peek_mut()
+                .expect("biggest_k: attempt to peek failed");
+            if Reverse(item) < *root { 
+                *root = Reverse(item);
+            } 
+        }; 
         heap
     }
 }

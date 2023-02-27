@@ -240,6 +240,8 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.4.16** Added: `biggest_k` to complement `smallest_k`. Returns `BinaryHeap<Reverse<&T>>` of k biggest items.
+
 **Version 1.4.15** Tuples with items of different types now also print.
 
 **Version 1.4.14** Pruning: removed `max_1_min_k` and `max_2_min_k`, specific to medians, to `medians` crate code.

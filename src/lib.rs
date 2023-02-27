@@ -13,7 +13,7 @@ pub mod search;
 pub mod vecops;
 
 use core::{
-    cmp::{Ordering, Ordering::*},
+    cmp::{Reverse, Ordering, Ordering::*},
     ops::Range,
 };
 use printing::*;
@@ -312,10 +312,14 @@ pub trait Vecops<T> {
     fn sorth(self, quantify: &mut impl FnMut(&T) -> f64, ascending: bool) -> Vec<T>
     where
         T: PartialOrd + Clone;
-    /// Vec of k smallest items
+    /// Heap of k smallest items in no particular order, except the first one is maximum
     fn smallest_k(&self, k: usize) -> BinaryHeap<&T>
     where
         T: Ord;
+    /// Heap of k biggest items in no particular order, except the first one is minimum
+    fn biggest_k(&self, k: usize) -> BinaryHeap<Reverse<&T>>
+    where
+    T: Ord;
 }
 
 /// Mutable Operators on `&mut[T]`
