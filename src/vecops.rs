@@ -848,42 +848,88 @@ impl<T> Vecops<T> for &[T] {
     {
         assert!(k > 0);
         assert!(k <= self.len());
+        let n = self.len();
         let mut datiter = self.iter();
-        let mut heap: BinaryHeap<&T> = datiter.by_ref().take(k).collect::<Vec<&T>>().into();
-        for item in datiter {
-            let mut root = heap
-                .peek_mut()
-                .expect("smallest_k: attempt to peek failed"); 
-            if item < *root {
-                *root = item;
+        if k >= n - k {
+            // testing individually n-k items, when n-k < k
+            let mut heap: BinaryHeap<&T> = datiter.by_ref().take(k).collect::<Vec<&T>>().into();
+            for item in datiter {
+                let mut root = heap.peek_mut().expect("smallest_k: attempt to peek failed");
+                if item < *root {
+                    *root = item;
+                };
             }
+            heap
+        } else {
+            // it is more efficient to be testing individually only k items, when k < n-k
+            let mut smallset = Vec::new();
+            let mut heap: BinaryHeap<Reverse<&T>> = datiter
+                .by_ref()
+                .take(n - k)
+                .map(Reverse)
+                .collect::<Vec<Reverse<&T>>>()
+                .into();
+            for item in datiter {
+                let mut root = heap
+                    .peek_mut()
+                    .expect("smallest_n-k: attempt to peek failed");
+                let rootval = *root;
+                if Reverse(item) < rootval {
+                    let Reverse(plain_root) = rootval;
+                    smallset.push(plain_root);
+                    *root = Reverse(item);
+                } else {
+                    smallset.push(item);
+                };
+            }
+            smallset.into() // return as a binaryheap
         }
-        heap
     }
 
     /// Heap of k biggest items in no particular order,
     /// except the first one is minimum
     fn biggest_k(&self, k: usize) -> BinaryHeap<Reverse<&T>>
     where
-        T: Ord
+        T: Ord,
     {
         assert!(k > 0);
-        assert!(k <= self.len()); 
+        assert!(k <= self.len());
+        let n = self.len();
         let mut datiter = self.iter();
-        let mut heap: BinaryHeap<Reverse<&T>> = datiter
-            .by_ref() 
-            .take(k)
-            .map(Reverse)
-            .collect::<Vec<Reverse<&T>>>()
-            .into();
-        for item in datiter {
-            let mut root = heap
-                .peek_mut()
-                .expect("biggest_k: attempt to peek failed");
-            if Reverse(item) < *root { 
-                *root = Reverse(item);
-            } 
-        }; 
-        heap
+        if k >= n - k { // use the larger part, it is more efficient
+            let mut heap: BinaryHeap<Reverse<&T>> = datiter
+                .by_ref()
+                .take(k)
+                .map(Reverse)
+                .collect::<Vec<Reverse<&T>>>()
+                .into();
+            for item in datiter {
+                let mut root = heap.peek_mut().expect("biggest_k: attempt to peek failed");
+                if Reverse(item) < *root {
+                    *root = Reverse(item);
+                };
+            }
+            heap
+        } else {
+            let mut bigset = Vec::new();
+            let mut heap: BinaryHeap<&T> = datiter
+                .by_ref()
+                .take(n - k)
+                .collect::<Vec<&T>>()
+                .into();
+            for item in datiter {
+                let mut root = heap
+                    .peek_mut()
+                    .expect("biggest_n-k: attempt to peek failed");
+                let rootval = *root;
+                if item < rootval {
+                    bigset.push(Reverse(rootval));
+                    *root = item;
+                } else {
+                    bigset.push(Reverse(item));
+                };
+            }
+            bigset.into()
+        }
     }
 }

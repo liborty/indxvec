@@ -12,9 +12,9 @@ fn indices() {
     let midval: u8 = 128;
     set_seeds(98777777);
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).unwrap().getvu8().unwrap();
+    let v1 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");
     println!("{GR}\nv1: {}", v1.bl());
-    let v2 = rn.ranv(20).unwrap().getvu8().unwrap();
+    let v2 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");
     println!("{GR}v2: {}", v2.bl());
     println!("minmax v1: {}", v1.minmax());
     println!("minmaxt v1: {GR}{:?}{UN}", v1.minmaxt());
@@ -112,9 +112,9 @@ fn indices() {
 fn vecops() {
     let midval: u8 = 128;
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).unwrap().getvu8().unwrap();    
+    let v1 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");    
     println!("{GR}\nv1: {}", v1.bl());
-    let v2 = rn.ranv(20).unwrap().getvu8().unwrap();
+    let v2 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");
     println!("{GR}v2: {}", v2.bl());
     let (vm, mut vi) = v1.merge_indexed(
         // merge two vecs using their sort indices
@@ -294,7 +294,7 @@ fn printing() {
 
     set_seeds(123456789);
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).unwrap().getvu8().unwrap();
+    let v1 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");
     println!("\n{}", v1.rd());
     println!("\n{}", v1.gr());
     println!("\n{}", v1.yl());

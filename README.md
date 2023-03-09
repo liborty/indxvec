@@ -240,6 +240,8 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.5.1** Made `biggest_k` and `smallest_k` even more efficient. Upped `ran` dependency to 1.1.
+
 **Version 1.5.0** Bumped up version because of some minor breaking changes.
 
 **Version 1.4.16** Added: `biggest_k` to complement `smallest_k`. Returns `BinaryHeap<Reverse<&T>>` of k biggest items.
