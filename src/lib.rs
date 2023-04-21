@@ -13,7 +13,7 @@ pub mod search;
 pub mod vecops;
 
 use core::{
-    cmp::{Reverse, Ordering, Ordering::*},
+    cmp::{Reverse, Ordering},
     ops::Range,
 };
 use printing::*;
@@ -30,20 +30,6 @@ macro_rules! here {
         let name = type_name_of(f);
         format!("\n{}:{} {}", file!(), line!(), &name[..name.len() - 3])
     }};
-}
-
-/// General comparison that unlike cmp method in trait core::cmp::Ordering does not require onerous trait bounds, namely T to be Ord, Iterator, etc.
-pub fn compare<T>(a: &T, b: &T) -> Ordering
-where
-    T: PartialOrd,
-{
-    if *b > *a {
-        Greater
-    } else if *b < *a {
-        Less
-    } else {
-        Equal
-    }
 }
 
 /// struct for minimum value, its index, maximum value, its index
@@ -146,7 +132,7 @@ pub trait Search<T> {
     fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
     /// General Binary Search using a closure to sample and compare data,
     /// data order must be explicitly specified
-    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering, ascending: bool) -> Range<T>;
+    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>;
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.

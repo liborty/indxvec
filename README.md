@@ -1,16 +1,18 @@
 # Indxvec [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github">](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions)
 
-**Author: Libor Spacek**
+## Author: Libor Spacek
 
-Vectors searching, indexing, ranking, sorting, merging, reversing, intersecting, printing, ..
+## Usage
 
-Usage: The following will import everything
+The following will import everything:
 
 ```rust
-use indxvec::{ here, compare, MinMax, Binarysearch, Indices, Vecops, Mutops, Printing, printing::* };
+use indxvec::{ here, MinMax, Binarysearch, Indices, Vecops, Mutops, Printing, printing::* };
 ```
 
 ## Description
+
+Vectors searching, indexing, ranking, sorting, merging, reversing, intersecting, printing, ..
 
 `Indxvec` is lightweight and has no dependencies. The methods of all traits can be functionally chained to achieve numerous manipulations of `Ranges`, `Vec`s, and their indices, in compact form.
 
@@ -48,7 +50,9 @@ or you can just click the above `test` badge and then click your way to  the lat
 
 * **Complement of an index** - beware that the standard reversal will not convert directly between ascending and descending ranks. This purpose is served by `complindex()`. Alternatively, descending ranks can be reconstructed by applying `invindex()` to a descending sort index.
 
-* **Unindexing** - given a sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1,..data_n`, not explicitly joined together in some bulky Struct elements. The sort index obtained by: `let indx = keys.sort_indexed()` can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
+* **Unindexing** - given a sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1,..data_n`, not explicitly joined together in some bulky structure. The sort index obtained by:  
+`let indx = keys.sort_indexed();`  
+can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
 
 ## Search
 
@@ -94,9 +98,8 @@ pub trait Search<T> {
     /// The comparator must take into account the data order.
     /// Used internally by `binary_all`
     fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
-    /// General Binary Search using a closure to sample and compare data,
-    /// data order must be explicitly specified
-    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering, ascending: bool) -> Range<T>;
+    /// General Binary Search using a closure to sample and compare data
+    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>;
 }
 ```
 
@@ -131,6 +134,7 @@ pub trait Indices {
 ```rust
 use indxvec::{Vecops};
 ```
+
 The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Clone`, are  implemented for `T`. The methods are too numerous to list here, please see the documentation.
 
 ## Trait Mutops
@@ -189,8 +193,8 @@ See `tests/tests.rs` for examples of usage.
 
 Suitable for printing or writing to files up to 4-tuples of differing type items, all kinds of Vecs and slices and irregularly shaped 2D matrices.
 
-Serializes tuples: `&(T,U)`, `&(T,U,V)`, `&(T,U,V,W)`   
-and slices: `&[T]`, `&[&[T]]`, `&[Vec<T>]`. 
+Serializes tuples: `&(T,U)`, `&(T,U,V)`, `&(T,U,V,W)`  
+and slices: `&[T]`, `&[&[T]]`, `&[Vec<T>]`.
 
 Additionally, `wvec` writes contents of self as plain space separated values (`.ssv`) to File, possibly raising io::Error(s):
 
@@ -206,9 +210,9 @@ fn pvec(self) where Self: Sized;
 
 All above listed types are converted to Strings and optionally decorated and coloured. Included are methods and constants to render the resulting String in six primary bold ANSI terminal colours.
 
-Note that all these types are unprintable in standard Rust (they do not have `Display` implemented). Which is a big stumbling block for beginners. The methods of this trait convert all these types to printable (writeable) strings. 
+Note that all these types are unprintable in standard Rust (they do not have `Display` implemented). Which is a big stumbling block for beginners. The methods of this trait convert all these types to printable (writeable) strings.
 
-The colouring methods add the relevant colouring to the stringified output. This makes testing output much prettier and avoids reliance on Debug mode in production code. For finer control of the colouring, import the colour constants from  `printing::*` and use them in formatting strings manually. For example, switching colours:
+The colouring methods add the relevant colouring to the string output. This makes testing output much prettier and avoids reliance on Debug mode in production code. For finer control of the colouring, import the colour constants from  `printing::*` and use them in formatting strings manually. For example, switching colours:
 
 ```rust  
 use indxvec::printing::*; // ANSI colours constants
@@ -239,6 +243,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.6.0** Simplified the binary search code.
 
 **Version 1.5.1** Made `biggest_k` and `smallest_k` even more efficient. Upped `ran` dependency to 1.1.
 

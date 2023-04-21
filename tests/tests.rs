@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 #[cfg(test)]
 use core::cmp::Ordering::*;
-use indxvec::{here, compare, printing::*, Binarysearch, Search, Indices, Mutops, Printing, Vecops};
+use indxvec::{here, printing::*, Binarysearch, Search, Indices, Mutops, Printing, Vecops};
 use ran::*;
 use std::{cmp::Ord, convert::From};
 use times::*;
@@ -142,7 +142,7 @@ fn vecops() {
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg());
     println!(
         "Binary_search for {BL}199{UN}: {GR}{:?}{UN}",
-        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].cmp(&199),true));
+        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].cmp(&199)));
 
     println!(
         "Binsearch_indexed for {BL}{midval}{UN}: {GR}{:?}{UN}",
@@ -283,8 +283,12 @@ fn solvetest() {
         num.powf(1. / root).gr(),
         (num - num.powf(1. / root).powf(root))
     );
-    let (quarterpi,rng) = (0.5..=1_f64).find_any(&mut |&x| x.tan(),1_f64);
-    println!("pi:\t{GR}{}{UN} err:  {RD}{:e}{UN}", 4.0*quarterpi, rng.end-rng.start);
+    let (pi,rng) = (3.0..=3.2).find_any(&mut |x| (x/4_f64).tan(),1_f64);
+    println!("pi:\t   {GR}{}{UN} error: {RD}{:e}{UN}\n4*atan(1): {GR}{}{UN}\n",
+        pi,
+        rng.end-rng.start,
+        1_f64.atan()*4_f64
+    );
 }
 
 #[test]
