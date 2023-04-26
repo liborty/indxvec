@@ -7,7 +7,7 @@
 The following will import everything:
 
 ```rust
-use indxvec::{ here, MinMax, Binarysearch, Indices, Vecops, Mutops, Printing, printing::* };
+use indxvec::{ here, MinMax, Search, Indices, Vecops, Mutops, Printing, printing::* };
 ```
 
 ## Description
@@ -23,18 +23,18 @@ The facilities provided are:
 * many useful operations on generic vectors and their indices
 * set operations
 * serialising generic slices and slices of vectors to Strings: `to_plainstr()`
-* printing generic slices and slices of vectors: `pvec()`
-* writing generic slices and slices of vectors to files: `wvec(&mut f)`
+* printing and writing generic slices and slices of vectors: `pvec()`, `wvec(&mut f)`
 * coloured pretty printing (ANSI terminal output, mainly for testing)
 * macro `here!()` for more informative errors reporting
 
-It is highly recommended to read and run [`tests/tests.rs`](https://github.com/liborty/indxvec/blob/main/tests/tests.rs) to learn from examples of usage. Use a single thread to run them. It may be a bit slower but it will write the results in the right order. It is also necessary to run the timing benchmark `sorts()` on its own for meaningful results.
+It is highly recommended to read and run [`tests/tests.rs`](https://github.com/liborty/indxvec/blob/main/tests/tests.rs) to learn from examples of usage therein. Use a single thread to run them to keep the output in the right order. It is necessary to run the timing benchmark `sorts()` on its own for meaningful results.
 
 ```bash
-cargo test --release -- --test-threads=1 --nocapture --color always
+cargo test --release -- --test-threads=1 --nocapture
+cargo test sorts --release -- --test --nocapture
 ```
 
-or you can just click the above `test` badge and then click your way to  the latest automated test run output log.
+Or just clicking the above `test` badge leads to the logs of the automated test run.
 
 ## Glossary
 
@@ -54,52 +54,41 @@ or you can just click the above `test` badge and then click your way to  the lat
 `let indx = keys.sort_indexed();`  
 can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
 
-## Search
+## Trait Search
 
-There are two traits dedicated to search: `Binarysearch` and `Search`. `Binarysearch` is safer and easier to use:
+**`binary_all`**
 
-### Trait Binarysearch
+Binary Search for finding all the matches. This implementation is uniquely general. It is also very fast, especially over long ranges.
+
+Searches within the given `RangeInclusive<T>` (self). It can be used in functionally chained 'builder style APIs', that select the subrange closer bracketing the target.
+The range values can be of any generic type T (satisfying the listed bounds), e.g.
+usize for indexing in-memory, u128 for searching whole disks or internet,
+f64 for solving equations which might not converge using other methods...
+
+Comparator closure `cmpr` is comparing data against a target captured from its environment.
+Using closures enables custom comparisons of user's own data types. Also, this code is agnostic about the type of the target (and of the data)!
+
+When the target is in order before self.start, empty `self.start..self.start` range is returned.  
+When the target is in order after self.end, `self.end..self.end` is returned.  
+When the target is not found, then `ip..ip` is returned, where `ip` is its insert position.
+
+Otherwise the range of all consecutive values `PartiallyEqual` to the target is returned.
+
+The first hit encountered will be anywhere within some unknown number of matching items. The algorithm then conducts two more binary searches in both directions away from the first hit. These secondary searches are applied only within the last (narrowest) range found during the main search. First non-matching items in both directions are found, giving the full enclosed matching range.
+
+**`binary_any`** 
+
+finds and returns only the first hit and its last enclosing range. It is used by `binary_all` for its three searches. It can also be used on its own when just one found item will do. For example, to solve non-linear equations, using range values of `f64` type.
 
 ```rust
 /// Binary search algoritms implemented on RangeInclusive<T>
-pub trait Binarysearch<T, U> {
-    /// Binary search for target: returns the first match and its enclosing range
-    fn find_any(self, sample: &mut impl FnMut(&T) -> U, target: U) -> (T, Range<T>);
-    /// Binary search for target, returns full range of all matches
-    fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>;
-}
-```
-
-**`find_all`** is the main general purpose method. This algorithm is new and unique  in its generality. It is very fast, especially over long ranges and is capable of many varied uses.
-
-The method is applied to a `RangeInclusive` of indices of any numeric type (self). Thus it can be used in functionally chained 'builder style APIs', to select only the subrange closer bracketing the target.
-
-It takes a closure that samples some sorted data source in the given range. Descending order of data is also allowed and is detected automatically. The target is specified by the last argument.
-
-When the target is not found, an empty `Range` `(idx..idx)` is returned, where `idx` is the target's sorted order insert position. This can be at the beginning or just after the given range, if the target lies outside it.
-
-The first hit encountered will be anywhere within some number of matching partially equal items. The algorithm then conducts two more binary searches in both directions away from the first hit. These secondary searches are applied only within the last (narrowest) range found during the first search. First non-matching positions in both directions are found, giving the full enclosed matching range.
-
-**`find_any`** is similar but it finds and returns only the first hit. It can be used for example to solve non-linear equations, using range values of `f64` type. The following example finds pi/4 by solving the equation tan(x) = 1 (it also gives error range for the found root). Of course, some care has to be taken to choose the right initial bracketing interval.
-
-```rust
-let (quarterpi,rng) = (0.5..=1_f64).find_any(&mut |&x| x.tan(),1_f64);
-println!("pi:\t{} error: {:e}", 4.0*quarterpi, rng.end-rng.start);
-```
-
-### Trait Search
-
-is used by the above. It can also be used directly in special situations, where custom comparisons are needed. The closure fetches the sample internally only and now additionally defines an ordering test on it. An example use of custom ordering is when `binary_all` calls `binary_any` to look for the first non-matching item.
-
-```rust
-/// Lower level binary search algoritms implemented on RangeInclusive<T>
 pub trait Search<T> {
-    /// Unchecked first hit or insert order, and the final search range.
-    /// The comparator must take into account the data order.
-    /// Used internally by `binary_all`
-    fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
     /// General Binary Search using a closure to sample and compare data
-    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>;
+    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) 
+        -> Range<T>;
+    /// First hit and the last search range
+    fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) 
+        -> (T, Range<T>);
 }
 ```
 
@@ -243,6 +232,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.7.0** More simplification. Removed trait BinarySearch, which was just a couple of wrappers for Search methods.
 
 **Version 1.6.0** Simplified the binary search code.
 

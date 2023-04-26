@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 #[cfg(test)]
 use core::cmp::Ordering::*;
-use indxvec::{here, printing::*, Binarysearch, Search, Indices, Mutops, Printing, Vecops};
+use indxvec::{here, printing::*, Search, Indices, Mutops, Printing, Vecops};
 use ran::*;
 use std::{cmp::Ord, convert::From};
 use times::*;
@@ -176,11 +176,17 @@ fn vecops() {
     );
     println!(
         "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
-        (0..=sorteddesc.len()-1).find_all(&mut |&probe| sorteddesc[probe],199),
+        (0..=sorteddesc.len()-1)
+            .binary_all(&mut |&probe| 
+                sorteddesc[probe].partial_cmp(&199)
+                .expect("comparison failed")),
         sorteddesc.binsearch(&199)); 
     println!(
         "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN} = {GR}{:?}{UN}",
-        (0..=sorteddesc.len()-1).find_all(&mut |&probe| vm[vi[probe]],midval),
+        (0..=sorteddesc.len()-1)
+            .binary_all(&mut |&probe| 
+                vm[vi[probe]].partial_cmp(&midval)
+                .expect("comparison failed")),
         vm.binsearch_indexed(&vi, &midval)
     ); // binsearch_indexed, descending
     println!(
@@ -214,29 +220,29 @@ fn text() {
     // Binary search 
     println!(
         "Binary_search for {BL}word length 8{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len()-1).find_all(&mut |&probe| sorted[probe].len(),8)
+        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].len().partial_cmp(&8).unwrap())
     );
     sorted = v.sortm(true);
     println!("Ascending sorted by lexicon:\n{}", sorted.gr());
     println!(
         "Binary_search for {BL}Humpty{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len()-1).find_all(&mut |&probe| sorted[probe],"Humpty")
+        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].partial_cmp("Humpty").unwrap())
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 5..end: {YL}{:?}{UN}",
-        (5..=sorted.len()-1).find_all(&mut |&probe| sorted[probe],"Humpty")
+        (5..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].partial_cmp("Humpty").unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len()-1).find_all(&mut |&probe| sorted[probe],"the")
+        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].partial_cmp("the").unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 0..=23: {YL}{:?}{UN}",
-        (0..=23).find_all(&mut |&probe| sorted[probe],"the")
+        (0..=23).binary_all(&mut |&probe| sorted[probe].partial_cmp("the").unwrap())
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len()-1).find_all(&mut |&probe| sorted[probe],"queen's")
+        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].partial_cmp("queen's").unwrap())
     );
     sorted.dedup();
     println!("Ascending deduplicated:\n{}\n", sorted.gr());
@@ -245,23 +251,31 @@ fn text() {
     println!("Descending sorted:\n{}", dsorted.gr());
     println!(
         "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        (0..=dsorted.len()-1).find_all(&mut |&probe| dsorted[probe],"Humpty") 
+        (0..=dsorted.len()-1).binary_all(&mut |&probe| 
+            "Humpty".partial_cmp(dsorted[probe]).unwrap()) 
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 0..=21: {YL}{:?}{UN}",
-        (0..=21).find_all(&mut |&probe| dsorted[probe],"Humpty")
+        (0..=21).binary_all(&mut |&probe| 
+            "Humpty".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        (0..=dsorted.len()-1).find_all(&mut |&probe| dsorted[probe],"the") 
+        (0..=dsorted.len()-1)
+            .binary_all(&mut |&probe|
+                "the".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 5..end: {YL}{:?}{UN}",
-        (5..=sorted.len()-1).find_all(&mut |&probe| dsorted[probe],"the")
+        (5..=sorted.len()-1)
+            .binary_all(&mut |&probe|
+                "the".partial_cmp(dsorted[probe]).unwrap())           
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        (0..=dsorted.len()-1).find_all(&mut |&probe| dsorted[probe],"queen's") 
+        (0..=dsorted.len()-1)
+            .binary_all(&mut |&probe|
+                "queen's".partial_cmp(dsorted[probe]).unwrap()) 
     );
     dsorted.dedup();
     println!("Descending deduplicated:\n{}\n", dsorted.gr());
@@ -273,9 +287,14 @@ use core::ops::Range;
 fn solvetest() {
     let num: f64 = 1234567890.0;
     let root: f64 = 5.3;
-    let (res,rng) = (1_f64..=num).find_any(&mut |&x| x.powf(root),num);
+    let (res,rng) = (1_f64..=num).binary_any(&mut |&x| 
+        x.powf(root).partial_cmp(&num)
+        .expect("root failed")
+    );
     println!(
-        "{} to the power of {YL}1/({}){UN}\nsolve:\t{} error: {RD}{:e}{UN}\npowf:\t{} error:{RD}{:e}{UN}\n",
+        "{} to the power of {YL}1/{}{UN}\nsolved:      {} \
+        error: {RD}{:e}{UN}\n\
+        powf(1/{root}): {} error:{RD}{:e}{UN}\n",
         num.yl(),
         root,
         res.gr(), 
@@ -283,8 +302,11 @@ fn solvetest() {
         num.powf(1. / root).gr(),
         (num - num.powf(1. / root).powf(root))
     );
-    let (pi,rng) = (3.0..=3.2).find_any(&mut |x| (x/4_f64).tan(),1_f64);
-    println!("pi:\t   {GR}{}{UN} error: {RD}{:e}{UN}\n4*atan(1): {GR}{}{UN}\n",
+    let (pi,rng) = (3.0..=3.2).binary_any(&mut |x| 
+        (x/4_f64).tan().partial_cmp(&1_f64)
+        .expect("pi failed")        
+    );
+    println!("pi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}\n4*atan(1): {GR}{}{UN}\n",
         pi,
         rng.end-rng.start,
         1_f64.atan()*4_f64

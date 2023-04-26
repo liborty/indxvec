@@ -117,21 +117,10 @@ where
 }
 
 /// Binary search algoritms implemented on RangeInclusive<T>
-pub trait Binarysearch<T, U> {
-    /// Binary search for target, returns the index of the first match and its bounds
-    fn find_any(self, sample: &mut impl FnMut(&T) -> U, target: U) -> (T, Range<T>);
-    /// Binary search for target, returns full range of all matches
-    fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T>;
-}
-
-/// Lower level binary search algoritms implemented on RangeInclusive<T>
 pub trait Search<T> {
     /// Unchecked first hit or insert order, and the final search range.
-    /// The comparator must take into account the data order.
-    /// Used internally by `binary_all`
     fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
-    /// General Binary Search using a closure to sample and compare data,
-    /// data order must be explicitly specified
+    /// General Binary Search using a closure to sample and compare data
     fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>;
 }
 

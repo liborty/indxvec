@@ -1,4 +1,4 @@
-use crate::{BinaryHeap, Binarysearch, Indices, MinMax, Mutops, Vecops};
+use crate::{BinaryHeap, Indices, MinMax, Mutops, Search, Vecops};
 use core::ops::Range;
 // use std::collections::binary_heap::PeekMut;
 use core::cmp::Reverse;
@@ -454,20 +454,43 @@ impl<T> Vecops<T> for &[T] {
     }
 
     /// Binary Search with automatic descending order detection.
-    /// Easy encapsulation of function `find_all`
     fn binsearch(self, target: &T) -> Range<usize>
     where
-        T: PartialOrd + Copy,
+        T: PartialOrd,
     {
-        (0..=self.len() - 1).find_all(&mut |&probe| self[probe], *target)
+        if *self.last().expect("binsearch: no data") < self[0] {
+            (0..=self.len() - 1).binary_all(&mut |&probe| {
+                target
+                    .partial_cmp(&self[probe])
+                    .expect("binsearch comparison failure")
+            })
+        } else {
+            (0..=self.len() - 1).binary_all(&mut |&probe| {
+                self[probe]
+                    .partial_cmp(target)
+                    .expect("binsearch comparison failure")
+            })
+        }
     }
 
-    /// Binary Search via index. Encapsulation of `search_all`
+    /// Binary Search via index with automatic order detection.
     fn binsearch_indexed(self, idx: &[usize], target: &T) -> Range<usize>
     where
-        T: PartialOrd + Copy,
+        T: PartialOrd,
     {
-        (0..=idx.len() - 1).find_all(&mut |&probe| self[idx[probe]], *target)
+        if self[idx[idx.len() - 1]] < self[idx[0]] {
+            (0..=idx.len() - 1).binary_all(&mut |&probe| {
+                target
+                    .partial_cmp(&self[idx[probe]])
+                    .expect("binsearch_indexed comparison failure")
+            })
+        } else {
+            (0..=idx.len() - 1).binary_all(&mut |&probe| {
+                self[idx[probe]]
+                    .partial_cmp(target)
+                    .expect("binsearch_indexed comparison failure")
+            })
+        }
     }
 
     /// Merges two explicitly ascending sorted generic vectors,
@@ -896,7 +919,8 @@ impl<T> Vecops<T> for &[T] {
         assert!(k <= self.len());
         let n = self.len();
         let mut datiter = self.iter();
-        if k >= n - k { // use the larger part, it is more efficient
+        if k >= n - k {
+            // use the larger part, it is more efficient
             let mut heap: BinaryHeap<Reverse<&T>> = datiter
                 .by_ref()
                 .take(k)
@@ -912,11 +936,7 @@ impl<T> Vecops<T> for &[T] {
             heap
         } else {
             let mut bigset = Vec::new();
-            let mut heap: BinaryHeap<&T> = datiter
-                .by_ref()
-                .take(n - k)
-                .collect::<Vec<&T>>()
-                .into();
+            let mut heap: BinaryHeap<&T> = datiter.by_ref().take(n - k).collect::<Vec<&T>>().into();
             for item in datiter {
                 let mut root = heap
                     .peek_mut()

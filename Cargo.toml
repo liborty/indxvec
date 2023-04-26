@@ -1,6 +1,6 @@
 [package]
 name = "indxvec"
-version = "1.6.0"
+version = "1.7.0"
 authors = ["Libor Spacek"]
 edition = "2021"
 description = "Vecs sorting, merging, indexing, ranking, searching, reversing, intersecting, printing, etc."
@@ -11,7 +11,11 @@ license = "Apache-2.0"
 keywords = ["merge-sort","hash-sort","set-operations","ranking-searching","printing-vectors"]
 categories = ["algorithms","data-structures","mathematics","rust-patterns","simulation"]
 include = [
-    "src/*.rs",
+    "src/lib.rs",
+    "src/indices.rs",
+    "src/printing.rs",
+    "src/search.rs",
+    "src/vecops.rs",
     "Cargo.toml",
     "README.md", 
     "LICENSE"

@@ -1,96 +1,30 @@
-use crate::{here, Binarysearch, Search};
+use crate::Search;
 use core::{
-    cmp::{Ordering, PartialOrd, Ordering::*},
-    ops::{Add, Div, Mul, Range, RangeInclusive, Sub},
+    cmp::{Ordering, Ordering::*, PartialOrd},
+    ops::{Add, Div, Range, RangeInclusive, Sub},
 };
-
-impl<T, U> Binarysearch<T, U> for RangeInclusive<T>
-where
-    T: PartialOrd
-        + Copy
-        + From<u8>
-        + Add<Output = T>
-        + Sub<Output = T>
-        + Div<Output = T>
-        + Mul<Output = T>,
-    U: PartialOrd,
-{
-    /// Binary search for an index of any item matching the target.  
-    /// Searches the specified RangeInclusive<T>.  
-    /// Closure `sample` returns data items of generic type U from any source.
-    /// The sort order of the data can be either ascending or descending, it is automatically detected.
-    /// Returns the index of the first hit that is PartiallyEqual to the target and
-    /// its last enclosing interval lo..hi.  
-    /// When the target is not found, then (ip, lo..ip) is returned,
-    /// where ip is the target's insert position (index) and lo is the last lower bound.
-    /// The (indexing) range values can be of any generic type T satisfying the listed trait bounds.
-    /// Typically usize for searching efficiently in-memory, u128 for searching whole disks or the internet,
-    /// or f64 for solving nonlinear equations.
-    fn find_any(self, sample: &mut impl FnMut(&T) -> U, target: U) -> (T, Range<T>) {
-        assert!(!self.is_empty(),"{} empty range given!", here!()); 
-        if sample(self.start()) < sample(self.end()) {
-            self.binary_any(&mut |probe| 
-                sample(probe).partial_cmp(&target)
-                .expect("partial_cmp failed"))
-        } else {
-            self.binary_any(&mut |probe| 
-                target.partial_cmp(&sample(probe))
-                .expect("partial_cmp failed"))
-        }
-    }
-
-    /// General Binary Search. Fast nethod for finding all the matches of target (the last argument).  
-    /// Search within the specified `Range<T>` where `range.start <= range.end`.  
-    /// `Range<T>` indexing values can be of any generic type satisfying the listed bounds.
-    /// Typically `usize` for indexing efficiently in-memory, `u128` for searching whole disks or internet, etc.
-    /// Closure `sample` fetches individual items from the (sorted) data source.  
-    /// The sort order of the data can be either ascending or descending.
-    /// It is automatically detected.
-    /// When the target is in sort order before self.start, empty self.start..self.start range is returned.
-    /// When the target is in sort order after self.end, self.end..self.end is returned.
-    /// When target is not found, then ip..ip is returned, where ip is its insert position.
-    /// Otherwise returns the range of all consecutive values PartiallyEqual to the target.
-    fn find_all(self, sample: &mut impl FnMut(&T) -> U, target: U) -> Range<T> {
-        if sample(self.start()) <= sample(self.end()) {
-            self.binary_all(&mut |probe| 
-                sample(probe).partial_cmp(&target)
-                .expect("partial_cmp failed"))
-        } else {
-            self.binary_all(&mut |probe| 
-                target.partial_cmp(&sample(probe))
-                .expect("partial_cmp failed"))
-        }
-    }
-}
 
 impl<T> Search<T> for RangeInclusive<T>
 where
-    T: PartialOrd
-        + Copy
-        + From<u8>
-        + Add<Output = T>
-        + Sub<Output = T>
-        + Div<Output = T> 
+    T: PartialOrd + Copy + From<u8> + Add<Output = T> + Sub<Output = T> + Div<Output = T>,
 {
-    /// Binary search for an index of any item matching the target.  
-    /// Searches specified RangeInclusive<T>.  
-    /// Comparator closure `cmpr` is comparing some data against a target captured in it.
-    /// The sort order of the data can be either ascending or descending but it must be reflected by `cmpr`.
-    /// Returns the index of the first hit that is PartiallyEqual to the target and
-    /// its last enclosing search interval lo..=hi.  
-    /// When the target is not found, then (ip, lo..=ip) is returned,
-    /// where ip is the target's insert position and lo is the last lower bound.
+    /// Binary search for an index of any item matching the target within the open interval
+    /// `(*self.start(),*self.end())`.
+    /// Closure `cmpr` probes some ordered data and compares it with the captured target.
+    /// This code is thus agnostic about the type of the target (and the data).
+    /// Descending order data can be handled by reversing the order of the comparison operands.
+    /// Returns the index of the first hit that is PartiallyEqual to the target
+    /// and its last search envelope `lo..hi`.  
+    /// When the target is not found, then `(ip, lo..ip)` is returned, where ip is the target's insert position.
     /// The (indexing) range values can be of any generic type T, satisfying the listed trait bounds.
-    /// Typically usize for searching efficiently in-memory, u128 for searching whole disks or internet,
+    /// Typically usize for searching in-memory, u128 for searching disks or internet,
     /// or f64 for solving nonlinear equations.
     fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>) {
-        // Binary search: lo and hi should never be equal to target here
-        let mut hi = *self.end(); // initial high index
         let mut lo = *self.start(); // initial low index
+        let mut hi = *self.end(); // initial high index
         loop {
-            let mid = lo + (hi - lo) / 2.into(); // binary chop here with truncation
+            let mid = lo + (hi - lo) / 2.into(); // binary chop with truncation
             if mid > lo {
-                // mid == lo means interval exhausted (lo rather than hi because of truncation)
                 // still some interval left
                 match cmpr(&mid) {
                     Less => lo = mid,
@@ -101,23 +35,23 @@ where
                     }
                 }
             } else {
-                // interval exhausted, no match, hi is insert position
+                // interval is exhausted without a match, hi is the insert position
                 return (hi, lo..hi);
             };
         }
     }
 
     /// General Binary Search for finding all the matches.
-    /// Search within the specified Range<T> index, which is always ascending.
-    /// The (indexing) range values can be of any generic type T satisfying the listed bounds.
-    /// Typically usize for indexing efficiently in-memory, u128 for searching whole disks or internet,
-    /// f64 for solving equations which might not converge using secant and other methods.
-    /// Comparator closure `cmpr` is comparing against a target captured from its environment.
-    /// The sort order of the data can be either ascending or descending (increasing/decreasing).
-    /// The order must be specified by the `ascending` argument.
-    /// When the target is in order before self.start, empty self self.start..self.start range is returned.
-    /// When the target is in order after self.end, self.end..self.end is returned.
-    /// When target is not found, then ip..ip is returned, where ip is its insert position.
+    /// Searches within the specified RangeInclusive<T> index.
+    /// The (indexing) range values can be of any generic type T (satisfying the listed bounds):
+    /// usize for indexing in-memory, u128 for searching whole disks or internet,
+    /// f64 for solving equations which might not converge using other methods.
+    /// Comparator closure `cmpr` is comparing data against a target captured from its environment.
+    /// Using closures enables custom comparisons of user's own data types.
+    /// This code is also agnostic about the type of the target (and of the data).
+    /// When the target is in order before self.start, empty `self.start..self.start` range is returned.
+    /// When the target is in order after self.end, `self.end..self.end` is returned.
+    /// When target is not found, then `ip..ip` is returned, where ip is its insert position.
     /// Otherwise the range of all consecutive values PartiallyEqual to the target is returned.
     fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T> {
         fn upend(ord: Ordering) -> Ordering {
