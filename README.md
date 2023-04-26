@@ -233,6 +233,8 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.7.1** Minor test/bug fixes and tidying up.
+
 **Version 1.7.0** More simplification. Removed trait BinarySearch, which was just a couple of wrappers for Search methods.
 
 **Version 1.6.0** Simplified the binary search code.

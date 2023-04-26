@@ -178,14 +178,14 @@ fn vecops() {
         "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
         (0..=sorteddesc.len()-1)
             .binary_all(&mut |&probe| 
-                sorteddesc[probe].partial_cmp(&199)
+                199.partial_cmp(&sorteddesc[probe])
                 .expect("comparison failed")),
         sorteddesc.binsearch(&199)); 
     println!(
         "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN} = {GR}{:?}{UN}",
         (0..=sorteddesc.len()-1)
             .binary_all(&mut |&probe| 
-                vm[vi[probe]].partial_cmp(&midval)
+                midval.partial_cmp(&vm[vi[probe]])
                 .expect("comparison failed")),
         vm.binsearch_indexed(&vi, &midval)
     ); // binsearch_indexed, descending

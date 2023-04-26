@@ -21,7 +21,7 @@ where
     /// or f64 for solving nonlinear equations.
     fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>) {
         let mut lo = *self.start(); // initial low index
-        let mut hi = *self.end(); // initial high index
+        let mut hi = *self.end();   // initial high index
         loop {
             let mid = lo + (hi - lo) / 2.into(); // binary chop with truncation
             if mid > lo {
@@ -54,24 +54,20 @@ where
     /// When target is not found, then `ip..ip` is returned, where ip is its insert position.
     /// Otherwise the range of all consecutive values PartiallyEqual to the target is returned.
     fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T> {
-        fn upend(ord: Ordering) -> Ordering {
+        fn findend(ord: Ordering, up: bool) -> Ordering {
             if ord == Equal {
-                Less
+                if up {
+                    Less
+                } else {
+                    Greater
+                }
             } else {
                 ord
             }
         }
-        fn downend(ord: Ordering) -> Ordering {
-            if ord == Equal {
-                Greater
-            } else {
-                ord
-            }
-        }
-        let one = T::from(1);
         let lo = self.start(); // initial low index
-        let ihi = self.end(); // initial high index
-        let hi = *ihi + one;
+        let ihi = self.end();  // initial high index
+        let hi = *ihi + 1.into();
         if self.is_empty() {
             return *lo..hi;
         };
@@ -86,8 +82,8 @@ where
                     // all in range match
                     return *lo..hi;
                 };
-                let (lor, _) = self.binary_any(&mut |probe| upend(cmpr(probe)));
-                return *lo..lor + one;
+                let (lor, _) = self.binary_any(&mut |probe| findend(cmpr(probe),true));
+                return *lo..lor + 1.into();
             }
             _ => (),
         };
@@ -96,22 +92,24 @@ where
                 return hi..hi;
             } // item is after the range
             Equal => {
-                let (lor, _) = self.binary_any(&mut |probe| downend(cmpr(probe)));
+                let (lor, _) = self.binary_any(&mut |probe| findend(cmpr(probe),false));
                 return lor..hi;
             }
             _ => (),
         };
-        // Now lo and hi will never be equal to target
-        // Binary search for first match
-        let (hit, lastrange) = self.binary_any(&mut |probe| cmpr(probe));
-        // No hit, return empty range with sort position
+        // lo and hi will now never be equal to target
+        // Binary search for any match, with the given closure
+        let (hit, lastrange) = self.binary_any(cmpr);
+        // Not found, return empty range with sort position
         if hit == lastrange.end {
             return hit..hit;
         };
-        // Binary search in the narrowest interval for the start of the matching range
-        let (lowend, _) = (lastrange.start..=hit).binary_any(&mut |probe| downend(cmpr(probe)));
-        // Binary search in the narrowest interval for the end of the matching range
-        let (highend, _) = (hit..=lastrange.end - one).binary_any(&mut |probe| upend(cmpr(probe)));
+        // Search down in the last interval for the start of the matching range
+        let (lowend, _) = (lastrange.start..=hit)
+            .binary_any(&mut |probe| findend(cmpr(probe),false));
+        // Search up in the last interval for the end of the matching range
+        let (highend, _) = (hit..=lastrange.end)
+            .binary_any(&mut |probe| findend(cmpr(probe),true));
         lowend..highend
     }
 }
