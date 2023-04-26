@@ -12,7 +12,7 @@ use indxvec::{ here, MinMax, Search, Indices, Vecops, Mutops, Printing, printing
 
 ## Description
 
-Vectors searching, indexing, ranking, sorting, merging, reversing, intersecting, printing, ..
+Vectors sorting, searching, indexing, ranking, merging, reversing, intersecting, printing, ..
 
 `Indxvec` is lightweight and has no dependencies. The methods of all traits can be functionally chained to achieve numerous manipulations of `Ranges`, `Vec`s, and their indices, in compact form.
 
@@ -31,7 +31,7 @@ It is highly recommended to read and run [`tests/tests.rs`](https://github.com/l
 
 ```bash
 cargo test --release -- --test-threads=1 --nocapture
-cargo test sorts --release -- --test --nocapture
+cargo test sorts --release -- --nocapture
 ```
 
 Or just clicking the above `test` badge leads to the logs of the automated test run.
