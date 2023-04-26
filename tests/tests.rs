@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 #[cfg(test)]
 use core::cmp::Ordering::*;
-use indxvec::{here, printing::*, Search, Indices, Mutops, Printing, Vecops};
+use indxvec::{here, printing::*, Indices, Mutops, Printing, Search, Vecops};
 use ran::*;
 use std::{cmp::Ord, convert::From};
 use times::*;
@@ -12,9 +12,17 @@ fn indices() {
     let midval: u8 = 128;
     set_seeds(98777777);
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");
+    let v1 = rn
+        .ranv(20)
+        .expect("ranv failed")
+        .getvu8()
+        .expect("getvu8 failed");
     println!("{GR}\nv1: {}", v1.bl());
-    let v2 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");
+    let v2 = rn
+        .ranv(20)
+        .expect("ranv failed")
+        .getvu8()
+        .expect("getvu8 failed");
     println!("{GR}v2: {}", v2.bl());
     println!("minmax v1: {}", v1.minmax());
     println!("minmaxt v1: {GR}{:?}{UN}", v1.minmaxt());
@@ -38,7 +46,10 @@ fn indices() {
     );
     println!("Ranks:        {}", v1ranks.gr()); // how to get ranks
     println!("Ranks:        {}", v1ranks.complindex().complindex().gr()); // symmetry
-    println!("Ranks:        {}", v1.hashsort_indexed(&mut |&t| t as f64).invindex().gr()); // simplest ranks from sortindex
+    println!(
+        "Ranks:        {}",
+        v1.hashsort_indexed(&mut |&t| t as f64).invindex().gr()
+    ); // simplest ranks from sortindex
     println!("Ranks rev:    {}", v1ranks.revs().gr()); // revindex() reverses any index
     println!(
         "Ranks rev:    {}",
@@ -46,20 +57,32 @@ fn indices() {
     ); // via mergesort_indexed()  and complindex()
     println!(
         "Ranks rev:    {}",
-        v1.hashsort_indexed(&mut |&t| t as f64).invindex().revs().gr()
+        v1.hashsort_indexed(&mut |&t| t as f64)
+            .invindex()
+            .revs()
+            .gr()
     ); // via revindex()
     println!("Ranks desc:   {}", v1.rank(false).gr()); // descending ranks are not the same as ranks reversed!!
     println!("Ranks desc:   {}", v1ranks.complindex().gr()); // to make ranks descending, use complindex() instead
     println!(
         "Ranks desc:   {}",
-        v1.hashsort_indexed(&mut |&t| t as f64).invindex().complindex().gr()
+        v1.hashsort_indexed(&mut |&t| t as f64)
+            .invindex()
+            .complindex()
+            .gr()
     ); // descending ranks from sortindex
     println!(
         "Ranks desc:   {}",
-        v1.hashsort_indexed(&mut |&t| t as f64).revs().invindex().gr()
+        v1.hashsort_indexed(&mut |&t| t as f64)
+            .revs()
+            .invindex()
+            .gr()
     ); // descending ranks from descending sort
     println!("Mergeort idx: {}", v1.mergesort_indexed().gr()); // can be unindexed at anytime
-    println!("Hashsort idx: {}", v1.hashsort_indexed(&mut |&t| t as f64).gr());
+    println!(
+        "Hashsort idx: {}",
+        v1.hashsort_indexed(&mut |&t| t as f64).gr()
+    );
     println!("Sortix rev:   {}", v1.mergesort_indexed().revs().gr());
     println!("Sortix rev:   {}", v1ranksd.invindex().gr()); // descending sort index from desc ranks
     println!("Sortix rev:   {}", v1ranks.complindex().invindex().gr()); // descending sort index from desc ranks
@@ -68,14 +91,16 @@ fn indices() {
     println!("Idx to ranks: {}", v1.mergesort_indexed().invindex().gr());
     println!("Sortm naively reversed:\n{}", v1.sortm(true).revs().gr()); // the above simply reversed
     println!("Sortm false:\n{}", v1.sortm(false).gr()); // descending sort, index lost
-    println!("Sorth false:\n{}", v1.sorth(&mut |&t| t as f64,false).gr());
+    println!("Sorth false:\n{}", v1.sorth(&mut |&t| t as f64, false).gr());
     println!(
         "mergesort_indexed unindex false:\n{}",
         v1.mergesort_indexed().unindex(&v1, false).gr()
     ); // more efficient reversal
     println!(
         "hashsort_indexed unindex false:\n{}",
-        v1.hashsort_indexed(&mut |&t| t as f64).unindex(&v1, false).gr()
+        v1.hashsort_indexed(&mut |&t| t as f64)
+            .unindex(&v1, false)
+            .gr()
     ); // more efficient reversal
     println!(
         "Revindex:\n{}",
@@ -112,9 +137,17 @@ fn indices() {
 fn vecops() {
     let midval: u8 = 128;
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");    
+    let v1 = rn
+        .ranv(20)
+        .expect("ranv failed")
+        .getvu8()
+        .expect("getvu8 failed");
     println!("{GR}\nv1: {}", v1.bl());
-    let v2 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");
+    let v2 = rn
+        .ranv(20)
+        .expect("ranv failed")
+        .getvu8()
+        .expect("getvu8 failed");
     println!("{GR}v2: {}", v2.bl());
     let (vm, mut vi) = v1.merge_indexed(
         // merge two vecs using their sort indices
@@ -123,8 +156,14 @@ fn vecops() {
         &v2.hashsort_indexed(&mut |&t| t as f64),
     );
     println!("\nv1 and v2 appended:\n{}", vm.gr());
-    println!("5 smallest items:\n{BL}{:?}{UN}", vm.as_slice().smallest_k(5));
-    println!("5 biggest items:\n{BL} {:?}{UN}",vm.as_slice().biggest_k(5));
+    println!(
+        "5 smallest items:\n{BL}{:?}{UN}",
+        vm.as_slice().smallest_k(5)
+    );
+    println!(
+        "5 biggest items:\n{BL} {:?}{UN}",
+        vm.as_slice().biggest_k(5)
+    );
     println!(
         "Number of occurrences of {BL}89{UN}: {GR}{}{UN}",
         vm.occurs(89)
@@ -142,16 +181,17 @@ fn vecops() {
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg());
     println!(
         "Binary_search for {BL}199{UN}: {GR}{:?}{UN}",
-        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].cmp(&199)));
+        (0..=sorted.len() - 1).binary_all(&mut |&probe| sorted[probe].cmp(&199))
+    );
 
     println!(
         "Binsearch_indexed for {BL}{midval}{UN}: {GR}{:?}{UN}",
-        vm.binsearch_indexed(&vi,&midval)
+        vm.binsearch_indexed(&vi, &midval)
     ); // binsearch_indexed, ascending
-    
+
     println!(
         "Nearest equal or greater item from {BL}{midval}{UN} is: {GR}{:?}{UN}",
-        vm[vi[vm.binsearch_indexed(&vi,&midval).start]]
+        vm[vi[vm.binsearch_indexed(&vi, &midval).start]]
     );
 
     println!(
@@ -176,17 +216,16 @@ fn vecops() {
     );
     println!(
         "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
-        (0..=sorteddesc.len()-1)
-            .binary_all(&mut |&probe| 
-                199.partial_cmp(&sorteddesc[probe])
-                .expect("comparison failed")),
-        sorteddesc.binsearch(&199)); 
+        (0..=sorteddesc.len() - 1).binary_all(&mut |&probe| 199
+            .partial_cmp(&sorteddesc[probe])
+            .expect("comparison failed")),
+        sorteddesc.binsearch(&199)
+    );
     println!(
         "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN} = {GR}{:?}{UN}",
-        (0..=sorteddesc.len()-1)
-            .binary_all(&mut |&probe| 
-                midval.partial_cmp(&vm[vi[probe]])
-                .expect("comparison failed")),
+        (0..=sorteddesc.len() - 1).binary_all(&mut |&probe| midval
+            .partial_cmp(&vm[vi[probe]])
+            .expect("comparison failed")),
         vm.binsearch_indexed(&vi, &midval)
     ); // binsearch_indexed, descending
     println!(
@@ -214,27 +253,28 @@ fn text() {
         could not put Humpty together again";
     let v = sentence.split(' ').collect::<Vec<_>>();
     println!("{}", v.gr()); // Display
-                            // using cloning mergesort with implied alphabetic partial order
     let mut sorted = v.sorth(&mut |&s| s.len() as f64, true);
     println!("Ascending sorted by word length:\n{}", sorted.gr());
-    // Binary search 
     println!(
         "Binary_search for {BL}word length 8{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].len().partial_cmp(&8).unwrap())
+        (0..=sorted.len() - 1)
+            .binary_all(&mut |&probe| sorted[probe].len().partial_cmp(&8).unwrap())
     );
     sorted = v.sortm(true);
     println!("Ascending sorted by lexicon:\n{}", sorted.gr());
     println!(
         "Binary_search for {BL}Humpty{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].partial_cmp("Humpty").unwrap())
+        (0..=sorted.len() - 1)
+            .binary_all(&mut |&probe| sorted[probe].partial_cmp("Humpty").unwrap())
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 5..end: {YL}{:?}{UN}",
-        (5..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].partial_cmp("Humpty").unwrap())
+        (5..=sorted.len() - 1)
+            .binary_all(&mut |&probe| sorted[probe].partial_cmp("Humpty").unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].partial_cmp("the").unwrap())
+        (0..=sorted.len() - 1).binary_all(&mut |&probe| sorted[probe].partial_cmp("the").unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 0..=23: {YL}{:?}{UN}",
@@ -242,7 +282,8 @@ fn text() {
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len()-1).binary_all(&mut |&probe| sorted[probe].partial_cmp("queen's").unwrap())
+        (0..=sorted.len() - 1)
+            .binary_all(&mut |&probe| sorted[probe].partial_cmp("queen's").unwrap())
     );
     sorted.dedup();
     println!("Ascending deduplicated:\n{}\n", sorted.gr());
@@ -251,31 +292,26 @@ fn text() {
     println!("Descending sorted:\n{}", dsorted.gr());
     println!(
         "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        (0..=dsorted.len()-1).binary_all(&mut |&probe| 
-            "Humpty".partial_cmp(dsorted[probe]).unwrap()) 
+        (0..=dsorted.len() - 1)
+            .binary_all(&mut |&probe| "Humpty".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 0..=21: {YL}{:?}{UN}",
-        (0..=21).binary_all(&mut |&probe| 
-            "Humpty".partial_cmp(dsorted[probe]).unwrap())
+        (0..=21).binary_all(&mut |&probe| "Humpty".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        (0..=dsorted.len()-1)
-            .binary_all(&mut |&probe|
-                "the".partial_cmp(dsorted[probe]).unwrap())
+        (0..=dsorted.len() - 1)
+            .binary_all(&mut |&probe| "the".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 5..end: {YL}{:?}{UN}",
-        (5..=sorted.len()-1)
-            .binary_all(&mut |&probe|
-                "the".partial_cmp(dsorted[probe]).unwrap())           
+        (5..=sorted.len() - 1).binary_all(&mut |&probe| "the".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        (0..=dsorted.len()-1)
-            .binary_all(&mut |&probe|
-                "queen's".partial_cmp(dsorted[probe]).unwrap()) 
+        (0..=dsorted.len() - 1)
+            .binary_all(&mut |&probe| "queen's".partial_cmp(dsorted[probe]).unwrap())
     );
     dsorted.dedup();
     println!("Descending deduplicated:\n{}\n", dsorted.gr());
@@ -287,40 +323,47 @@ use core::ops::Range;
 fn solvetest() {
     let num: f64 = 1234567890.0;
     let root: f64 = 5.3;
-    let (res,rng) = (1_f64..=num).binary_any(&mut |&x| 
-        x.powf(root).partial_cmp(&num)
-        .expect("root failed")
-    );
+    let (res, rng) =
+        (1_f64..=num).binary_any(&mut |&x| x.powf(root).partial_cmp(&num).expect("root failed"));
     println!(
         "{} to the power of {YL}1/{}{UN}\nsolved:      {} \
         error: {RD}{:e}{UN}\n\
         powf(1/{root}): {} error:{RD}{:e}{UN}\n",
         num.yl(),
         root,
-        res.gr(), 
-        rng.end-rng.start,    
+        res.gr(),
+        rng.end - rng.start,
         num.powf(1. / root).gr(),
         (num - num.powf(1. / root).powf(root))
     );
-    let (pi,rng) = (3.0..=3.2).binary_any(&mut |x| 
-        (x/4_f64).tan().partial_cmp(&1_f64)
-        .expect("pi failed")        
-    );
-    println!("pi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}\n4*atan(1): {GR}{}{UN}\n",
+    let (pi, rng) =
+        (3.0..=3.2).binary_any(&mut |x| (x / 4_f64).tan().partial_cmp(&1_f64).expect("pi failed"));
+    println!(
+        "pi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}\n4*atan(1): {GR}{}{UN}\n",
         pi,
-        rng.end-rng.start,
-        1_f64.atan()*4_f64
+        rng.end - rng.start,
+        1_f64.atan() * 4_f64
     );
 }
 
 #[test]
-fn printing() { 
-    println!("\n{}", &("this_was_a_triple".rd(),[0,1].gr(),"tuple".bl()).to_plainstr());
-    println!("\n{}", &("now prints","upto",4,"tuples").to_plainstr().yl());    
+fn printing() {
+    println!(
+        "\n{}",
+        &("this_was_a_triple".rd(), [0, 1].gr(), "tuple".bl()).to_plainstr()
+    );
+    println!(
+        "\n{}",
+        &("now prints", "upto", 4, "tuples").to_plainstr().yl()
+    );
 
     set_seeds(123456789);
     let rn = Rnum::newu8();
-    let v1 = rn.ranv(20).expect("ranv failed").getvu8().expect("getvu8 failed");
+    let v1 = rn
+        .ranv(20)
+        .expect("ranv failed")
+        .getvu8()
+        .expect("getvu8 failed");
     println!("\n{}", v1.rd());
     println!("\n{}", v1.gr());
     println!("\n{}", v1.yl());
