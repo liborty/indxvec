@@ -13,11 +13,11 @@ pub mod search;
 pub mod vecops;
 
 use core::{
-    cmp::{Reverse, Ordering},
+    cmp::{Ordering, Reverse},
     ops::Range,
 };
 use printing::*;
-use std::{fs::File, io, io::Write, collections::BinaryHeap};
+use std::{collections::BinaryHeap, fs::File, io, io::Write};
 
 /// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
 #[macro_export]
@@ -59,7 +59,7 @@ where
     }
 }
 
-/// Trait to serialize tuples `&(T,T)` and `&(T,T,T)` and 
+/// Trait to serialize tuples `&(T,T)` and `&(T,T,T)` and
 /// slices `&[T]`, `&[&[T]]`, `&[Vec<T>]`.
 /// Suitable for printing or writing to files pairs, triplets,
 /// all kinds of Vecs and slices and irregularly shaped 2D matrices.  
@@ -108,10 +108,10 @@ where
 
     /// Method to serialize.
     /// Decorates Vecs with square brackets and tuples with round ones.
-    /// Implementation code is in `printing.rs`. 
+    /// Implementation code is in `printing.rs`.
     fn to_str(self) -> String;
 
-    /// Method to serialize in minimal form (space separated, no brackets) 
+    /// Method to serialize in minimal form (space separated, no brackets)
     /// Implementation code is in `printing.rs`.
     fn to_plainstr(self) -> String;
 }
@@ -294,7 +294,7 @@ pub trait Vecops<T> {
     /// Heap of k biggest items in no particular order, except the first one is minimum
     fn biggest_k(&self, k: usize) -> BinaryHeap<Reverse<&T>>
     where
-    T: Ord;
+        T: Ord;
 }
 
 /// Mutable Operators on `&mut[T]`

@@ -13,6 +13,7 @@ categories = ["algorithms","data-structures","mathematics","rust-patterns","simu
 include = [
     "src/lib.rs",
     "src/indices.rs",
+    "src/mutops.rs",
     "src/printing.rs",
     "src/search.rs",
     "src/vecops.rs",
