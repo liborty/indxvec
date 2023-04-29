@@ -36,7 +36,7 @@ fn indices() {
     );
     println!("Sorted by merge sort:\n{}", v1.sortm(true).gr()); // sorted data but index lost
     let mut vm = v1.clone();
-    vm.muthashsort(&mut |&t| t as f64); // destructive (mutable) sort of vm
+    vm.muthashsort(|&t| t as f64); // destructive (mutable) sort of vm
     println!("Sorted by muthashsort:\n{}", vm.gr()); // hashsorted
     let v1ranks = v1.rank(true); // ascending ranks
     let v1ranksd = v1.rank(false); // descending ranks
@@ -48,7 +48,7 @@ fn indices() {
     println!("Ranks:        {}", v1ranks.complindex().complindex().gr()); // symmetry
     println!(
         "Ranks:        {}",
-        v1.hashsort_indexed(&mut |&t| t as f64).invindex().gr()
+        v1.hashsort_indexed(|&t| t as f64).invindex().gr()
     ); // simplest ranks from sortindex
     println!("Ranks rev:    {}", v1ranks.revs().gr()); // revindex() reverses any index
     println!(
@@ -57,7 +57,7 @@ fn indices() {
     ); // via mergesort_indexed()  and complindex()
     println!(
         "Ranks rev:    {}",
-        v1.hashsort_indexed(&mut |&t| t as f64)
+        v1.hashsort_indexed(|&t| t as f64)
             .invindex()
             .revs()
             .gr()
@@ -66,14 +66,14 @@ fn indices() {
     println!("Ranks desc:   {}", v1ranks.complindex().gr()); // to make ranks descending, use complindex() instead
     println!(
         "Ranks desc:   {}",
-        v1.hashsort_indexed(&mut |&t| t as f64)
+        v1.hashsort_indexed(|&t| t as f64)
             .invindex()
             .complindex()
             .gr()
     ); // descending ranks from sortindex
     println!(
         "Ranks desc:   {}",
-        v1.hashsort_indexed(&mut |&t| t as f64)
+        v1.hashsort_indexed(|&t| t as f64)
             .revs()
             .invindex()
             .gr()
@@ -81,7 +81,7 @@ fn indices() {
     println!("Mergeort idx: {}", v1.mergesort_indexed().gr()); // can be unindexed at anytime
     println!(
         "Hashsort idx: {}",
-        v1.hashsort_indexed(&mut |&t| t as f64).gr()
+        v1.hashsort_indexed(|&t| t as f64).gr()
     );
     println!("Sortix rev:   {}", v1.mergesort_indexed().revs().gr());
     println!("Sortix rev:   {}", v1ranksd.invindex().gr()); // descending sort index from desc ranks
@@ -91,14 +91,14 @@ fn indices() {
     println!("Idx to ranks: {}", v1.mergesort_indexed().invindex().gr());
     println!("Sortm naively reversed:\n{}", v1.sortm(true).revs().gr()); // the above simply reversed
     println!("Sortm false:\n{}", v1.sortm(false).gr()); // descending sort, index lost
-    println!("Sorth false:\n{}", v1.sorth(&mut |&t| t as f64, false).gr());
+    println!("Sorth false:\n{}", v1.sorth(|&t| t as f64, false).gr());
     println!(
         "mergesort_indexed unindex false:\n{}",
         v1.mergesort_indexed().unindex(&v1, false).gr()
     ); // more efficient reversal
     println!(
         "hashsort_indexed unindex false:\n{}",
-        v1.hashsort_indexed(&mut |&t| t as f64)
+        v1.hashsort_indexed(|&t| t as f64)
             .unindex(&v1, false)
             .gr()
     ); // more efficient reversal
@@ -151,9 +151,9 @@ fn vecops() {
     println!("{GR}v2: {}", v2.bl());
     let (vm, mut vi) = v1.merge_indexed(
         // merge two vecs using their sort indices
-        &v1.hashsort_indexed(&mut |&t| t as f64),
+        &v1.hashsort_indexed(|&t| t as f64),
         &v2,
-        &v2.hashsort_indexed(&mut |&t| t as f64),
+        &v2.hashsort_indexed(|&t| t as f64),
     );
     println!("\nv1 and v2 appended:\n{}", vm.gr());
     println!(
@@ -181,7 +181,7 @@ fn vecops() {
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg());
     println!(
         "Binary_search for {BL}199{UN}: {GR}{:?}{UN}",
-        (0..=sorted.len() - 1).binary_all(&mut |&probe| sorted[probe].cmp(&199))
+        (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].cmp(&199))
     );
 
     println!(
@@ -216,14 +216,14 @@ fn vecops() {
     );
     println!(
         "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
-        (0..=sorteddesc.len() - 1).binary_all(&mut |&probe| 199
+        (0..=sorteddesc.len() - 1).binary_all(|probe| 199
             .partial_cmp(&sorteddesc[probe])
             .expect("comparison failed")),
         sorteddesc.binsearch(&199)
     );
     println!(
         "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN} = {GR}{:?}{UN}",
-        (0..=sorteddesc.len() - 1).binary_all(&mut |&probe| midval
+        (0..=sorteddesc.len() - 1).binary_all(|probe| midval
             .partial_cmp(&vm[vi[probe]])
             .expect("comparison failed")),
         vm.binsearch_indexed(&vi, &midval)
@@ -253,37 +253,37 @@ fn text() {
         could not put Humpty together again";
     let v = sentence.split(' ').collect::<Vec<_>>();
     println!("{}", v.gr()); // Display
-    let mut sorted = v.sorth(&mut |&s| s.len() as f64, true);
+    let mut sorted = v.sorth(|&s| s.len() as f64, true);
     println!("Ascending sorted by word length:\n{}", sorted.gr());
     println!(
         "Binary_search for {BL}word length 8{UN}: {YL}{:?}{UN}",
         (0..=sorted.len() - 1)
-            .binary_all(&mut |&probe| sorted[probe].len().partial_cmp(&8).unwrap())
+            .binary_all(|probe| sorted[probe].len().partial_cmp(&8).unwrap())
     );
     sorted = v.sortm(true);
     println!("Ascending sorted by lexicon:\n{}", sorted.gr());
     println!(
         "Binary_search for {BL}Humpty{UN}: {YL}{:?}{UN}",
         (0..=sorted.len() - 1)
-            .binary_all(&mut |&probe| sorted[probe].partial_cmp("Humpty").unwrap())
+            .binary_all(|probe| sorted[probe].partial_cmp("Humpty").unwrap())
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 5..end: {YL}{:?}{UN}",
         (5..=sorted.len() - 1)
-            .binary_all(&mut |&probe| sorted[probe].partial_cmp("Humpty").unwrap())
+            .binary_all(|probe| sorted[probe].partial_cmp("Humpty").unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len() - 1).binary_all(&mut |&probe| sorted[probe].partial_cmp("the").unwrap())
+        (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].partial_cmp("the").unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 0..=23: {YL}{:?}{UN}",
-        (0..=23).binary_all(&mut |&probe| sorted[probe].partial_cmp("the").unwrap())
+        (0..=23).binary_all(|probe| sorted[probe].partial_cmp("the").unwrap())
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
         (0..=sorted.len() - 1)
-            .binary_all(&mut |&probe| sorted[probe].partial_cmp("queen's").unwrap())
+            .binary_all(|probe| sorted[probe].partial_cmp("queen's").unwrap())
     );
     sorted.dedup();
     println!("Ascending deduplicated:\n{}\n", sorted.gr());
@@ -293,25 +293,25 @@ fn text() {
     println!(
         "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
         (0..=dsorted.len() - 1)
-            .binary_all(&mut |&probe| "Humpty".partial_cmp(dsorted[probe]).unwrap())
+            .binary_all(|probe| "Humpty".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 0..=21: {YL}{:?}{UN}",
-        (0..=21).binary_all(&mut |&probe| "Humpty".partial_cmp(dsorted[probe]).unwrap())
+        (0..=21).binary_all(|probe| "Humpty".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
         (0..=dsorted.len() - 1)
-            .binary_all(&mut |&probe| "the".partial_cmp(dsorted[probe]).unwrap())
+            .binary_all(|probe| "the".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 5..end: {YL}{:?}{UN}",
-        (5..=sorted.len() - 1).binary_all(&mut |&probe| "the".partial_cmp(dsorted[probe]).unwrap())
+        (5..=sorted.len() - 1).binary_all(|probe| "the".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
         (0..=dsorted.len() - 1)
-            .binary_all(&mut |&probe| "queen's".partial_cmp(dsorted[probe]).unwrap())
+            .binary_all(|probe| "queen's".partial_cmp(dsorted[probe]).unwrap())
     );
     dsorted.dedup();
     println!("Descending deduplicated:\n{}\n", dsorted.gr());
@@ -324,7 +324,7 @@ fn solvetest() {
     let num: f64 = 1234567890.0;
     let root: f64 = 5.3;
     let (res, rng) =
-        (1_f64..=num).binary_any(&mut |&x| x.powf(root).partial_cmp(&num).expect("root failed"));
+        (1_f64..=num).binary_any(|x| x.powf(root).partial_cmp(&num).expect("root failed"));
     println!(
         "{} to the power of {YL}1/{}{UN}\nsolved:      {} \
         error: {RD}{:e}{UN}\n\
@@ -337,7 +337,7 @@ fn solvetest() {
         (num - num.powf(1. / root).powf(root))
     );
     let (pi, rng) =
-        (3.0..=3.2).binary_any(&mut |x| (x / 4_f64).tan().partial_cmp(&1_f64).expect("pi failed"));
+        (3.0..=3.2).binary_any(|x| (x / 4_f64).tan().partial_cmp(&1_f64).expect("pi failed"));
     println!(
         "pi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}\n4*atan(1): {GR}{}{UN}\n",
         pi,
@@ -402,19 +402,19 @@ fn sorts() {
             v.sortm(true);
         },
         |v: &mut [u8]| {
-            v.sorth(&mut |&t| t as f64, true);
+            v.sorth(|&t| t as f64, true);
         },
         |v: &mut [u8]| {
             v.mergesort_indexed();
         },
         |v: &mut [u8]| {
-            v.hashsort_indexed(&mut |&t| t as f64);
+            v.hashsort_indexed(|&t| t as f64);
         },
         |v: &mut [u8]| {
             v.mutquicksort();
         },
         |v: &mut [u8]| {
-            v.muthashsort(&mut |&t| t as f64);
+            v.muthashsort(|&t| t as f64);
         },
     ];
 

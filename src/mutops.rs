@@ -53,7 +53,7 @@ impl<T> Mutops<T> for &mut [T] {
         n: usize,
         fmin: f64,
         fmax: f64,
-        quantify: &mut impl FnMut(&T) -> f64,
+        quantify: impl Copy+Fn(&T) -> f64,
     ) where
         T: PartialOrd + Clone,
     {
@@ -155,7 +155,7 @@ impl<T> Mutops<T> for &mut [T] {
     /// N recursive hash sort.
     /// Sorts mutable first argument in place
     /// Takes closure `quantify` for converting user type T to f64
-    fn muthashsort(self, quantify: &mut impl FnMut(&T) -> f64)
+    fn muthashsort(self, quantify: impl Copy + Fn(&T) -> f64)
     where
         T: PartialOrd + Clone,
     {

@@ -12,10 +12,7 @@ pub mod search;
 /// Implementation of trait Vecops for `&[T]`
 pub mod vecops;
 
-use core::{
-    cmp::{Ordering, Reverse},
-    ops::Range,
-};
+use core::{cmp::Reverse, ops::Range};
 use printing::*;
 use std::{collections::BinaryHeap, fs::File, io, io::Write};
 
@@ -116,12 +113,13 @@ where
     fn to_plainstr(self) -> String;
 }
 
-/// Binary search algoritms implemented on RangeInclusive<T>
-pub trait Search<T> {
+/// Binary search algoritms implemented on RangeInclusive<T>.
+/// Using a closure `cmpr` to sample and compare data to captured target.
+pub trait Search<T, U> {
     /// Unchecked first hit or insert order, and the final search range.
-    fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> (T, Range<T>);
-    /// General Binary Search using a closure to sample and compare data
-    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) -> Range<T>;
+    fn binary_any(&self, cmpr: U) -> (T, Range<T>);
+    /// General Binary Search, returns the range of all matching items
+    fn binary_all(&self, cmpr: U) -> Range<T>;
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.
@@ -269,7 +267,7 @@ pub trait Vecops<T> {
     where
         T: PartialOrd;
     /// Stable hash sort giving sort index
-    fn hashsort_indexed(self, quantify: &mut impl FnMut(&T) -> f64) -> Vec<usize>
+    fn hashsort_indexed(self, quantify: impl Copy + Fn(&T) -> f64) -> Vec<usize>
     where
         T: PartialOrd + Clone;
     /// Utility used by hashsort_indexed
@@ -280,11 +278,11 @@ pub trait Vecops<T> {
         n: usize,
         min: f64,
         max: f64,
-        quantify: &mut impl FnMut(&T) -> f64,
+        quantify: impl Copy + Fn(&T) -> f64,
     ) where
         T: PartialOrd + Clone;
     /// Stable hash sort. Returns new sorted data vector (ascending or descending)
-    fn sorth(self, quantify: &mut impl FnMut(&T) -> f64, ascending: bool) -> Vec<T>
+    fn sorth(self, quantify: impl Copy + Fn(&T) -> f64, ascending: bool) -> Vec<T>
     where
         T: PartialOrd + Clone;
     /// Heap of k smallest items in no particular order, except the first one is maximum
@@ -314,10 +312,9 @@ pub trait Mutops<T> {
     where
         T: PartialOrd;
     /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
-    fn muthashsort(self, quantify: &mut impl FnMut(&T) -> f64)
+    fn muthashsort(self, quantify: impl Copy + Fn(&T) -> f64)
     where
         T: PartialOrd + Clone;
-
     /// Sorts n items from i in self. Used by muthashsort.
     fn muthashsortslice(
         self,
@@ -325,7 +322,7 @@ pub trait Mutops<T> {
         n: usize,
         min: f64,
         max: f64,
-        quantify: &mut impl FnMut(&T) -> f64,
+        quantify: impl Copy + Fn(&T) -> f64,
     ) where
         T: PartialOrd + Clone;
 }

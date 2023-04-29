@@ -459,13 +459,13 @@ impl<T> Vecops<T> for &[T] {
         T: PartialOrd,
     {
         if *self.last().expect("binsearch: no data") < self[0] {
-            (0..=self.len() - 1).binary_all(&mut |&probe| {
+            (0..=self.len() - 1).binary_all(|probe| {
                 target
                     .partial_cmp(&self[probe])
                     .expect("binsearch comparison failure")
             })
         } else {
-            (0..=self.len() - 1).binary_all(&mut |&probe| {
+            (0..=self.len() - 1).binary_all( |probe| {
                 self[probe]
                     .partial_cmp(target)
                     .expect("binsearch comparison failure")
@@ -479,13 +479,13 @@ impl<T> Vecops<T> for &[T] {
         T: PartialOrd,
     {
         if self[idx[idx.len() - 1]] < self[idx[0]] {
-            (0..=idx.len() - 1).binary_all(&mut |&probe| {
+            (0..=idx.len() - 1).binary_all( |probe| {
                 target
                     .partial_cmp(&self[idx[probe]])
                     .expect("binsearch_indexed comparison failure")
             })
         } else {
-            (0..=idx.len() - 1).binary_all(&mut |&probe| {
+            (0..=idx.len() - 1).binary_all( |probe| {
                 self[idx[probe]]
                     .partial_cmp(target)
                     .expect("binsearch_indexed comparison failure")
@@ -723,7 +723,7 @@ impl<T> Vecops<T> for &[T] {
     /// Input data are read only. Output is sort index.
     /// Requires min,max, the data range, that must enclose all its values.
     /// The range is often known. If not, it can be obtained with `minmaxt()`.
-    fn hashsort_indexed(self, quantify: &mut impl FnMut(&T) -> f64) -> Vec<usize>
+    fn hashsort_indexed(self, quantify: impl Copy+Fn(&T) -> f64) -> Vec<usize>
     where
         T: PartialOrd + Clone,
     {
@@ -742,7 +742,7 @@ impl<T> Vecops<T> for &[T] {
         n: usize,
         fmin: f64,
         fmax: f64,
-        quantify: &mut impl FnMut(&T) -> f64,
+        quantify: impl Copy+Fn(&T) -> f64,
     ) where
         T: PartialOrd + Clone,
     {
@@ -851,7 +851,7 @@ impl<T> Vecops<T> for &[T] {
     /// Wraps mergesortslice.
     /// Mergesortslice and mergesort_indexed produce only an ascending index.
     /// Sortm will produce descending data order with ascending == false.
-    fn sorth(self, quantify: &mut impl FnMut(&T) -> f64, ascending: bool) -> Vec<T>
+    fn sorth(self, quantify: impl Copy + Fn(&T) -> f64, ascending: bool) -> Vec<T>
     where
         T: PartialOrd + Clone,
     {

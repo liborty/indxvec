@@ -81,15 +81,13 @@ The first hit encountered will be anywhere within some unknown number of matchin
 finds and returns only the first hit and its last enclosing range. It is used by `binary_all` for its three searches. It can also be used on its own when just one found item will do. For example, to solve non-linear equations, using range values of `f64` type.
 
 ```rust
-/// Binary search algoritms implemented on RangeInclusive<T>
-pub trait Search<T> {
-    /// General Binary Search using a closure to sample and compare data
-    fn binary_all(&self, cmpr: &mut impl FnMut(&T) -> Ordering) 
-        -> Range<T>;
-    /// First hit and the last search range
-    fn binary_any(&self, cmpr: &mut impl FnMut(&T) -> Ordering) 
-        -> (T, Range<T>);
-}
+/// Binary search algoritms implemented on RangeInclusive<T>.
+/// Using a closure `cmpr` to sample and compare data to a captured target.
+pub trait Search<T, U> {
+    /// Unchecked first hit or insert order, and the final search range.
+    fn binary_any(&self, cmpr: U) -> (T, Range<T>);
+    /// General Binary Search, returns the range of all matching items
+    fn binary_all(&self, cmpr: U) -> Range<T>;}
 ```
 
 ## Trait `Indices`
@@ -121,18 +119,18 @@ pub trait Indices {
 ## Trait Vecops
 
 ```rust
-use indxvec::{Vecops};
+use indxvec::Vecops;
 ```
 
-The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Clone`, are  implemented for `T`. The methods are too numerous to list here, please see the documentation.
+The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Clone`, are  implemented for `T`. The methods are too numerous to list here, please see their declarations in `lib.rs` and their source in `vecops.rs`.
 
 ## Trait Mutops
 
 ```rust
-use indxvec::{Mutops};
+use indxvec::Mutops;
 ```
 
-This trait contains `muthashsort`, which overwrites `self` with sorted data. When we do not need to keep the original order, this is the most efficient way to sort. A non-destructive version `sorth` in in trait `Vecops`.
+This trait contains `muthashsort`, which overwrites `self` with sorted data. When we do not need to keep the original order, this is the most efficient way to sort. A non-destructive version `sorth` is implemented in trait `Vecops`.
 
 **Nota bene:** `muthashsort` really wins on longer Vecs. For about one thousand items upwards, it is on average about 25%-30% faster than the default Rust (Quicksort) `sort_unstable`.
 
@@ -145,19 +143,18 @@ pub trait Mutops<T> {
         T: PartialOrd;
     /// mutable reversal, general utility
     fn mutrevs(self);
-    /// utility that mutably swaps two indexed items into ascending order
+    /// mutably swaps two indexed items into ascending order
     fn mutsorttwo(self, i0: usize, i1: usize) -> bool
     where
         T: PartialOrd;
-    /// utility that mutably bubble sorts three indexed items into ascending order
+    /// mutably sorts three indexed items into ascending order
     fn mutsortthree(self, i0: usize, i1: usize, i2: usize)
     where
         T: PartialOrd;
-    /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
-    fn muthashsort(self, quantify: &mut impl FnMut(&T) -> f64)
+    /// Possibly the fastest sort for long lists. Wraps  `muthashsortslice`.
+    fn muthashsort(self, quantify: impl Copy + Fn(&T) -> f64)
     where
         T: PartialOrd + Clone;
-
     /// Sorts n items from i in self. Used by muthashsort.
     fn muthashsortslice(
         self,
@@ -165,7 +162,7 @@ pub trait Mutops<T> {
         n: usize,
         min: f64,
         max: f64,
-        quantify: &mut impl FnMut(&T) -> f64,
+        quantify: impl Copy + Fn(&T) -> f64,
     ) where
         T: PartialOrd + Clone;
 }
@@ -220,7 +217,7 @@ println!("Memsearch for {BL}{midval}{UN}, found at: {}",
 );
 ```
 
-`memsearch` returns `Option(None)`, when `midval` is not found in `vm`. Here, `None` will be printed in red, while any found item will be printed in green. Since x has been 'stringified' by `.gr()`, both closures return the same types, as required by `map_or_else`.
+`memsearch` returns `Option(None)`, when `midval` is not found in `vm`. Here, `None` will be printed in red, while any found item will be printed in green. Since x has been converted to `String` by `.gr()`, both closures return the same types, as required by `map_or_else`.
 
 ## Struct and Utility Functions
 
@@ -232,6 +229,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.8.0** Changed trait of closure arguments from `&mut FnMut(&T)` to `Fn(T)`, which is adequate and simpler.
 
 **Version 1.7.1** Minor test/bug fixes and tidying up.
 
