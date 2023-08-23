@@ -1,8 +1,10 @@
-# Indxvec [<img alt="crates.io" src="https://img.shields.io/crates/v/indxvec?logo=rust">](https://crates.io/crates/indxvec) [<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github">](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions)
+# Indxvec [![crates.io](https://img.shields.io/crates/v/indxvec?logo=rust)](https://crates.io/crates/indxvec) [![GitHub last commit](https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github)](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions)
 
-## Author: Libor Spacek
+Author: Libor Spacek
 
 ## Usage
+
+Written using 100% safe Rust.
 
 The following will import everything:
 
@@ -76,7 +78,7 @@ Otherwise the range of all consecutive values `PartiallyEqual` to the target is 
 
 The first hit encountered will be anywhere within some unknown number of matching items. The algorithm then conducts two more binary searches in both directions away from the first hit. These secondary searches are applied only within the last (narrowest) range found during the main search. First non-matching items in both directions are found, giving the full enclosed matching range.
 
-**`binary_any`** 
+**`binary_any`**
 
 finds and returns only the first hit and its last enclosing range. It is used by `binary_all` for its three searches. It can also be used on its own when just one found item will do. For example, to solve non-linear equations, using range values of `f64` type.
 

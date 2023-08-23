@@ -721,8 +721,6 @@ impl<T> Vecops<T> for &[T] {
 
     /// N recursive non-destructive hash sort.
     /// Input data are read only. Output is sort index.
-    /// Requires min,max, the data range, that must enclose all its values.
-    /// The range is often known. If not, it can be obtained with `minmaxt()`.
     fn hashsort_indexed(self, quantify: impl Copy+Fn(&T) -> f64) -> Vec<usize>
     where
         T: PartialOrd + Clone,
