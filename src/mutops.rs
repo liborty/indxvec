@@ -1,15 +1,6 @@
 use crate::{Mutops, Vecops};
 
 impl<T> Mutops<T> for &mut [T] {
-    /// Sorts a mutable slice in place.
-    /// The fastest default Rust sort  
-    /// It is the responsibility of the user to ensure that there are no NaNs
-    fn mutquicksort(self)
-    where
-        T: PartialOrd,
-    {
-        self.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap() )
-    }    
 
     /// Destructive reversal by swapping
     fn mutrevs(self) {
@@ -55,7 +46,7 @@ impl<T> Mutops<T> for &mut [T] {
         fmax: f64,
         quantify: impl Copy+Fn(&T) -> f64,
     ) where
-        T: PartialOrd + Clone,
+        T: Ord + Clone,
     {
         // convert limits to f64 for accurate hash calculations
         // hash is a precomputed factor, s.t. ((x-min)*hash).floor() subscripts will be in [0,n]
@@ -100,7 +91,7 @@ impl<T> Mutops<T> for &mut [T] {
                     isub += 3;
                 }
                 x if x < 120 => {
-                    bucket.mutquicksort(); // small buckets sorted by quicksort
+                    bucket.sort_unstable(); // small buckets sorted by quicksort
                     for item in bucket {
                         self[isub] = item.clone();
                         isub += 1;
@@ -157,7 +148,7 @@ impl<T> Mutops<T> for &mut [T] {
     /// Takes closure `quantify` for converting user type T to f64
     fn muthashsort(self, quantify: impl Copy + Fn(&T) -> f64)
     where
-        T: PartialOrd + Clone,
+        T: Ord + Clone,
     {
         let n = self.len();
         if n < 120 {

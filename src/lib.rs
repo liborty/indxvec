@@ -12,7 +12,7 @@ pub mod search;
 /// Implementation of trait Vecops for `&[T]`
 pub mod vecops;
 
-use core::{cmp::Ordering, cmp::Reverse, ops::Range};
+use core::{cmp::Reverse, ops::Range};
 use printing::*;
 use std::{collections::BinaryHeap, fs::File, io, io::Write};
 
@@ -58,20 +58,7 @@ where
 
 /// function to sort f64s safely
 pub fn qsortf64(v: &mut [f64]) {
-    v.sort_unstable_by(|a, b| {
-        if let Some(res) = a.partial_cmp(b) {
-            res
-        } else if a.is_nan() {
-            if b.is_nan() {
-                Ordering::Equal
-            } else {
-                Ordering::Greater
-            }
-        } else {
-            Ordering::Less
-        }
-    })
-}
+    v.sort_unstable_by(|a, b| a.total_cmp(b)) }
 
 /// Trait to serialize tuples `&(T,T)` and `&(T,T,T)` and
 /// slices `&[T]`, `&[&[T]]`, `&[Vec<T>]`.
@@ -301,7 +288,7 @@ pub trait Vecops<T> {
     /// Stable hash sort. Returns new sorted data vector (ascending or descending)
     fn sorth(self, quantify: impl Copy + Fn(&T) -> f64, ascending: bool) -> Vec<T>
     where
-        T: PartialOrd + Clone;
+        T: Ord + Clone;
     /// Heap of k smallest items in no particular order, except the first one is maximum
     fn smallest_k(&self, k: usize) -> BinaryHeap<&T>
     where
@@ -314,10 +301,6 @@ pub trait Vecops<T> {
 
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
-    /// Sorts a mutable slice in place.
-    fn mutquicksort(self)
-    where
-        T: PartialOrd;
     /// mutable reversal, general utility
     fn mutrevs(self);
     /// utility that mutably swaps two indexed items into ascending order
@@ -331,7 +314,7 @@ pub trait Mutops<T> {
     /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
     fn muthashsort(self, quantify: impl Copy + Fn(&T) -> f64)
     where
-        T: PartialOrd + Clone;
+        T: Ord + Clone;
     /// Sorts n items from i in self. Used by muthashsort.
     fn muthashsortslice(
         self,
@@ -341,5 +324,5 @@ pub trait Mutops<T> {
         max: f64,
         quantify: impl Copy + Fn(&T) -> f64,
     ) where
-        T: PartialOrd + Clone;
+        T: Ord + Clone;
 }

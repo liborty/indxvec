@@ -854,7 +854,7 @@ impl<T> Vecops<T> for &[T] {
     /// Sortm will produce descending data order with ascending == false.
     fn sorth(self, quantify: impl Copy + Fn(&T) -> f64, ascending: bool) -> Vec<T>
     where
-        T: PartialOrd + Clone,
+        T: Ord + Clone,
     {
         let mut sorted = self.to_vec();
         sorted.muthashsort(quantify);

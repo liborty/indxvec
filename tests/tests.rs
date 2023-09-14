@@ -350,7 +350,7 @@ fn solvetest() {
 fn nantest() {
     let mut data = [ f64::INFINITY, 5_f64, f64::NAN, 4_f64, f64::NAN, 3_f64, -f64::INFINITY ];
     println!("\nUnsorted: {}",data.gr());
-    qsortf64(&mut data);
+    data.sort_unstable_by(|a,b| a.total_cmp(b)); // == qsortf64(&mut data);
     println!("Sorted:   {}",data.gr());
 }
 
@@ -419,7 +419,7 @@ fn sorts() {
             v.hashsort_indexed(|&t| t as f64);
         },
         |v: &mut [u8]| {
-            v.mutquicksort();
+            v.sort_unstable();
         },
         |v: &mut [u8]| {
             v.muthashsort(|&t| t as f64);
