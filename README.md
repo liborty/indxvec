@@ -9,7 +9,7 @@ Written using 100% safe Rust.
 The following will import everything:
 
 ```rust
-use indxvec::{ here, `qsortf64()`, MinMax, Search, Indices, Vecops, Mutops, Printing, printing::* };
+use indxvec::{ here, qsortf64(), MinMax, Search, Indices, Vecops, Mutops, Printing, printing::* };
 ```
 
 ## Description
