@@ -229,6 +229,7 @@ use indxvec::{MinMax,here};
 
 * `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices.
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
+* `qsortf64()` applies `sort_unstable_by()` to a mutable slice of f64s safely. By employing a modified `partial_cmp()` method which captures NaNs and assigns them in order past the positive infinity. Thus, in effect, producing the total ordering, which has for so long been eluding the designers of Rust and has led them to endless complications.
 
 ## Release Notes (Latest First)
 
