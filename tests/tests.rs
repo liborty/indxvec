@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 #[cfg(test)]
 use core::cmp::Ordering::*;
-use indxvec::{here, printing::*, Indices, Mutops, Printing, Search, Vecops};
+use indxvec::{here, qsortf64, printing::*, Indices, Mutops, Printing, Search, Vecops};
 use ran::*;
 use std::{cmp::Ord, convert::From};
 use times::*;
@@ -344,6 +344,14 @@ fn solvetest() {
         rng.end - rng.start,
         1_f64.atan() * 4_f64
     );
+}
+
+#[test]
+fn nantest() {
+    let mut data = [ f64::INFINITY, 5_f64, f64::NAN, 4_f64, f64::NAN, 3_f64, -f64::INFINITY ];
+    println!("\nUnsorted: {}",data.gr());
+    qsortf64(&mut data);
+    println!("Sorted:   {}",data.gr());
 }
 
 #[test]

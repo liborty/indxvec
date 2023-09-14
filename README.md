@@ -1,4 +1,4 @@
-# Indxvec [![crates.io](https://img.shields.io/crates/v/indxvec?logo=rust)](https://crates.io/crates/indxvec) [![GitHub last commit](https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github)](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions)
+# Indxvec [![crates.io](https://img.shields.io/crates/v/indxvec?logo=rust)](https://crates.io/crates/indxvec) [![crates.io](https://img.shields.io/crates/d/indxvec?logo=rust)](https://crates.io/crates/indxvec) [![GitHub last commit](https://img.shields.io/github/last-commit/liborty/indxvec/HEAD?logo=github)](https://github.com/liborty/indxvec) [![Actions Status](https://github.com/liborty/indxvec/workflows/test/badge.svg)](https://github.com/liborty/indxvec/actions)
 
 Author: Libor Spacek
 
@@ -231,6 +231,8 @@ use indxvec::{MinMax,here};
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
 
 ## Release Notes (Latest First)
+
+**Version 1.8.1** Added function `qsortf64()` which finally sorts safely f64s. Including NaNs! It was not even that difficult. Will eventually be extended to all sorts.
 
 **Version 1.8.0** Changed trait of closure arguments from `&mut FnMut(&T)` to `Fn(T)`, which is adequate and simpler.
 

@@ -3,13 +3,13 @@ use crate::{Mutops, Vecops};
 impl<T> Mutops<T> for &mut [T] {
     /// Sorts a mutable slice in place.
     /// The fastest default Rust sort  
-    /// It is the responsibility of the user to ensure that there are no NaNs etc.
+    /// It is the responsibility of the user to ensure that there are no NaNs
     fn mutquicksort(self)
     where
         T: PartialOrd,
     {
-        self.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap())
-    }
+        self.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap() )
+    }    
 
     /// Destructive reversal by swapping
     fn mutrevs(self) {

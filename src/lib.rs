@@ -12,7 +12,7 @@ pub mod search;
 /// Implementation of trait Vecops for `&[T]`
 pub mod vecops;
 
-use core::{cmp::Reverse, ops::Range};
+use core::{cmp::Ordering, cmp::Reverse, ops::Range};
 use printing::*;
 use std::{collections::BinaryHeap, fs::File, io, io::Write};
 
@@ -54,6 +54,23 @@ where
             self.min, self.minindex, self.max, self.maxindex
         )
     }
+}
+
+/// function to sort f64s safely
+pub fn qsortf64(v: &mut [f64]) {
+    v.sort_unstable_by(|a, b| {
+        if let Some(res) = a.partial_cmp(b) {
+            res
+        } else if a.is_nan() {
+            if b.is_nan() {
+                Ordering::Equal
+            } else {
+                Ordering::Greater
+            }
+        } else {
+            Ordering::Less
+        }
+    })
 }
 
 /// Trait to serialize tuples `&(T,T)` and `&(T,T,T)` and

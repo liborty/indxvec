@@ -744,14 +744,16 @@ impl<T> Vecops<T> for &[T] {
     ) where
         T: PartialOrd + Clone,
     {
-        // Recursion termination conditions
+        // Recursion termination condition
+        if n == 0 { return; };
+        /*
         match n {
             0 => {
                 return;
             } // nothing to do
             1 => {
-                idx[i] = i;
-                return;
+               idx[i] = i+1;
+               return;
             } // enter one item, no sorting
             2 => {
                 self.isorttwo(idx, i, i + 1);
@@ -763,6 +765,7 @@ impl<T> Vecops<T> for &[T] {
             }
             _ => (), // carry on below
         };
+        */
         // hash is a constant s.t. (x-min)*hash is in [0,n]
         let hash = (n as f64) / (fmax - fmin);
         let mut buckets: Vec<Vec<usize>> = vec![Vec::new(); n];
