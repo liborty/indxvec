@@ -1,7 +1,7 @@
 use crate::{BinaryHeap, Indices, MinMax, Mutops, Search, Vecops};
 use core::ops::Range;
 // use std::collections::binary_heap::PeekMut;
-use core::cmp::Reverse;
+use core::cmp::{Reverse,Ordering::*};
 
 impl<T> Vecops<T> for &[T] {
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
@@ -150,7 +150,7 @@ impl<T> Vecops<T> for &[T] {
         self.iter().rev().cloned().collect::<Vec<T>>()
     }
 
-    /// Removes repetitions from an explicitly ordered set.
+    /// Removes repetitions from an explicitly PartialOrdered set.
     fn sansrepeat(self) -> Vec<T>
     where
         T: PartialEq + Clone,
@@ -172,7 +172,7 @@ impl<T> Vecops<T> for &[T] {
 
     /// Finds the first/last occurence of item `m` in self by forward/backward iteration.
     /// Returns `Some(index)` of the found item or `None`.
-    /// Suitable for small unordered lists.
+    /// Suitable for small unPartialOrdered lists.
     /// For longer lists, it is better to sort them and use `binsearch` (see below).
     /// For repeated tests, index sort first and then use `binsearch_indexed.
     fn member(self, m: T, forward: bool) -> Option<usize>
@@ -196,7 +196,7 @@ impl<T> Vecops<T> for &[T] {
         }
     }
 
-    /// Counts partial equal occurrences of val by simple linear search of any unordered set
+    /// Counts partial equal occurrences of val by simple linear search of any unPartialOrdered set
     fn occurs(self, val: T) -> usize
     where
         T: PartialOrd,
@@ -224,7 +224,7 @@ impl<T> Vecops<T> for &[T] {
 
     /// Unites two ascending index-sorted generic vectors.
     /// This is the union of two index sorted sets.
-    /// Returns a single explicitly ordered set.
+    /// Returns a single explicitly PartialOrdered set.
     fn unite_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
     where
         T: PartialOrd + Clone,
@@ -303,7 +303,7 @@ impl<T> Vecops<T> for &[T] {
     }
 
     /// Intersects two ascending index-sorted generic vectors.
-    /// Returns a single explicitly ordered set.
+    /// Returns a single explicitly PartialOrdered set.
     fn intersect_indexed(self, ix1: &[usize], v2: &[T], ix2: &[usize]) -> Vec<T>
     where
         T: PartialOrd + Clone,
@@ -412,7 +412,7 @@ impl<T> Vecops<T> for &[T] {
     }
 
     /// Partition with respect to a pivot into three sets
-    fn partition(self, pivot: T) -> (Vec<T>, Vec<T>, Vec<T>)
+    fn partition(self, pivot: &T) -> (Vec<T>, Vec<T>, Vec<T>)
     where
         T: PartialOrd + Clone,
     {
@@ -421,19 +421,18 @@ impl<T> Vecops<T> for &[T] {
         let mut eqset: Vec<T> = Vec::with_capacity(n);
         let mut posset: Vec<T> = Vec::with_capacity(n);
         for item in self {
-            if *item < pivot {
-                negset.push(item.clone())
-            } else if *item > pivot {
-                posset.push(item.clone())
-            } else {
-                eqset.push(item.clone())
+            match item.partial_cmp(pivot) {
+                Some(Less) => negset.push(item.clone()),
+                Some(Equal) => eqset.push(item.clone()),
+                Some(Greater) => posset.push(item.clone()),
+                None => continue              
             };
         }
         (negset, eqset, posset)
     }
 
     /// Partition by pivot gives three sets of indices.
-    fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
+    fn partition_indexed(self, pivot: &T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
     where
         T: PartialOrd + Clone,
     {
@@ -442,18 +441,17 @@ impl<T> Vecops<T> for &[T] {
         let mut eqset: Vec<usize> = Vec::with_capacity(n);
         let mut posset: Vec<usize> = Vec::with_capacity(n);
         for (i, vi) in self.iter().enumerate() {
-            if *vi < pivot {
-                negset.push(i)
-            } else if *vi > pivot {
-                posset.push(i)
-            } else {
-                eqset.push(i)
+            match vi.partial_cmp(pivot) {
+                Some(Less) => negset.push(i),
+                Some(Equal) => eqset.push(i),
+                Some(Greater) => posset.push(i),
+                None => continue
             };
         }
         (negset, eqset, posset)
     }
 
-    /// Binary Search with automatic descending order detection.
+    /// Binary Search with automatic descending PartialOrder detection.
     fn binsearch(self, target: &T) -> Range<usize>
     where
         T: PartialOrd,
@@ -473,7 +471,7 @@ impl<T> Vecops<T> for &[T] {
         }
     }
 
-    /// Binary Search via index with automatic order detection.
+    /// Binary Search via index with automatic PartialOrder detection.
     fn binsearch_indexed(self, idx: &[usize], target: &T) -> Range<usize>
     where
         T: PartialOrd,
@@ -537,7 +535,7 @@ impl<T> Vecops<T> for &[T] {
 
     /// Merges two ascending sort indices.
     /// Data is not shuffled at all, v2 is just concatenated onto v1
-    /// in one go and both remain in their original order.
+    /// in one go and both remain in their original PartialOrder.
     /// Returns the concatenated vector and a new valid sort index into it.
     fn merge_indexed(self, idx1: &[usize], v2: &[T], idx2: &[usize]) -> (Vec<T>, Vec<usize>)
     where
@@ -615,7 +613,7 @@ impl<T> Vecops<T> for &[T] {
     /// The data is not moved or mutated.
     /// Efficiency is comparable to quicksort but more stable
     /// Returns a vector of indices to s from i to i+n,
-    /// such that the indexed values are in ascending sort order (a sort index).
+    /// such that the indexed values are in ascending sort PartialOrder (a sort index).
     /// Only the index values are being moved.
     fn mergesortslice(self, i: usize, n: usize) -> Vec<usize>
     where
@@ -653,7 +651,7 @@ impl<T> Vecops<T> for &[T] {
     /// Immutable merge sort. Returns new sorted data vector (ascending or descending).
     /// Wraps mergesortslice.
     /// Mergesortslice and mergesort_indexed produce only an ascending index.
-    /// Sortm will produce descending data order with ascending == false.
+    /// Sortm will produce descending data PartialOrder with ascending == false.
     fn sortm(self, ascending: bool) -> Vec<T>
     where
         T: PartialOrd + Clone,
@@ -673,8 +671,8 @@ impl<T> Vecops<T> for &[T] {
 
     /// Fast ranking of many T items, with only `n*(log(n)+1)` complexity.
     /// Ranking is done by inverting the sort index.
-    /// Sort index is in sorted order, giving data positions.
-    /// Ranking is in data order, giving sorted order positions.
+    /// Sort index is in sorted PartialOrder, giving data positions.
+    /// Ranking is in data PartialOrder, giving sorted PartialOrder positions.
     /// Thus sort index and ranks are in an inverse relationship.
     /// They are easily converted by `.invindex()` (for: invert index).
     fn rank(self, ascending: bool) -> Vec<usize>
@@ -689,7 +687,7 @@ impl<T> Vecops<T> for &[T] {
                 rankvec[sortpos] = i
             }
         } else {
-            // rank in the order of descending values
+            // rank in the PartialOrder of descending values
             for (i, &sortpos) in sortindex.iter().enumerate() {
                 rankvec[sortpos] = n - i - 1
             }
@@ -697,7 +695,7 @@ impl<T> Vecops<T> for &[T] {
         rankvec
     }
 
-    /// swap any two index items, if their data items (self) are not in ascending order
+    /// swap any two index items, if their data items (self) are not in ascending PartialOrder
     fn isorttwo(self, idx: &mut [usize], i0: usize, i1: usize)
     where
         T: PartialOrd,
@@ -707,7 +705,7 @@ impl<T> Vecops<T> for &[T] {
         };
     }
 
-    /// sort three index items if their self items are out of ascending order
+    /// sort three index items if their self items are out of ascending PartialOrder
     fn isortthree(self, idx: &mut [usize], i0: usize, i1: usize, i2: usize)
     where
         T: PartialOrd,
@@ -851,10 +849,10 @@ impl<T> Vecops<T> for &[T] {
     /// Immutable hash sort. Returns new sorted data vector (ascending or descending).
     /// Wraps mergesortslice.
     /// Mergesortslice and mergesort_indexed produce only an ascending index.
-    /// Sortm will produce descending data order with ascending == false.
+    /// Sortm will produce descending data PartialOrder with ascending == false.
     fn sorth(self, quantify: impl Copy + Fn(&T) -> f64, ascending: bool) -> Vec<T>
     where
-        T: Ord + Clone,
+        T: PartialOrd + Clone,
     {
         let mut sorted = self.to_vec();
         sorted.muthashsort(quantify);
@@ -864,7 +862,7 @@ impl<T> Vecops<T> for &[T] {
         sorted
     }
 
-    /// Heap of k smallest items in no particular order,
+    /// Heap of k smallest items in no particular PartialOrder,
     /// except the first one is maximum
     fn smallest_k(&self, k: usize) -> BinaryHeap<&T>
     where
@@ -910,7 +908,7 @@ impl<T> Vecops<T> for &[T] {
         }
     }
 
-    /// Heap of k biggest items in no particular order,
+    /// Heap of k biggest items in no particular PartialOrder,
     /// except the first one is minimum
     fn biggest_k(&self, k: usize) -> BinaryHeap<Reverse<&T>>
     where

@@ -1,6 +1,6 @@
 use crate::Search;
 use core::{
-    cmp::{Ordering, Ordering::*, PartialOrd},
+    cmp::{Ordering, Ordering::*},
     ops::{Add, Div, Range, RangeInclusive, Sub},
 };
 
@@ -23,22 +23,21 @@ where
     fn binary_any(&self, cmpr: U) -> (T, Range<T>) {
         let mut lo = *self.start(); // initial low index
         let mut hi = *self.end();   // initial high index
-        loop {
+        loop {            
             let mid = lo + (hi - lo) / 2.into(); // binary chop with truncation
-            if mid > lo {
-                // still some interval left
-                match cmpr(mid) {
-                    Less => lo = mid,
-                    Greater => hi = mid,
-                    Equal => {
-                        // the first match hit
-                        return (mid, lo..hi);
-                    }
-                }
-            } else {
+            if mid == lo {
                 // interval is exhausted without a match, hi is the insert position
                 return (hi, lo..hi);
             };
+            // still some interval left
+            match cmpr(mid) {
+                Less => lo = mid,
+                Greater => hi = mid,
+                Equal => {
+                    // the first match hit
+                    return (mid, lo..hi);
+                }
+            } 
         }
     }
 

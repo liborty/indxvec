@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use core::cmp::Ordering::*;
+use core::{cmp::Ordering::*,convert::identity};
 use indxvec::{here, qsortf64, printing::*, Indices, Mutops, Printing, Search, Vecops};
 use ran::*;
 use std::{cmp::Ord, convert::From};
@@ -9,8 +9,7 @@ use times::*;
 
 #[test]
 fn indices() {
-    let midval: u8 = 128;
-    set_seeds(98777777);
+    let midval: &u8 = &128;  
     let rn = Rnum::newu8();
     let v1 = rn
         .ranv(20)
@@ -135,53 +134,53 @@ fn indices() {
 
 #[test]
 fn vecops() {
-    let midval: u8 = 128;
-    let rn = Rnum::newu8();
+    let midval: f64 = 128.0;
+    let rn = Rnum::newf64();
     let v1 = rn
-        .ranv(20)
-        .expect("ranv failed")
-        .getvu8()
+        .ranv_in(20,0.,255.)
+        // .expect("ranv failed")
+        .getvf64()
         .expect("getvu8 failed");
     println!("{GR}\nv1: {}", v1.bl());
     let v2 = rn
         .ranv(20)
         .expect("ranv failed")
-        .getvu8()
+        .getvf64()
         .expect("getvu8 failed");
     println!("{GR}v2: {}", v2.bl());
     let (vm, mut vi) = v1.merge_indexed(
         // merge two vecs using their sort indices
-        &v1.hashsort_indexed(|&t| t as f64),
+        &v1.hashsort_indexed(|t| *t),
         &v2,
-        &v2.hashsort_indexed(|&t| t as f64),
+        &v2.hashsort_indexed(|t| *t),
     );
     println!("\nv1 and v2 appended:\n{}", vm.gr());
-    println!(
-        "5 smallest items:\n{BL}{:?}{UN}",
-        vm.as_slice().smallest_k(5)
-    );
-    println!(
-        "5 biggest items:\n{BL} {:?}{UN}",
-        vm.as_slice().biggest_k(5)
-    );
+    // println!(
+    //    "5 smallest items:\n{BL}{:?}{UN}",
+    //    vm.as_slice().smallest_k(5)
+    // );
+    //println!(
+    //    "5 biggest items:\n{BL} {:?}{UN}",
+    //    vm.as_slice().biggest_k(5)
+    //);
     println!(
         "Number of occurrences of {BL}89{UN}: {GR}{}{UN}",
-        vm.occurs(89)
+        vm.occurs(89.)
     );
     println!(
         "Number of occurrences of {BL}128{UN}: {GR}{}{UN}",
-        vm.occurs(128)
+        vm.occurs(128.)
     );
     println!(
         "Number of occurrences of {BL}199{UN}: {GR}{}{UN}",
-        vm.revs().occurs(199)
+        vm.revs().occurs(199.)
     );
 
     let mut sorted = vi.unindex(&vm, true);
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg());
     println!(
         "Binary_search for {BL}199{UN}: {GR}{:?}{UN}",
-        (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].cmp(&199))
+        (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].total_cmp(&199_f64))
     );
 
     println!(
@@ -197,13 +196,13 @@ fn vecops() {
     println!(
         "Forwards member index of {BL}199{UN}, is in 'sorted' at: {}",
         sorted
-            .member(199, true)
+            .member(199_f64, true)
             .map_or_else(|| "None".rd(), |x| x.gr())
     );
     println!(
         "Backwards member index for {BL}199{UN}, is in 'sorted' at: {}",
         sorted
-            .member(199, false)
+            .member(199_f64, false)
             .map_or_else(|| "None".rd(), |x| x.gr())
     );
 
@@ -216,10 +215,10 @@ fn vecops() {
     );
     println!(
         "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
-        (0..=sorteddesc.len() - 1).binary_all(|probe| 199
+        (0..=sorteddesc.len() - 1).binary_all(|probe| 199_f64
             .partial_cmp(&sorteddesc[probe])
             .expect("comparison failed")),
-        sorteddesc.binsearch(&199)
+        sorteddesc.binsearch(&199_f64)
     );
     println!(
         "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN} = {GR}{:?}{UN}",
@@ -324,7 +323,7 @@ fn solvetest() {
     let num: f64 = 1234567890.0;
     let root: f64 = 5.3;
     let (res, rng) =
-        (1_f64..=num).binary_any(|x| x.powf(root).partial_cmp(&num).expect("root failed"));
+        (1_f64..=num).binary_any(|x| x.powf(root).total_cmp(&num));
     println!(
         "{} to the power of {YL}1/{}{UN}\nsolved:      {} \
         error: {RD}{:e}{UN}\n\
@@ -337,13 +336,19 @@ fn solvetest() {
         (num - num.powf(1. / root).powf(root))
     );
     let (pi, rng) =
-        (3.0..=3.2).binary_any(|x| (x / 4_f64).tan().partial_cmp(&1_f64).expect("pi failed"));
+        (3.0..=3.2).binary_any(|x| (x / 4_f64).tan().total_cmp(&1_f64));
     println!(
         "pi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}\n4*atan(1): {GR}{}{UN}\n",
         pi,
         rng.end - rng.start,
         1_f64.atan() * 4_f64
     );
+    let (sqrt5, rng) = (-3_f64..=-2_f64).binary_any(|x| (5_f64-x*x).total_cmp(&0_f64));
+    println!(
+            "phi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}",
+            (1_f64-sqrt5)/2_f64,
+            rng.end - rng.start
+    );  
 }
 
 #[test]

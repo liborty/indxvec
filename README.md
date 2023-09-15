@@ -124,7 +124,7 @@ pub trait Indices {
 use indxvec::Vecops;
 ```
 
-The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `PartialOrd` and/or `Clone`, are  implemented for `T`. The methods are too numerous to list here, please see their declarations in `lib.rs` and their source in `vecops.rs`.
+The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `Ord` and/or `Clone`, are  implemented for `T`. The methods are too numerous to list here, please see their declarations in `lib.rs` and their source in `vecops.rs`.
 
 ## Trait Mutops
 
@@ -142,21 +142,21 @@ pub trait Mutops<T> {
     /// Sorts a mutable slice in place.
     fn mutquicksort(self)
     where
-        T: PartialOrd;
+        T: Ord;
     /// mutable reversal, general utility
     fn mutrevs(self);
     /// mutably swaps two indexed items into ascending order
     fn mutsorttwo(self, i0: usize, i1: usize) -> bool
     where
-        T: PartialOrd;
+        T: Ord;
     /// mutably sorts three indexed items into ascending order
     fn mutsortthree(self, i0: usize, i1: usize, i2: usize)
     where
-        T: PartialOrd;
+        T: Ord;
     /// Possibly the fastest sort for long lists. Wraps  `muthashsortslice`.
     fn muthashsort(self, quantify: impl Copy + Fn(&T) -> f64)
     where
-        T: PartialOrd + Clone;
+        T: Ord + Clone;
     /// Sorts n items from i in self. Used by muthashsort.
     fn muthashsortslice(
         self,
@@ -166,7 +166,7 @@ pub trait Mutops<T> {
         max: f64,
         quantify: impl Copy + Fn(&T) -> f64,
     ) where
-        T: PartialOrd + Clone;
+        T: Ord + Clone;
 }
 ```
 
@@ -229,11 +229,13 @@ use indxvec::{MinMax,here};
 
 * `pub struct Minmax` holds minimum and maximum values of a `Vec` and their indices.
 * `here!()` is a macro giving the filename, line number and function name of the place from where it was invoked. It can be interpolated into any error/tracing messages and reports.
-* `qsortf64()` applies `sort_unstable_by()` to a mutable slice of f64s safely.
+* `qsortf64()` applies `sort_unstable_by()` to a mutable slice of f64s safely, using `total_cmp()`.
 
 ## Release Notes (Latest First)
 
-**Version 1.8.1** Added function `qsortf64()` which finally sorts safely f64s.
+**Version 1.8.2** Some minor tidying up and additions to tests. Upped dependencies.
+
+**Version 1.8.1** Added function `qsortf64()` which sorts safely f64s.
 
 **Version 1.8.0** Changed trait of closure arguments from `&mut FnMut(&T)` to `Fn(T)`, which is adequate and simpler.
 

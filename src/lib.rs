@@ -128,7 +128,7 @@ pub trait Search<T, U> {
 
 /// Methods to manipulate indices of `Vec<usize>` type.
 pub trait Indices {
-    /// Indices::newindex(n) creates a new index without reordering
+    /// Indices::newindex(n) creates a new index without rePartialOrdering
     fn newindex(n: usize) -> Vec<usize> {
         Vec::from_iter(0..n)
     }
@@ -190,7 +190,7 @@ pub trait Vecops<T> {
     fn member(self, m: T, forward: bool) -> Option<usize>
     where
         T: PartialEq + Clone;
-    /// Counts partially equal occurrences of val by simple linear search of an unordered set
+    /// Counts partially equal occurrences of val by simple linear search of an unPartialOrdered set
     fn occurs(self, val: T) -> usize
     where
         T: PartialOrd;
@@ -219,18 +219,18 @@ pub trait Vecops<T> {
     where
         T: PartialOrd + Clone;
     /// Divides an unordered set into three: items smaller than pivot, equal, and greater
-    fn partition(self, pivot: T) -> (Vec<T>, Vec<T>, Vec<T>)
+    fn partition(self, pivot: &T) -> (Vec<T>, Vec<T>, Vec<T>)
     where
         T: PartialOrd + Clone;
     /// Divides an unordered set into three by the pivot. The results are subscripts to self   
-    fn partition_indexed(self, pivot: T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
+    fn partition_indexed(self, pivot: &T) -> (Vec<usize>, Vec<usize>, Vec<usize>)
     where
         T: PartialOrd + Clone;
-    /// Binary Search. Automatic descending order detection.
+    /// Binary Search. Automatic descending PartialOrder detection.
     fn binsearch(self, target: &T) -> Range<usize>
     where
         T: PartialOrd + Copy;
-    /// Binary Search via index. Automatic descending order detection
+    /// Binary Search via index. Automatic descending PartialOrder detection
     fn binsearch_indexed(self, idx: &[usize], target: &T) -> Range<usize>
     where
         T: PartialOrd + Copy;
@@ -288,7 +288,7 @@ pub trait Vecops<T> {
     /// Stable hash sort. Returns new sorted data vector (ascending or descending)
     fn sorth(self, quantify: impl Copy + Fn(&T) -> f64, ascending: bool) -> Vec<T>
     where
-        T: Ord + Clone;
+        T: PartialOrd + Clone;
     /// Heap of k smallest items in no particular order, except the first one is maximum
     fn smallest_k(&self, k: usize) -> BinaryHeap<&T>
     where
@@ -314,7 +314,7 @@ pub trait Mutops<T> {
     /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
     fn muthashsort(self, quantify: impl Copy + Fn(&T) -> f64)
     where
-        T: Ord + Clone;
+        T: PartialOrd + Clone;
     /// Sorts n items from i in self. Used by muthashsort.
     fn muthashsortslice(
         self,
@@ -324,5 +324,5 @@ pub trait Mutops<T> {
         max: f64,
         quantify: impl Copy + Fn(&T) -> f64,
     ) where
-        T: Ord + Clone;
+        T: PartialOrd + Clone;
 }

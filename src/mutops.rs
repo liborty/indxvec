@@ -46,7 +46,7 @@ impl<T> Mutops<T> for &mut [T] {
         fmax: f64,
         quantify: impl Copy+Fn(&T) -> f64,
     ) where
-        T: Ord + Clone,
+        T: PartialOrd + Clone,
     {
         // convert limits to f64 for accurate hash calculations
         // hash is a precomputed factor, s.t. ((x-min)*hash).floor() subscripts will be in [0,n]
@@ -91,7 +91,8 @@ impl<T> Mutops<T> for &mut [T] {
                     isub += 3;
                 }
                 x if x < 120 => {
-                    bucket.sort_unstable(); // small buckets sorted by quicksort
+                    // small buckets sorted by quicksort    
+                    bucket.sort_unstable_by(|a, b| quantify(a).total_cmp(&quantify(b)));
                     for item in bucket {
                         self[isub] = item.clone();
                         isub += 1;
@@ -148,12 +149,12 @@ impl<T> Mutops<T> for &mut [T] {
     /// Takes closure `quantify` for converting user type T to f64
     fn muthashsort(self, quantify: impl Copy + Fn(&T) -> f64)
     where
-        T: Ord + Clone,
+        T: PartialOrd + Clone,
     {
         let n = self.len();
         if n < 120 {
             // use default Rust sort for short Vecs
-            self.sort_unstable_by(|a, b| quantify(a).partial_cmp(&quantify(b)).unwrap());
+            self.sort_unstable_by(|a, b| quantify(a).total_cmp(&quantify(b)));
             return;
         };
         let (min, max) = self.minmaxt();
