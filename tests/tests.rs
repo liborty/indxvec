@@ -1,15 +1,15 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use core::{cmp::Ordering::*,convert::identity};
-use indxvec::{here, qsortf64, printing::*, Indices, Mutops, Printing, Search, Vecops};
+use core::{cmp::Ordering::*, convert::identity};
+use indxvec::{here, printing::*, qsortf64, Indices, Mutops, Printing, Search, Vecops};
 use ran::*;
 use std::{cmp::Ord, convert::From};
 use times::*;
 
 #[test]
 fn indices() {
-    let midval: &u8 = &128;  
+    let midval: &u8 = &128;
     let rn = Rnum::newu8();
     let v1 = rn
         .ranv(20)
@@ -56,10 +56,7 @@ fn indices() {
     ); // via mergesort_indexed()  and complindex()
     println!(
         "Ranks rev:    {}",
-        v1.hashsort_indexed(|&t| t as f64)
-            .invindex()
-            .revs()
-            .gr()
+        v1.hashsort_indexed(|&t| t as f64).invindex().revs().gr()
     ); // via revindex()
     println!("Ranks desc:   {}", v1.rank(false).gr()); // descending ranks are not the same as ranks reversed!!
     println!("Ranks desc:   {}", v1ranks.complindex().gr()); // to make ranks descending, use complindex() instead
@@ -72,16 +69,10 @@ fn indices() {
     ); // descending ranks from sortindex
     println!(
         "Ranks desc:   {}",
-        v1.hashsort_indexed(|&t| t as f64)
-            .revs()
-            .invindex()
-            .gr()
+        v1.hashsort_indexed(|&t| t as f64).revs().invindex().gr()
     ); // descending ranks from descending sort
     println!("Mergeort idx: {}", v1.mergesort_indexed().gr()); // can be unindexed at anytime
-    println!(
-        "Hashsort idx: {}",
-        v1.hashsort_indexed(|&t| t as f64).gr()
-    );
+    println!("Hashsort idx: {}", v1.hashsort_indexed(|&t| t as f64).gr());
     println!("Sortix rev:   {}", v1.mergesort_indexed().revs().gr());
     println!("Sortix rev:   {}", v1ranksd.invindex().gr()); // descending sort index from desc ranks
     println!("Sortix rev:   {}", v1ranks.complindex().invindex().gr()); // descending sort index from desc ranks
@@ -97,9 +88,7 @@ fn indices() {
     ); // more efficient reversal
     println!(
         "hashsort_indexed unindex false:\n{}",
-        v1.hashsort_indexed(|&t| t as f64)
-            .unindex(&v1, false)
-            .gr()
+        v1.hashsort_indexed(|&t| t as f64).unindex(&v1, false).gr()
     ); // more efficient reversal
     println!(
         "Revindex:\n{}",
@@ -137,7 +126,7 @@ fn vecops() {
     let midval: f64 = 128.0;
     let rn = Rnum::newf64();
     let v1 = rn
-        .ranv_in(20,0.,255.)
+        .ranv_in(20, 0., 255.)
         // .expect("ranv failed")
         .getvf64()
         .expect("getvu8 failed");
@@ -256,20 +245,17 @@ fn text() {
     println!("Ascending sorted by word length:\n{}", sorted.gr());
     println!(
         "Binary_search for {BL}word length 8{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len() - 1)
-            .binary_all(|probe| sorted[probe].len().partial_cmp(&8).unwrap())
+        (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].len().partial_cmp(&8).unwrap())
     );
     sorted = v.sortm(true);
     println!("Ascending sorted by lexicon:\n{}", sorted.gr());
     println!(
         "Binary_search for {BL}Humpty{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len() - 1)
-            .binary_all(|probe| sorted[probe].partial_cmp("Humpty").unwrap())
+        (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].partial_cmp("Humpty").unwrap())
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 5..end: {YL}{:?}{UN}",
-        (5..=sorted.len() - 1)
-            .binary_all(|probe| sorted[probe].partial_cmp("Humpty").unwrap())
+        (5..=sorted.len() - 1).binary_all(|probe| sorted[probe].partial_cmp("Humpty").unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
@@ -281,8 +267,7 @@ fn text() {
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        (0..=sorted.len() - 1)
-            .binary_all(|probe| sorted[probe].partial_cmp("queen's").unwrap())
+        (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].partial_cmp("queen's").unwrap())
     );
     sorted.dedup();
     println!("Ascending deduplicated:\n{}\n", sorted.gr());
@@ -291,8 +276,7 @@ fn text() {
     println!("Descending sorted:\n{}", dsorted.gr());
     println!(
         "Binary_search for {BL}'Humpty'{UN}: {YL}{:?}{UN}",
-        (0..=dsorted.len() - 1)
-            .binary_all(|probe| "Humpty".partial_cmp(dsorted[probe]).unwrap())
+        (0..=dsorted.len() - 1).binary_all(|probe| "Humpty".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'Humpty'{UN} in range 0..=21: {YL}{:?}{UN}",
@@ -300,8 +284,7 @@ fn text() {
     );
     println!(
         "Binary_search for {BL}'the'{UN}: {YL}{:?}{UN}",
-        (0..=dsorted.len() - 1)
-            .binary_all(|probe| "the".partial_cmp(dsorted[probe]).unwrap())
+        (0..=dsorted.len() - 1).binary_all(|probe| "the".partial_cmp(dsorted[probe]).unwrap())
     );
     println!(
         "Binary_search for {BL}'the'{UN} in range 5..end: {YL}{:?}{UN}",
@@ -309,8 +292,7 @@ fn text() {
     );
     println!(
         "Binary_search for {BL}'queen's'{UN}: {YL}{:?}{UN}",
-        (0..=dsorted.len() - 1)
-            .binary_all(|probe| "queen's".partial_cmp(dsorted[probe]).unwrap())
+        (0..=dsorted.len() - 1).binary_all(|probe| "queen's".partial_cmp(dsorted[probe]).unwrap())
     );
     dsorted.dedup();
     println!("Descending deduplicated:\n{}\n", dsorted.gr());
@@ -322,8 +304,7 @@ use core::ops::Range;
 fn solvetest() {
     let num: f64 = 1234567890.0;
     let root: f64 = 5.3;
-    let (res, rng) =
-        (1_f64..=num).binary_any(|x| x.powf(root).total_cmp(&num));
+    let (res, rng) = (1_f64..=num).binary_any(|x| x.powf(root).total_cmp(&num));
     println!(
         "{} to the power of {YL}1/{}{UN}\nsolved:      {} \
         error: {RD}{:e}{UN}\n\
@@ -335,28 +316,35 @@ fn solvetest() {
         num.powf(1. / root).gr(),
         (num - num.powf(1. / root).powf(root))
     );
-    let (pi, rng) =
-        (3.0..=3.2).binary_any(|x| (x / 4_f64).tan().total_cmp(&1_f64));
+    let (pi, rng) = (3.0..=3.2).binary_any(|x| (x / 4_f64).tan().total_cmp(&1_f64));
     println!(
         "pi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}\n4*atan(1): {GR}{}{UN}\n",
         pi,
         rng.end - rng.start,
         1_f64.atan() * 4_f64
     );
-    let (sqrt5, rng) = (-3_f64..=-2_f64).binary_any(|x| (5_f64-x*x).total_cmp(&0_f64));
+    let (sqrt5, rng) = (-3_f64..=-2_f64).binary_any(|x| (5_f64 - x * x).total_cmp(&0_f64));
     println!(
-            "phi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}",
-            (1_f64-sqrt5)/2_f64,
-            rng.end - rng.start
-    );  
+        "phi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}",
+        (1_f64 - sqrt5) / 2_f64,
+        rng.end - rng.start
+    );
 }
 
 #[test]
 fn nantest() {
-    let mut data = [ f64::INFINITY, 5_f64, f64::NAN, 4_f64, f64::NAN, 3_f64, -f64::INFINITY ];
-    println!("\nUnsorted: {}",data.gr());
-    data.sort_unstable_by(|a,b| a.total_cmp(b)); // == qsortf64(&mut data);
-    println!("Sorted:   {}",data.gr());
+    let mut data = [
+        f64::INFINITY,
+        5_f64,
+        f64::NAN,
+        4_f64,
+        f64::NAN,
+        3_f64,
+        -f64::INFINITY,
+    ];
+    println!("\nUnsorted: {}", data.gr());
+    data.sort_unstable_by(|a, b| a.total_cmp(b)); // == qsortf64(&mut data);
+    println!("Sorted:   {}", data.gr());
 }
 
 #[test]
@@ -385,15 +373,10 @@ fn printing() {
     println!("\n{}", v1.cy());
     println!("\n{}", v1.to_str());
     println!("\n{}\n", v1.to_plainstr()); // no brackets
-    let mut f = std::fs::File::create("/dev/stdout").unwrap_or_else(|e| {
-        panic!(
-            "{} {} Failed to open stdout File. Works on Linux.",
-            here!(),
-            e
-        )
-    });
+    let mut f = std::fs::File::create("/dev/stdout")
+        .unwrap_or_else(|e| panic!("{} {}",here!("Failed to open stdout File. Works on Linux"), e));
     v1.wvec(&mut f)
-        .unwrap_or_else(|e| panic!("{} {} failed to write", here!(), e));
+        .unwrap_or_else(|e| panic!("{} {}",here!("failed to write"), e));
     println!() // blank line to mark the end of the test
 }
 

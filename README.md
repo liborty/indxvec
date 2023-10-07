@@ -233,6 +233,9 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.8.3** Added `&str` argument to macro `here(msg:&str)` to incorporate payload error messages. Changed `ierror` to `idx_error`. It now returns `Result` (Err variant), that can be more conveniently processed upstream with just the `?` operator.  It is not really used in the code yet, so this improvement should be backwards compatible.
+Example: `return idx_error("size",here!("my specific further message"))?` will do all the necessary IdxError reporting for the `Size` variant, plus output the custom message with file, line location and method name.
+
 **Version 1.8.2** Some minor tidying up and additions to tests. Upped dependencies.
 
 **Version 1.8.1** Added function `qsortf64()` which sorts safely f64s.

@@ -16,16 +16,17 @@ use core::{cmp::Reverse, ops::Range};
 use printing::*;
 use std::{collections::BinaryHeap, fs::File, io, io::Write};
 
-/// Macro `here!()` gives `&str` with the `file:line path::function-name` of where it was called from.
+/// Macro `here!("message")` gives `&str` with the `file:line path::function-name` of where it was invoked,
+/// followed by the passed "message" - useful for informative errors
 #[macro_export]
 macro_rules! here {
-    () => {{
+    ($msg:expr) => {{
         fn f() {}
         fn type_name_of<T>(_: T) -> &'static str {
             std::any::type_name::<T>()
         }
         let name = type_name_of(f);
-        format!("\n{}:{} {}", file!(), line!(), &name[..name.len() - 3])
+        format!("\n{}:{} {} - {}", file!(), line!(), &name[..name.len() - 3],$msg)
     }};
 }
 

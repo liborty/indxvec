@@ -30,10 +30,10 @@ where
 
 /// Convenience function for building IdxError<String>  
 /// from error kind name and payload message, which can be either &str or String
-pub fn ierror(kind: &str, msg: impl Into<String>) -> IE {
+pub fn idx_error<T>(kind: &str, msg: impl Into<String>) -> Result<T,IdxError>{
     match kind {
-        "size" => IdxError::Size(msg.into()), 
-        "other" => IdxError::Other(msg.into()),
-        _ => IdxError::Other("Wrong error kind given to ierror".into())
+        "size" => Err(IdxError::Size(msg.into())), 
+        "other" => Err(IdxError::Other(msg.into())),
+        _ => Err(IdxError::Other("Wrong error kind given to idx_error".into()))
     }
 }
