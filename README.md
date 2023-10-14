@@ -58,6 +58,30 @@ can then be efficiently applied to sort the data vectors individually, e.g. `ind
 
 ## Trait Search
 
+These methods do not require explicit data of any particular type. Probing of data is done by the comparator closure `cmpr` which captures some data item and some target and defines their comparison. Data subscripts are not limited to `usize` (they are generic T). The comparator specified in the call can be easily reversed, e.g. `|data_item,target| target.cmp(data_item)`, making these methods work on data in implicit descending order as well.
+
+```rust
+/// Binary search algoritms implemented on RangeInclusive<T>.
+/// Using a closure `cmpr` to sample and compare data to captured target.
+pub trait Search<T> {
+    /// Unchecked  Ok(first hit) or Err(insert order of a missing item).
+    fn binary_by(self, cmpr: impl Fn(T) -> Ordering) -> Result <T,T>;
+    /// Unchecked first hit or insert order, and the final search range.
+    fn binary_any(&self, cmpr: impl Fn(T) -> Ordering) -> (T, Range<T>);
+    /// General Binary Search, returns the range of all matching items
+    fn binary_all(&self, cmpr: impl Fn(T)-> Ordering) -> Range<T>;
+}
+```
+
+**`binary_by`**
+
+Binary search within an inclusive range. When the target is missing, the insert position is returned as `Err<T>`.  
+Same as `std::slice::binary_search_by()` but is more general (see above).
+
+**`binary_any`**
+
+finds and returns only the first hit and its last enclosing range. It is used by `binary_all` for its three searches. It can also be used on its own when just one found item will do. For example, to solve non-linear equations, using range values of `f64` type.
+
 **`binary_all`**
 
 Binary Search for finding all the matches. This implementation is uniquely general. It is also very fast, especially over long ranges.
@@ -77,20 +101,6 @@ When the target is not found, then `ip..ip` is returned, where `ip` is its inser
 Otherwise the range of all consecutive values `PartiallyEqual` to the target is returned.
 
 The first hit encountered will be anywhere within some unknown number of matching items. The algorithm then conducts two more binary searches in both directions away from the first hit. These secondary searches are applied only within the last (narrowest) range found during the main search. First non-matching items in both directions are found, giving the full enclosed matching range.
-
-**`binary_any`**
-
-finds and returns only the first hit and its last enclosing range. It is used by `binary_all` for its three searches. It can also be used on its own when just one found item will do. For example, to solve non-linear equations, using range values of `f64` type.
-
-```rust
-/// Binary search algoritms implemented on RangeInclusive<T>.
-/// Using a closure `cmpr` to sample and compare data to a captured target.
-pub trait Search<T, U> {
-    /// Unchecked first hit or insert order, and the final search range.
-    fn binary_any(&self, cmpr: U) -> (T, Range<T>);
-    /// General Binary Search, returns the range of all matching items
-    fn binary_all(&self, cmpr: U) -> Range<T>;}
-```
 
 ## Trait `Indices`
 
@@ -232,6 +242,8 @@ use indxvec::{MinMax,here};
 * `qsortf64()` applies `sort_unstable_by()` to a mutable slice of f64s safely, using `total_cmp()`.
 
 ## Release Notes (Latest First)
+
+**Version 1.8.4** Added `binary-by()` to trait `Search`. It behaves like  `std::slice::binary_search_by()` but is more general, not expecting explicit data of any particular type. Nor are subscripts to it limited to `usize`.
 
 **Version 1.8.3** Added `&str` argument to macro `here(msg:&str)` to incorporate payload error messages. Changed `ierror` to `idx_error`. It now returns `Result` (Err variant), that can be more conveniently processed upstream with just the `?` operator.  It is not really used in the code yet, so this improvement should be backwards compatible.
 Example: `return idx_error("size",here!("my specific further message"))?` will do all the necessary IdxError reporting for the `Size` variant, plus output the custom message with file, line location and method name.

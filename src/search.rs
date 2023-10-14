@@ -4,23 +4,56 @@ use core::{
     ops::{Add, Div, Range, RangeInclusive, Sub},
 };
 
-impl<T,U> Search<T,U> for RangeInclusive<T>
+impl<T> Search<T> for RangeInclusive<T>
 where
-    T: PartialOrd + Copy + From<u8> + Add<Output = T> + Sub<Output = T> + Div<Output = T>,
-    U: Copy + Fn(T) -> Ordering
+    T: PartialOrd + Copy + From<u8> + Add<Output = T> + Sub<Output = T> + Div<Output = T>    
+
 {
-    /// Binary search for an index of any item matching the target within the open interval
-    /// `(*self.start(),*self.end())`.
-    /// Closure `cmpr` probes some ordered data and compares it with the captured target.
-    /// This code is thus agnostic about the type of the target (and the data).
-    /// Descending order data can be handled by reversing the order of the comparison operands.
-    /// Returns the index of the first hit that is PartiallyEqual to the target
-    /// and its last search envelope `lo..hi`.  
+    /// Binary search within an inclusive range.  
+    /// When the target is missing, returns the insert position as `Err<T>`. 
+    /// Same as `std::slice::binary_search_by()` but does not need explicit data.
+    /// The probing of any data is done by the comparator closure.
+    fn binary_by(self, cmpr: impl Fn(T) -> Ordering) -> Result<T,T> {
+        let mut lo = *self.start(); // initial low index
+        let mut hi = *self.end();   // initial high index
+        match cmpr(lo) {
+            Equal => return Ok(lo),
+            Greater => return Err(lo),
+            _ => match cmpr(hi) {
+                Equal => return Ok(hi),
+                Less => return Err(hi+1.into()),
+                _ => ()
+            }            
+        }; 
+        loop {            
+            let mid = lo + (hi - lo) / 2.into(); // binary chop with truncation
+            if mid == lo {
+                // interval is exhausted without a match, hi is the insert position
+                return Err(hi);
+            };
+            // still some interval left
+            match cmpr(mid) {
+                Less => lo = mid,
+                Greater => hi = mid,
+                Equal => {
+                    // the first hit
+                    return Ok(mid);
+                }
+            } 
+        }
+    }
+
+    /// Binary search for an index of any item matching the target within an open interval
+    /// specified in the input inclusive range.
+    /// Closure `cmpr` probes some ordered data and compares it against some target.
+    /// This code is agnostic about the type of the target (and the data).
+    /// Descending order data can be handled by reversing the order of the comparison operands in the call.
+    /// Returns the index of the first hit that is PartiallyEqual to the target and its last search envelope `lo..hi`.  
     /// When the target is not found, then `(ip, lo..ip)` is returned, where ip is the target's insert position.
     /// The (indexing) range values can be of any generic type T, satisfying the listed trait bounds.
     /// Typically usize for searching in-memory, u128 for searching disks or internet,
-    /// or f64 for solving nonlinear equations.
-    fn binary_any(&self, cmpr: U) -> (T, Range<T>) {
+    /// or f64 for numerically solving nonlinear equations.
+    fn binary_any(&self, cmpr: impl Fn(T) -> Ordering) -> (T, Range<T>) {
         let mut lo = *self.start(); // initial low index
         let mut hi = *self.end();   // initial high index
         loop {            
@@ -53,7 +86,7 @@ where
     /// When the target is in order after self.end, `self.end..self.end` is returned.
     /// When target is not found, then `ip..ip` is returned, where ip is its insert position.
     /// Otherwise the range of all consecutive values PartiallyEqual to the target is returned.
-    fn binary_all(&self, cmpr: U) -> Range<T> {
+    fn binary_all(&self, cmpr: impl Fn(T) -> Ordering) -> Range<T> {
         let matches_end = |probe| -> Ordering {
             let ord = cmpr(probe);
             if ord == Equal { Less } else {ord}
@@ -96,7 +129,7 @@ where
         };
         // lo and hi will now never be equal to target
         // Binary search for any match, with the given closure
-        let (hit, lastrange) = self.binary_any(cmpr);
+        let (hit, lastrange) = self.binary_any(&cmpr);
         // Not found, return empty range with sort position
         if hit == lastrange.end {
             return hit..hit;

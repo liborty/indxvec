@@ -2,6 +2,7 @@ use crate::{BinaryHeap, Indices, MinMax, Mutops, Search, Vecops};
 use core::ops::Range;
 // use std::collections::binary_heap::PeekMut;
 use core::cmp::{Reverse,Ordering::*};
+// use rayon::prelude::*;
 
 impl<T> Vecops<T> for &[T] {
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.

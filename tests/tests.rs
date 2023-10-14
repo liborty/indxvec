@@ -323,7 +323,7 @@ fn solvetest() {
         rng.end - rng.start,
         1_f64.atan() * 4_f64
     );
-    let (sqrt5, rng) = (-3_f64..=-2_f64).binary_any(|x| (5_f64 - x * x).total_cmp(&0_f64));
+    let (sqrt5, rng) = (-3_f64..=-2_f64).binary_any(|x| (5.0 - x*x).total_cmp(&0.));
     println!(
         "phi:\t   {GR}{}{UN}  error: {RD}{:e}{UN}",
         (1_f64 - sqrt5) / 2_f64,
@@ -338,7 +338,7 @@ fn nantest() {
         5_f64,
         f64::NAN,
         4_f64,
-        f64::NAN,
+        -f64::NAN,
         3_f64,
         -f64::INFINITY,
     ];
