@@ -58,7 +58,7 @@ can then be efficiently applied to sort the data vectors individually, e.g. `ind
 
 ## Trait Search
 
-These methods do not require explicit data of any particular type. Probing of data is done by the comparator closure `cmpr` which captures some data item and some target and defines their comparison. Data subscripts are not limited to `usize` (they are generic T). The comparator specified in the call can be easily reversed, e.g. `|data_item,target| target.cmp(data_item)`, making these methods work on data in implicit descending order as well.
+Is implemented for `RangeInclusive<T>`, specifying the range of binary search.The methods do not require explicit data of any particular type. Probing of data is done by the comparator closure `cmpr` which captures some data item from somewhere and a target and defines their comparison. Data subscripts are not limited to `usize`. The comparator specified in the call can be easily reversed, e.g. `|data_item,target| target.cmp(data_item)`. These methods will then work on data in implicit descending order.
 
 ```rust
 /// Binary search algoritms implemented on RangeInclusive<T>.
@@ -75,21 +75,21 @@ pub trait Search<T> {
 
 **`binary_by`**
 
-Binary search within an inclusive range. When the target is missing, the insert position is returned as `Err<T>`.  
-Same as `std::slice::binary_search_by()` but is more general (see above).
+Binary search within an inclusive range. When the target is missing, its insert position is returned as `Err<T>`.  
+Same as `std::slice::binary_search_by()` but is more general.
 
 **`binary_any`**
 
-finds and returns only the first hit and its last enclosing range. It is used by `binary_all` for its three searches. It can also be used on its own when just one found item will do. For example, to solve non-linear equations, using range values of `f64` type.
+finds and returns the first hit and its last enclosing range. The returned range is used by `binary_all` to constrain its search for all matches. Also, `binary_any` can be used on its own when any matching item will do. For example, to iteratively solve non-linear equations, using range values of `f64` type (see [`tests/tests.rs`](https://github.com/liborty/indxvec/blob/main/tests/tests.rs)).
 
 **`binary_all`**
 
-Binary Search for finding all the matches. This implementation is uniquely general. It is also very fast, especially over long ranges.
+Binary search that finds all the matches. This implementation is uniquely general. It is also very fast, especially over long ranges.
 
 Searches within the given `RangeInclusive<T>` (self). It can be used in functionally chained 'builder style APIs', that select the subrange closer bracketing the target.
-The range values can be of any generic type T (satisfying the listed bounds), e.g.
-usize for indexing in-memory, u128 for searching whole disks or internet,
-f64 for solving equations which might not converge using other methods...
+
+The range values can be of any generic type T (satisfying the listed bounds), e.g. usize for indexing in-memory, u128 for searching whole disks or internet,
+f64 for solving equations...
 
 Comparator closure `cmpr` is comparing data against a target captured from its environment.
 Using closures enables custom comparisons of user's own data types. Also, this code is agnostic about the type of the target (and of the data)!
@@ -243,7 +243,7 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.8.4** Added `binary-by()` to trait `Search`. It behaves like  `std::slice::binary_search_by()` but is more general, not expecting explicit data of any particular type. Nor are subscripts to it limited to `usize`.
+**Version 1.8.4** Added `binary_by()` to trait `Search`. It behaves like  `std::slice::binary_search_by()` but is more general, not expecting explicit data of any particular type. Nor are subscripts to it limited to `usize`.
 
 **Version 1.8.3** Added `&str` argument to macro `here(msg:&str)` to incorporate payload error messages. Changed `ierror` to `idx_error`. It now returns `Result` (Err variant), that can be more conveniently processed upstream with just the `?` operator.  It is not really used in the code yet, so this improvement should be backwards compatible.
 Example: `return idx_error("size",here!("my specific further message"))?` will do all the necessary IdxError reporting for the `Size` variant, plus output the custom message with file, line location and method name.
