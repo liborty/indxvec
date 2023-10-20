@@ -147,7 +147,7 @@ This trait contains mutable reverse and mutable sort methods. They all overwrite
 ### mutisort
 
 It is often useful to avoid trait constrains on the end-type being sorted, such as `Ord` or  `Partial_Ord`. Such constraints are 'sticky' and have to be then applied everywhere.
-Our new `mutisort` (insert log sort) sidesteps these problems by taking a custom closure comparator. Its complexity is the best achievable for comparator sorts. It is almost as fast as the std provided sort, which beats it only because it can take advantage of unstable Rust methods. Additionally, `mutisort` allows sorting just within a specified range (sub-slice).
+Our new `mutisort` (insert log sort) sidesteps these problems by taking a custom closure comparator. Its complexity is the best achievable for comparator sorts. It is almost as fast as the std provided sort, which eventually beats it only because it can take advantage of unstable Rust mem moves. Tested on floats, `mutisort` is actually faster up to the data length of about 4500. Additionally, `mutisort` allows sorting just within a specified range (sub-slice).
 
 The comparator closure argument can be easily reversed to carry out descending sort.
 
