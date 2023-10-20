@@ -12,7 +12,10 @@ pub mod search;
 /// Implementation of trait Vecops for `&[T]`
 pub mod vecops;
 
-use core::{cmp::{Reverse,Ordering}, ops::Range};
+use core::{
+    cmp::{Ordering, Reverse},
+    ops::Range,
+};
 use printing::*;
 use std::{collections::BinaryHeap, fs::File, io, io::Write};
 
@@ -26,7 +29,13 @@ macro_rules! here {
             std::any::type_name::<T>()
         }
         let name = type_name_of(f);
-        format!("\n{}:{} {} - {}", file!(), line!(), &name[..name.len() - 3],$msg)
+        format!(
+            "\n{}:{} {} - {}",
+            file!(),
+            line!(),
+            &name[..name.len() - 3],
+            $msg
+        )
     }};
 }
 
@@ -59,7 +68,8 @@ where
 
 /// function to sort f64s safely
 pub fn qsortf64(v: &mut [f64]) {
-    v.sort_unstable_by(|a, b| a.total_cmp(b)) }
+    v.sort_unstable_by(|a, b| a.total_cmp(b))
+}
 
 /// Trait to serialize tuples `&(T,T)` and `&(T,T,T)` and
 /// slices `&[T]`, `&[&[T]]`, `&[Vec<T>]`.
@@ -122,11 +132,11 @@ where
 /// Using a closure `cmpr` to sample and compare data to captured target.
 pub trait Search<T> {
     /// Unchecked first Ok(hit) or Err(insert order for a missing item).
-    fn binary_by(self, cmpr: impl Fn(T) -> Ordering) -> Result <T,T>;
+    fn binary_by(self, cmpr: impl Fn(T) -> Ordering) -> Result<T, T>;
     /// Unchecked first hit or insert order, and the final search range.
     fn binary_any(&self, cmpr: impl Fn(T) -> Ordering) -> (T, Range<T>);
     /// General Binary Search, returns the range of all matching items
-    fn binary_all(&self, cmpr: impl Fn(T)-> Ordering) -> Range<T>;
+    fn binary_all(&self, cmpr: impl Fn(T) -> Ordering) -> Range<T>;
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.
@@ -300,6 +310,12 @@ pub trait Vecops<T> {
     fn biggest_k(&self, k: usize) -> BinaryHeap<Reverse<&T>>
     where
         T: Ord;
+    /// Sort index by insert logsort. Preserves data.  
+
+    /// Insert logsort, returns sort index. Reverse `c` for descending order
+    fn isort_indexed<F>(self, rng: Range<usize>, c: F) -> Vec<usize>
+    where
+        F: Fn(&T, &T) -> Ordering;
 }
 
 /// Mutable Operators on `&mut[T]`
@@ -328,4 +344,9 @@ pub trait Mutops<T> {
         quantify: impl Copy + Fn(&T) -> f64,
     ) where
         T: PartialOrd + Clone;
+    /// Mutable insert logsort. Pass in reversed comparator `c` for descending sort
+    fn mutisort<F>(self, rng: Range<usize>, c: F)
+    where
+        T: Copy,
+        F: Fn(&T, &T) -> Ordering;
 }

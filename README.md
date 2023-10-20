@@ -134,7 +134,7 @@ pub trait Indices {
 use indxvec::Vecops;
 ```
 
-The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the required traits, `Ord` and/or `Clone`, are  implemented for `T`. The methods are too numerous to list here, please see their declarations in `lib.rs` and their source in `vecops.rs`.
+The methods of this trait are applicable to all generic slices `&[T]` (the data). Thus they will work on all Rust primitive numeric end types, such as f64. They can also work on slices holding any arbitrarily complex end type `T`, as long as the often required traits, `Ord` and/or `Clone`, are  implemented for `T`. The methods are too numerous to list here, please see their declarations in `lib.rs` and their source in `vecops.rs`.
 
 ## Trait Mutops
 
@@ -142,31 +142,34 @@ The methods of this trait are applicable to all generic slices `&[T]` (the data)
 use indxvec::Mutops;
 ```
 
-This trait contains `muthashsort`, which overwrites `self` with sorted data. When we do not need to keep the original order, this is the most efficient way to sort. A non-destructive version `sorth` is implemented in trait `Vecops`.
+This trait contains mutable reverse and mutable sort methods. They all overwrite `self` with their outputs. When we do not need the original order, this is often the most efficient way to sort. Non-destructive versions are implemented in trait `Vecops`.
 
-**Nota bene:** `muthashsort` really wins on longer Vecs. For about one thousand items upwards, it is on average about 25%-30% faster than the default Rust (Quicksort) `sort_unstable`.
+### mutisort
+
+It is often useful to avoid trait constrains on the end-type being sorted, such as `Ord` or  `Partial_Ord`. Such constraints are 'sticky' and have to be then applied everywhere.
+Our new `mutisort` (insert log sort) sidesteps these problems by taking a custom closure comparator. Its complexity is the best achievable for comparator sorts. It is almost as fast as the std provided sort, which beats it only because it can take advantage of unstable Rust methods. Additionally, `mutisort` allows sorting just within a specified range (sub-slice).
+
+The comparator closure argument can be easily reversed to carry out descending sort.
+
+Its non destructive version is `Vecops::isort_indexed` which returns a useful sort index.
 
 ```rust
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
-    /// Sorts a mutable slice in place.
-    fn mutquicksort(self)
-    where
-        T: Ord;
     /// mutable reversal, general utility
     fn mutrevs(self);
-    /// mutably swaps two indexed items into ascending order
+    /// utility that mutably swaps two indexed items into ascending order
     fn mutsorttwo(self, i0: usize, i1: usize) -> bool
     where
-        T: Ord;
-    /// mutably sorts three indexed items into ascending order
+        T: PartialOrd;
+    /// utility that mutably bubble sorts three indexed items into ascending order
     fn mutsortthree(self, i0: usize, i1: usize, i2: usize)
     where
-        T: Ord;
-    /// Possibly the fastest sort for long lists. Wraps  `muthashsortslice`.
+        T: PartialOrd;
+    /// Possibly the fastest sort for long lists. Wrapper for `muthashsortslice`.
     fn muthashsort(self, quantify: impl Copy + Fn(&T) -> f64)
     where
-        T: Ord + Clone;
+        T: PartialOrd + Clone;
     /// Sorts n items from i in self. Used by muthashsort.
     fn muthashsortslice(
         self,
@@ -176,7 +179,12 @@ pub trait Mutops<T> {
         max: f64,
         quantify: impl Copy + Fn(&T) -> f64,
     ) where
-        T: Ord + Clone;
+        T: PartialOrd + Clone;
+    /// Mutable insert logsort. Pass in reversed comparator `c` for descending sort
+    fn mutisort<F>(self, rng: Range<usize>, c: F)
+    where
+        T: Copy,
+        F: Fn(&T, &T) -> Ordering;
 }
 ```
 
@@ -243,7 +251,9 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.8.4** Added `binary_by()` to trait `Search`. It behaves like  `std::slice::binary_search_by()` but is more general, not expecting explicit data of any particular type. Nor are subscripts to it limited to `usize`.
+**Version 1.8.5** Added new algorithm 'insert log sort': `mutisort()` and `isort_indexed()` to `Mutops` and `Vecops` traits respectively. Also to `tests.rs`.
+
+**Version 1.8.4** Added `binary_by()` to trait `Search`. It behaves like  `std::slice::binary_search_by()` but is more general, not expecting explicit data of any particular type. Nor is the indexing limited to `usize`.
 
 **Version 1.8.3** Added `&str` argument to macro `here(msg:&str)` to incorporate payload error messages. Changed `ierror` to `idx_error`. It now returns `Result` (Err variant), that can be more conveniently processed upstream with just the `?` operator.  It is not really used in the code yet, so this improvement should be backwards compatible.
 Example: `return idx_error("size",here!("my specific further message"))?` will do all the necessary IdxError reporting for the `Size` variant, plus output the custom message with file, line location and method name.
@@ -271,29 +281,3 @@ Example: `return idx_error("size",here!("my specific further message"))?` will d
 **Version 1.4.14** Pruning: removed `max_1_min_k` and `max_2_min_k`, specific to medians, to `medians` crate code.
 
 **Version 1.4.13** Added to trait Printing the capability to print pairs `&(T,T)` and triples `&(T,T,T)`, to avoid reliance on Debug mode in common situations (passing simple uniform tuple results).
-
-**Version 1.4.11** - Added to `Vecops` `smallest_k` method, similar to `smallest_k_heap`, except it avoids unnecessary copying (is suitable for complex types T). It returns just the final Vec of k smallest items. Also added `max_1_min_k` and `max_2_min_k`, to be used in crate `medians`. The point of these methods is that they find these values in the most efficient manner, using BinaryHeap. Added here because there may be also other uses for them. Typically picking a group to qualify to 'the final' and some overall winners.
-
-**Version 1.4.10** - Added method  
-`smallest_k_heap(self, k: usize) -> BinaryHeap<T>`  
-to Vecops. It efficiently returns max heap of k smallest items.
-
-**Version 1.4.9** - Breaking change of hash sort methods. They now require a closure `quantify` for converting any user type T to f64 (it defines how to build an `f64` sort key from any type). This makes prerequisite for `sorth` explicit and gives more power to the user. It is no longer necessary to implement `From` trait for every such user type and its methods of quantification, of which there could be many. It is not reasonable to expect the users to have to do that. This new capability is demonstrated at the beginning of test `text()` (fast sorting of words by their length with a simple closure).
-
-**Version 1.4.8** - Added trait `Binarysearch` with two convenient and safer wrapper methods for the previously introduced methods in `Search`. Now using `RangeInclusive<T>` for safe input range.
-
-**Version 1.4.7** - General tidying up, mostly just of the documentation.
-
-**Version 1.4.6** - Added function `search_all` which is a kind of easier wrapper for `binary_all`, without the need to specify the sort order.
-
-**Version 1.4.5** - Improved `binary_all` usage. Added `solve` to trait `Search` for solving equations (with guaranteed convergence, unlike secant methods). Added demonstration to `tests.rs`.
-
-**Version 1.4.4** - No change to functionality. Added fully automated github action testing, outputs can be found by clicking the test badge at the top of this document.
-
-**Version 1.4.3** - Updated dev dependency `ran`. Added github action.
-
-**Version 1.4.2** - Introduced automatic sort order detection in `binary_all`, thus allowing more code simplification in methods `binsearch` and `binsearch_indexed` that depend on it.
-
-**Version 1.4.1** - Rewritten `binsearch` and `binsearch_indexed` from trait Vecops as encapsulations of the general purpose `binary_all` from trait Sort. Reduced the code size.
-
-**Version 1.4.0** - Introduced new trait Search: `impl<T> Search<T> for Range<T>`. The search algorithms can now be applied in 'builder style chained API's', filtering the ranges.

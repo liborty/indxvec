@@ -1,4 +1,6 @@
 use crate::{Mutops, Vecops};
+use core::ops::Range;
+use core::cmp::{Ordering, Ordering::*};
 
 impl<T> Mutops<T> for &mut [T] {
 
@@ -160,4 +162,32 @@ impl<T> Mutops<T> for &mut [T] {
         let (min, max) = self.minmaxt();
         self.muthashsortslice(0, n, quantify(&min), quantify(&max), quantify);
     }
+
+/// Mutable insert logsort. Pass in reversed comparator `c` for descending sort
+fn mutisort<F>(self, rng: Range<usize>, c: F) 
+where 
+    T: Copy,
+    F: Fn(&T, &T) -> Ordering
+{
+    if self.len() < 2 {
+        return;
+    };
+    if c(&self[rng.start + 1], &self[rng.start]) == Less {
+        self.swap(rng.start, rng.start + 1);
+    };
+    for i in rng.start + 2..rng.end {
+        // first two already swapped
+        if c(&self[i], &self[i - 1]) != Less {
+            continue;
+        } // s[i] item is already in order
+        let target = self[i];
+        // let insert = match &(rng.start..=i - 2).binary_by(|j| c(s[j], target)) {
+        let insert = match self[rng.start..i - 1].binary_search_by(|j| c(j, &target)) {
+            Ok(ins) => ins + 1,
+            Err(ins) => ins, // *ins when using Search::binary_by()
+        };
+        self.copy_within(insert..i, insert + 1);
+        self[insert] = target;
+    }
+}
 }

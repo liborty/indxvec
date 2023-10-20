@@ -1,7 +1,7 @@
 use crate::{BinaryHeap, Indices, MinMax, Mutops, Search, Vecops};
 use core::ops::Range;
 // use std::collections::binary_heap::PeekMut;
-use core::cmp::{Reverse,Ordering::*};
+use core::cmp::{Ordering, Ordering::*, Reverse};
 // use rayon::prelude::*;
 
 impl<T> Vecops<T> for &[T] {
@@ -426,7 +426,7 @@ impl<T> Vecops<T> for &[T] {
                 Some(Less) => negset.push(item.clone()),
                 Some(Equal) => eqset.push(item.clone()),
                 Some(Greater) => posset.push(item.clone()),
-                None => continue              
+                None => continue,
             };
         }
         (negset, eqset, posset)
@@ -446,7 +446,7 @@ impl<T> Vecops<T> for &[T] {
                 Some(Less) => negset.push(i),
                 Some(Equal) => eqset.push(i),
                 Some(Greater) => posset.push(i),
-                None => continue
+                None => continue,
             };
         }
         (negset, eqset, posset)
@@ -464,7 +464,7 @@ impl<T> Vecops<T> for &[T] {
                     .expect("binsearch comparison failure")
             })
         } else {
-            (0..=self.len() - 1).binary_all( |probe| {
+            (0..=self.len() - 1).binary_all(|probe| {
                 self[probe]
                     .partial_cmp(target)
                     .expect("binsearch comparison failure")
@@ -478,13 +478,13 @@ impl<T> Vecops<T> for &[T] {
         T: PartialOrd,
     {
         if self[idx[idx.len() - 1]] < self[idx[0]] {
-            (0..=idx.len() - 1).binary_all( |probe| {
+            (0..=idx.len() - 1).binary_all(|probe| {
                 target
                     .partial_cmp(&self[idx[probe]])
                     .expect("binsearch_indexed comparison failure")
             })
         } else {
-            (0..=idx.len() - 1).binary_all( |probe| {
+            (0..=idx.len() - 1).binary_all(|probe| {
                 self[idx[probe]]
                     .partial_cmp(target)
                     .expect("binsearch_indexed comparison failure")
@@ -720,7 +720,7 @@ impl<T> Vecops<T> for &[T] {
 
     /// N recursive non-destructive hash sort.
     /// Input data are read only. Output is sort index.
-    fn hashsort_indexed(self, quantify: impl Copy+Fn(&T) -> f64) -> Vec<usize>
+    fn hashsort_indexed(self, quantify: impl Copy + Fn(&T) -> f64) -> Vec<usize>
     where
         T: PartialOrd + Clone,
     {
@@ -739,12 +739,14 @@ impl<T> Vecops<T> for &[T] {
         n: usize,
         fmin: f64,
         fmax: f64,
-        quantify: impl Copy+Fn(&T) -> f64,
+        quantify: impl Copy + Fn(&T) -> f64,
     ) where
         T: PartialOrd + Clone,
     {
         // Recursion termination condition
-        if n == 0 { return; };
+        if n == 0 {
+            return;
+        };
         /*
         match n {
             0 => {
@@ -951,5 +953,35 @@ impl<T> Vecops<T> for &[T] {
             }
             bigset.into()
         }
+    }
+    /// Sort index by insert logsort. Preserves data.  
+    /// Returns sort index of data in subslice defined by `rng`.  
+    /// Pass in reversed comparator `c` for descending sort.
+    fn isort_indexed<F>(self, rng: Range<usize>, c: F) -> Vec<usize>
+    where
+        F: Fn(&T, &T) -> Ordering,
+    {
+        let mut index = Vec::from_iter(rng.start..rng.end);
+        if rng.len() < 2 {
+            return index;
+        };
+        if c(&self[index[1]], &self[index[0]]) == Less {
+            index.swap(0, 1);
+        };
+        for i in 2..rng.len() {
+            // first two already swapped
+            if c(&self[index[i]], &self[index[i - 1]]) != Less {
+                continue;
+            } // index[i] item is already in order
+            let thisref = index[i];
+            let target = &self[thisref];
+            let insert = match index[0..i - 1].binary_search_by(|&j| c(&self[j], target)) {
+                Ok(ins) => ins + 1,
+                Err(ins) => ins,
+            };
+            index.copy_within(insert..i, insert + 1);
+            index[insert] = thisref;
+        }
+        index
     }
 }

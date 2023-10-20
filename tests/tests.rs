@@ -37,6 +37,9 @@ fn indices() {
     let mut vm = v1.clone();
     vm.muthashsort(|&t| t as f64); // destructive (mutable) sort of vm
     println!("Sorted by muthashsort:\n{}", vm.gr()); // hashsorted
+    vm = v1.clone();
+    vm.mutisort(0..v1.len(),|a,b| b.cmp(a));
+    println!("Reverse sorted by mutisort:\n{}", vm.gr()); // sorted data but index lost
     let v1ranks = v1.rank(true); // ascending ranks
     let v1ranksd = v1.rank(false); // descending ranks
     println!(
@@ -382,13 +385,15 @@ fn printing() {
 
 #[test]
 fn sorts() {
-    const NAMES: [&str; 6] = [
+    const NAMES: [&str; 8] = [
         "sortm",
         "sorth",
         "mergesort_indexed",
         "hashsort_indexed",
         "mutquicksort",
         "muthashsort",
+        "mutisort",
+        "isort_indexed"
     ];
     // Here we found it necessary to declare the data argument v as mutable in all closures,
     // even though only the last two require it.
@@ -412,9 +417,15 @@ fn sorts() {
         |v: &mut [u8]| {
             v.muthashsort(|&t| t as f64);
         },
+        |v: &mut [u8]| {
+            v.mutisort(0..v.len(),|a,b| a.cmp(b));
+        },
+        |v: &mut [u8]| {
+            v.isort_indexed(0..v.len(),|a,b| a.cmp(b));
+        },
     ];
 
     set_seeds(7777777777_u64); // intialise the random numbers generator
     let rn = Rnum::newu8(); // specifies the type of data items
-    mutbenchu8(rn, 10..3000, 1000, 10, &NAMES, &closures);
+    mutbenchu8(rn, 10..3011, 1000, 10, &NAMES, &closures);
 }
