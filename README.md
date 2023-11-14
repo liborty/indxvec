@@ -52,7 +52,7 @@ Or just clicking the above `test` badge leads to the logs of the automated test 
 
 * **Complement of an index** - beware that the standard reversal will not convert directly between ascending and descending ranks. This purpose is served by `complindex()`. Alternatively, descending ranks can be reconstructed by applying `invindex()` to a descending sort index.
 
-* **Unindexing** - given an explicit sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1,..data_n`, not explicitly joined together in some common data structure. The sort index obtained by: `let indx = keys.sort_indexed();` can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
+* **Unindexing** - given an explicit sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1,..data_n`, not explicitly joined together in some common data structure. The sort index obtained by e.g.: `let index = keys.hashsort_indexed();` can then be efficiently applied to sort the data vectors individually: `index.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
 
 ## Trait Search
 
@@ -106,7 +106,7 @@ The first hit encountered will be anywhere within some unknown number of matchin
 use indxvec::{Indices};
 ```
 
-The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>` or `Vec<f64>`, or other results, as appropriate. Please see the Glossary below for descriptions of the indices and operations on them.
+The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>` or `Vec<f64>`, or other results, as appropriate. Please see the Glossary for descriptions of the indices and the operations on them.
 
 ```rust
 /// Methods to manipulate indices of `Vec<usize>` type.
