@@ -147,14 +147,6 @@ fn vecops() {
         &v2.hashsort_indexed(|t| *t),
     );
     println!("\nv1 and v2 appended:\n{}", vm.gr());
-    // println!(
-    //    "5 smallest items:\n{BL}{:?}{UN}",
-    //    vm.as_slice().smallest_k(5)
-    // );
-    //println!(
-    //    "5 biggest items:\n{BL} {:?}{UN}",
-    //    vm.as_slice().biggest_k(5)
-    //);
     println!(
         "Number of occurrences of {BL}89{UN}: {GR}{}{UN}",
         vm.occurs(89.)
@@ -238,14 +230,15 @@ fn vecops() {
 
 #[test]
 fn text() {
-    let sentence = "Humpty Dumpty sat on a wall, \
-        Humpty Dumpty had a great fall, \
+    let sentence = "Humpty Dumpty sat on a wall \
+        Humpty Dumpty had a great fall \
         and all the king's horses and all the king's men \
         could not put Humpty together again";
     let v = sentence.split(' ').collect::<Vec<_>>();
     println!("{}", v.gr()); // Display
     let mut sorted = v.sorth(|&s| s.len() as f64, true);
     println!("Ascending sorted by word length:\n{}", sorted.gr());
+    println!("10 longest words:\n{}", v.best_k(10,0..v.len(),|a:&&str,b:&&str| b.len().cmp(&a.len())).gr());    
     println!(
         "Binary_search for {BL}word length 8{UN}: {YL}{:?}{UN}",
         (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].len().partial_cmp(&8).unwrap())
@@ -393,7 +386,7 @@ fn sorts() {
         "mutquicksort",
         "muthashsort",
         "mutisort",
-        "isort_indexed"
+        "isort_refs"
     ];
     // Here we found it necessary to declare the data argument v as mutable in all closures,
     // even though only the last two require it.
@@ -421,11 +414,32 @@ fn sorts() {
             v.mutisort(0..v.len(),|a,b| a.cmp(b));
         },
         |v: &mut [u8]| {
-            v.isort_indexed(0..v.len(),|a,b| a.cmp(b));
+            v.isort_refs(0..v.len(),|a,b| a.cmp(b));
         },
     ];
 
     set_seeds(7777777777_u64); // intialise the random numbers generator
     let rn = Rnum::newu8(); // specifies the type of data items
-    mutbenchu8(rn, 10..3011, 1000, 10, &NAMES, &closures);
+    mutbenchu8(rn, 10..5011, 1000, 10, &NAMES, &closures);
+}
+
+#[test]
+fn best_k_sorts() {
+    const NAMES: [&str; 2] = [
+        "smallest_k",
+        "best_k"
+    ];
+    // Here we found it necessary to declare the data argument v as mutable in all closures,
+    // even though only the last two require it.
+    // The Rust compiler would throw a fit otherwise.
+    let closures = [
+        |v: &[u8]| { 
+            let _ = v.smallest_k(v.len()/2).into_sorted_vec();
+        },
+        |v: &[u8]| {
+            v.best_k(v.len()/2,0..v.len(),|a,b| a.cmp(b));
+        },
+    ];
+    let rn = Rnum::newu8(); // specifies the type of data items
+    benchu8(rn, 10..10011, 1000, 10, &NAMES, &closures);
 }

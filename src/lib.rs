@@ -66,7 +66,15 @@ where
     }
 }
 
-/// function to sort f64s safely
+/// Builds Vec<T> from refs in Vec<&T> (inverse of ref_vec())
+pub fn deref_vec<T>(v: &[&T]) -> Vec<T>
+where
+    T: Clone,
+{
+    v.iter().map(|&x| x.clone()).collect()
+}
+
+/// function to sort f64s
 pub fn qsortf64(v: &mut [f64]) {
     v.sort_unstable_by(|a, b| a.total_cmp(b))
 }
@@ -161,7 +169,7 @@ pub trait Indices {
 }
 
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
-pub trait Vecops<T> {
+pub trait Vecops<'a, T> {
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
     fn tof64(self) -> Vec<f64>
     where
@@ -302,11 +310,13 @@ pub trait Vecops<T> {
     fn sorth(self, quantify: impl Copy + Fn(&T) -> f64, ascending: bool) -> Vec<T>
     where
         T: PartialOrd + Clone;
-    /// Heap of k smallest items in no particular order, except the first one is maximum
+    /// Heap of k smallest items in no particular order, except the first one is maximum.
+    /// Best for finding just the one k-ranked item
     fn smallest_k(&self, k: usize) -> BinaryHeap<&T>
     where
         T: Ord;
     /// Heap of k biggest items in no particular order, except the first one is minimum
+    /// Best for finding just the one k complement ranked item (k-th from the end).
     fn biggest_k(&self, k: usize) -> BinaryHeap<Reverse<&T>>
     where
         T: Ord;
@@ -314,6 +324,16 @@ pub trait Vecops<T> {
 
     /// Insert logsort, returns sort index. Reverse `c` for descending order
     fn isort_indexed<F>(self, rng: Range<usize>, c: F) -> Vec<usize>
+    where
+        F: Fn(&T, &T) -> Ordering;
+    /// Insert logsort of refs (within range). Suitable for bulky end-types.
+    /// Faster than `isort_indexed`, as it does not construct an explicit index.
+    fn isort_refs<F>(self, rng: Range<usize>, c: F) -> Vec<&'a T>
+    where
+        F: Fn(&T, &T) -> Ordering;
+    /// First k sorted items from rng (ascending or descending, depending on `c`)
+    /// Faster than `smallest/biggest_k, followed by `.to_sorted_vec()`.
+    fn best_k<F>(self, k: usize, rng: Range<usize>, c: F) -> Vec<&'a T>
     where
         F: Fn(&T, &T) -> Ordering;
 }

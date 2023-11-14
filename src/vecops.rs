@@ -4,7 +4,7 @@ use core::ops::Range;
 use core::cmp::{Ordering, Ordering::*, Reverse};
 // use rayon::prelude::*;
 
-impl<T> Vecops<T> for &[T] {
+impl<'a,T> Vecops<'a,T> for &'a[T] {
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
     /// Like the standard `.to_vec()` method but also recasts to f64 end type
     fn tof64(self) -> Vec<f64>
@@ -954,6 +954,7 @@ impl<T> Vecops<T> for &[T] {
             bigset.into()
         }
     }
+
     /// Sort index by insert logsort. Preserves data.  
     /// Returns sort index of data in subslice defined by `rng`.  
     /// Pass in reversed comparator `c` for descending sort.
@@ -984,4 +985,59 @@ impl<T> Vecops<T> for &[T] {
         }
         index
     }
+    /// Insert logsort of refs (within range).
+    /// Useful for large types T, as they are not copied.
+    /// Pass in reversed comparator `c` for descending sort.
+    fn isort_refs<F>(self, rng: Range<usize>, c:F) -> Vec<&'a T>
+    where F: Fn(&T, &T) -> Ordering
+    {
+        match rng.len() {
+            0 => return vec![],
+            1 => return vec![&self[rng.start]; 1],
+            _ => (),
+        };
+        // build a mutable vec of refs
+        let mut rv: Vec<&T> = self.iter().take(rng.end).skip(rng.start).collect();
+        if c(rv[rng.start + 1], rv[rng.start]) == Less {
+            rv.swap(rng.start, rng.start + 1);
+        };
+        for i in rng.start + 2..rng.end {
+            // first two already swapped
+            if c(rv[i], rv[i - 1]) != Less {
+                continue;
+            } // rv[i] item is already in order
+            let thisref = rv[i];
+            let insert = match rv[rng.start..i - 1].binary_search_by(|&j| c(j, thisref)) {
+                Ok(ins) => ins + 1,
+                Err(ins) => ins,
+            };
+            rv.copy_within(insert..i, insert + 1);
+            rv[insert] = thisref;
+        }
+        rv
+    }
+
+    /// First k sorted items from rng (ascending or descending, depending on `c`)
+    fn best_k<F>(self, k: usize, rng: Range<usize>, c:F) -> Vec<&'a T>
+    where F: Fn(&T, &T) -> Ordering  
+    {
+        let n = rng.len();
+        assert!((k > 0) & (k <= n)); 
+        let mut k_sorted:Vec<&T> = self.iter().take(k).skip(rng.start).collect();
+        k_sorted.sort_unstable_by(|&a,&b| c(a,b));
+        // let mut k_sorted = self.isort_refs(rng.start..k_end,c);
+        let mut k_max = k_sorted[k-1];
+        for s in self.iter().take(n-k).skip(rng.start+k) {
+            if c(s,k_max) == Less {
+                let insert_pos = match k_sorted.binary_search_by(|j| c(j,s)) {
+                    Ok(ins) => ins + 1,
+                    Err(ins) => ins,
+                };
+                k_sorted.insert(insert_pos,s);
+                k_sorted.pop();
+                k_max = k_sorted[k-1];                
+            };
+        };
+        k_sorted
+    }    
 }

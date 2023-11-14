@@ -1,9 +1,8 @@
 use crate::{Mutops, Vecops};
-use core::ops::Range;
 use core::cmp::{Ordering, Ordering::*};
+use core::ops::Range;
 
 impl<T> Mutops<T> for &mut [T] {
-
     /// Destructive reversal by swapping
     fn mutrevs(self) {
         let n = self.len();
@@ -46,7 +45,7 @@ impl<T> Mutops<T> for &mut [T] {
         n: usize,
         fmin: f64,
         fmax: f64,
-        quantify: impl Copy+Fn(&T) -> f64,
+        quantify: impl Copy + Fn(&T) -> f64,
     ) where
         T: PartialOrd + Clone,
     {
@@ -93,7 +92,7 @@ impl<T> Mutops<T> for &mut [T] {
                     isub += 3;
                 }
                 x if x < 120 => {
-                    // small buckets sorted by quicksort    
+                    // small buckets sorted by quicksort
                     bucket.sort_unstable_by(|a, b| quantify(a).total_cmp(&quantify(b)));
                     for item in bucket {
                         self[isub] = item.clone();
@@ -163,31 +162,31 @@ impl<T> Mutops<T> for &mut [T] {
         self.muthashsortslice(0, n, quantify(&min), quantify(&max), quantify);
     }
 
-/// Mutable insert logsort. Pass in reversed comparator `c` for descending sort
-fn mutisort<F>(self, rng: Range<usize>, c: F) 
-where 
-    T: Copy,
-    F: Fn(&T, &T) -> Ordering
-{
-    if self.len() < 2 {
-        return;
-    };
-    if c(&self[rng.start + 1], &self[rng.start]) == Less {
-        self.swap(rng.start, rng.start + 1);
-    };
-    for i in rng.start + 2..rng.end {
-        // first two already swapped
-        if c(&self[i], &self[i - 1]) != Less {
-            continue;
-        } // s[i] item is already in order
-        let target = self[i];
-        // let insert = match &(rng.start..=i - 2).binary_by(|j| c(s[j], target)) {
-        let insert = match self[rng.start..i - 1].binary_search_by(|j| c(j, &target)) {
-            Ok(ins) => ins + 1,
-            Err(ins) => ins, // *ins when using Search::binary_by()
+    /// Mutable insert logsort. Pass in reversed comparator `c` for descending sort
+    fn mutisort<F>(self, rng: Range<usize>, c: F)
+    where
+        T: Copy,
+        F: Fn(&T, &T) -> Ordering,
+    {
+        if self.len() < 2 {
+            return;
         };
-        self.copy_within(insert..i, insert + 1);
-        self[insert] = target;
+        if c(&self[rng.start + 1], &self[rng.start]) == Less {
+            self.swap(rng.start, rng.start + 1);
+        };
+        for i in rng.start + 2..rng.end {
+            // first two already swapped
+            if c(&self[i], &self[i - 1]) != Less {
+                continue;
+            } // s[i] item is already in order
+            let target = self[i];
+            // let insert = match &(rng.start..=i - 2).binary_by(|j| c(s[j], target)) {
+            let insert = match self[rng.start..i - 1].binary_search_by(|j| c(j, &target)) {
+                Ok(ins) => ins + 1,
+                Err(ins) => ins, // *ins when using Search::binary_by()
+            };
+            self.copy_within(insert..i, insert + 1);
+            self[insert] = target;
+        }
     }
-}
 }

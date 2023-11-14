@@ -46,19 +46,17 @@ Or just clicking the above `test` badge leads to the logs of the automated test 
 
 * **Reversing an index** - sort index can be reversed by generic reversal operation `revs()`, or `mutrevs()`. This has the effect of changing between ascending/descending sort orders without re-sorting or even reversing the (possibly bulky) actual data.
 
-* **Rank Index** - corresponds to the given data order, listing the sort positions (ranks) for the data items, e.g.the third entry in the rank index gives the rank of the third data item. Some statistical measures require ranks of data. It answers the question: 'what is the sort position of a given data item?'.
+* **Rank Index** - corresponds to the given data order, listing the sort positions (ranks) for the data items, e.g.the third entry in the rank index gives the rank of the third data item. Some statistical measures require ranks of data. It answers the question: 'what are the sort positions of the  data items?'.
 
-* **Inverting an index** - sort index and rank index are mutually inverse. Thus they can be easily switched by `invindex()`. This is usually the easiest way to obtain a rank index. They will both be equal to `0..n` for data that is already in ascending order.
+* **Inverting an index** - sort index and rank index are mutually inverse. Thus they can be easily switched by `invindex()`. This is usually the easiest way to obtain rank index. They will both be equal to `0..n` for data that is already in ascending order.
 
 * **Complement of an index** - beware that the standard reversal will not convert directly between ascending and descending ranks. This purpose is served by `complindex()`. Alternatively, descending ranks can be reconstructed by applying `invindex()` to a descending sort index.
 
-* **Unindexing** - given a sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1,..data_n`, not explicitly joined together in some bulky structure. The sort index obtained by:  
-`let indx = keys.sort_indexed();`  
-can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
+* **Unindexing** - given an explicit sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1,..data_n`, not explicitly joined together in some common data structure. The sort index obtained by: `let indx = keys.sort_indexed();` can then be efficiently applied to sort the data vectors individually, e.g. `indx.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
 
 ## Trait Search
 
-Is implemented for `RangeInclusive<T>`, specifying the range of binary search.The methods do not require explicit data of any particular type. Probing of data is done by the comparator closure `cmpr` which captures some data item from somewhere and a target and defines their comparison. Data subscripts are not limited to `usize`. The comparator specified in the call can be easily reversed, e.g. `|data_item,target| target.cmp(data_item)`. These methods will then work on data in implicit descending order.
+Is implemented for `RangeInclusive<T>`, specifying the range of search. Its binary search methods are not restricted to explicit data of any particular type. Probing of data is done by the comparator closure `cmpr`, which captures some data item from somewhere and a target and defines their comparison. Data subscripts are not limited to `usize`. The comparator specified in the call can be easily logically reversed, e.g. `|data_item,target| target.cmp(data_item)`. These methods will then work on data in implicit descending order.
 
 ```rust
 /// Binary search algoritms implemented on RangeInclusive<T>.
@@ -142,7 +140,7 @@ The methods of this trait are applicable to all generic slices `&[T]` (the data)
 use indxvec::Mutops;
 ```
 
-This trait contains mutable reverse and mutable sort methods. They all overwrite `self` with their outputs. When we do not need the original order, this is often the most efficient way to sort. Non-destructive versions are implemented in trait `Vecops`.
+This trait contains mutable reverse and mutable sort methods. They all overwrite `self` with their outputs. When we do not need to preserve the original order, this is often the most efficient way to sort. Non-destructive versions are implemented in trait `Vecops`.
 
 ### mutisort
 
@@ -151,7 +149,7 @@ Our new `mutisort` (insert log sort) sidesteps these problems by taking a custom
 
 The comparator closure argument can be easily reversed to carry out descending sort.
 
-Its non destructive version is `Vecops::isort_indexed` which returns a useful sort index.
+Its non destructive versions are `Vecops::isort_indexed`, which returns an explicit sort index and `Vcops::isort_refs()` which returns references `Vec<&T>` in the sort order and is a bit faster. Neither of these two copies the potentially bulky end-types (the data items).
 
 ```rust
 /// Mutable Operators on `&mut[T]`
@@ -250,6 +248,8 @@ use indxvec::{MinMax,here};
 * `qsortf64()` applies `sort_unstable_by()` to a mutable slice of f64s safely, using `total_cmp()`.
 
 ## Release Notes (Latest First)
+
+**Version 1.8.6** Added `isort_refs()` suitable for bulky end-types. Added `best_k`, possibly the fastest way to extract and sort k greatest or smallest items (by custom comparator).
 
 **Version 1.8.5** Added new algorithm 'insert log sort': `mutisort()` and `isort_indexed()` to `Mutops` and `Vecops` traits respectively. Also to `tests.rs`.
 
