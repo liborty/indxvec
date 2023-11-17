@@ -174,19 +174,16 @@ impl<T> Mutops<T> for &mut [T] {
         if c(&self[rng.start + 1], &self[rng.start]) == Less {
             self.swap(rng.start, rng.start + 1);
         };
-        for i in rng.start + 2..rng.end {
-            // first two already swapped
-            if c(&self[i], &self[i - 1]) != Less {
-                continue;
-            } // s[i] item is already in order
-            let target = self[i];
-            // let insert = match &(rng.start..=i - 2).binary_by(|j| c(s[j], target)) {
-            let insert = match self[rng.start..i - 1].binary_search_by(|j| c(j, &target)) {
-                Ok(ins) => ins + 1,
-                Err(ins) => ins, // *ins when using Search::binary_by()
+        for i in rng.start+2..rng.end { 
+            if c(&self[i], &self[i - 1]) == Less {
+                let target = self[i];
+                let insert = match self[rng.start..i - 1].binary_search_by(|j| c(j, &target)) {
+                    Ok(ins) => ins + 1,
+                    Err(ins) => ins, // *ins when using Search::binary_by()
+                };
+                self.copy_within(insert..i, insert + 1);
+                self[insert] = target;  
             };
-            self.copy_within(insert..i, insert + 1);
-            self[insert] = target;
-        }
+        };
     }
 }

@@ -249,6 +249,8 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.8.7** Improved `isort_refs()` and `isort_indexed`.
+
 **Version 1.8.6** Added `isort_refs()` suitable for bulky end-types. Added `best_k`, possibly the fastest way to extract and sort k greatest or smallest items (by custom comparator).
 
 **Version 1.8.5** Added new algorithm 'insert log sort': `mutisort()` and `isort_indexed()` to `Mutops` and `Vecops` traits respectively. Also to `tests.rs`.
@@ -263,21 +265,3 @@ Example: `return idx_error("size",here!("my specific further message"))?` will d
 **Version 1.8.1** Added function `qsortf64()` which sorts safely f64s.
 
 **Version 1.8.0** Changed trait of closure arguments from `&mut FnMut(&T)` to `Fn(T)`, which is adequate and simpler.
-
-**Version 1.7.1** Minor test/bug fixes and tidying up.
-
-**Version 1.7.0** More simplification. Removed trait BinarySearch, which was just a couple of wrappers for Search methods.
-
-**Version 1.6.0** Simplified the binary search code.
-
-**Version 1.5.1** Made `biggest_k` and `smallest_k` even more efficient. Upped `ran` dependency to 1.1.
-
-**Version 1.5.0** Bumped up version because of some minor breaking changes.
-
-**Version 1.4.16** Added: `biggest_k` to complement `smallest_k`. Returns `BinaryHeap<Reverse<&T>>` of k biggest items.
-
-**Version 1.4.15** Tuples with items of different types now also print.
-
-**Version 1.4.14** Pruning: removed `max_1_min_k` and `max_2_min_k`, specific to medians, to `medians` crate code.
-
-**Version 1.4.13** Added to trait Printing the capability to print pairs `&(T,T)` and triples `&(T,T,T)`, to avoid reliance on Debug mode in common situations (passing simple uniform tuple results).

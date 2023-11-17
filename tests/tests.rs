@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #[cfg(test)]
-use core::{cmp::Ordering::*, convert::identity};
+use core::{cmp::{Ordering::*, Reverse},convert::identity};
 use indxvec::{here, printing::*, qsortf64, Indices, Mutops, Printing, Search, Vecops};
 use ran::*;
 use std::{cmp::Ord, convert::From};
@@ -38,7 +38,7 @@ fn indices() {
     vm.muthashsort(|&t| t as f64); // destructive (mutable) sort of vm
     println!("Sorted by muthashsort:\n{}", vm.gr()); // hashsorted
     vm = v1.clone();
-    vm.mutisort(0..v1.len(),|a,b| b.cmp(a));
+    vm.mutisort(0..v1.len(),|a,b| a.cmp(b));
     println!("Reverse sorted by mutisort:\n{}", vm.gr()); // sorted data but index lost
     let v1ranks = v1.rank(true); // ascending ranks
     let v1ranksd = v1.rank(false); // descending ranks
@@ -74,7 +74,8 @@ fn indices() {
         "Ranks desc:   {}",
         v1.hashsort_indexed(|&t| t as f64).revs().invindex().gr()
     ); // descending ranks from descending sort
-    println!("Mergeort idx: {}", v1.mergesort_indexed().gr()); // can be unindexed at anytime
+    println!("Mergesort idx:{}", v1.mergesort_indexed().gr()); // can be unindexed at anytime
+    println!("Isort_indexed:{}", v1.isort_indexed(0..v1.len(),|a,b| a.cmp(b)).gr()); 
     println!("Hashsort idx: {}", v1.hashsort_indexed(|&t| t as f64).gr());
     println!("Sortix rev:   {}", v1.mergesort_indexed().revs().gr());
     println!("Sortix rev:   {}", v1ranksd.invindex().gr()); // descending sort index from desc ranks
@@ -92,6 +93,10 @@ fn indices() {
     println!(
         "hashsort_indexed unindex false:\n{}",
         v1.hashsort_indexed(|&t| t as f64).unindex(&v1, false).gr()
+    ); // more efficient reversal
+    println!(
+        "isort_indexed unindex false:\n{}",
+        v1.isort_indexed(0..v1.len(),|a,b| b.cmp(a)).unindex(&v1, true).gr()
     ); // more efficient reversal
     println!(
         "Revindex:\n{}",
@@ -378,7 +383,7 @@ fn printing() {
 
 #[test]
 fn sorts() {
-    const NAMES: [&str; 8] = [
+    const NAMES: [&str; 9] = [
         "sortm",
         "sorth",
         "mergesort_indexed",
@@ -386,6 +391,7 @@ fn sorts() {
         "mutquicksort",
         "muthashsort",
         "mutisort",
+        "isort_indexed",
         "isort_refs"
     ];
     // Here we found it necessary to declare the data argument v as mutable in all closures,
@@ -414,11 +420,13 @@ fn sorts() {
             v.mutisort(0..v.len(),|a,b| a.cmp(b));
         },
         |v: &mut [u8]| {
+            v.isort_indexed(0..v.len(),|a,b| a.cmp(b));
+        },
+        |v: &mut [u8]| {
             v.isort_refs(0..v.len(),|a,b| a.cmp(b));
         },
     ];
-
-    set_seeds(7777777777_u64); // intialise the random numbers generator
+    set_seeds(0_u64); // intialise the random numbers generator
     let rn = Rnum::newu8(); // specifies the type of data items
     mutbenchu8(rn, 10..5011, 1000, 10, &NAMES, &closures);
 }

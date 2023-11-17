@@ -4,7 +4,7 @@ use core::ops::Range;
 use core::cmp::{Ordering, Ordering::*, Reverse};
 // use rayon::prelude::*;
 
-impl<'a,T> Vecops<'a,T> for &'a[T] {
+impl<'a, T> Vecops<'a, T> for &'a [T] {
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
     /// Like the standard `.to_vec()` method but also recasts to f64 end type
     fn tof64(self) -> Vec<f64>
@@ -962,82 +962,98 @@ impl<'a,T> Vecops<'a,T> for &'a[T] {
     where
         F: Fn(&T, &T) -> Ordering,
     {
-        let mut index = Vec::from_iter(rng.start..rng.end);
-        if rng.len() < 2 {
-            return index;
+        match rng.len() {
+            0 => return vec![],
+            1 => return vec![rng.start; 1],
+            _ => (),
         };
-        if c(&self[index[1]], &self[index[0]]) == Less {
-            index.swap(0, 1);
+        let mut index: Vec<usize> = Vec::with_capacity(rng.len());
+        if c(&self[rng.start + 1], &self[rng.start]) == Less {
+            index.push(rng.start + 1);
+            index.push(rng.start);
+        } else {
+            index.push(rng.start);
+            index.push(rng.start + 1);
         };
-        for i in 2..rng.len() {
-            // first two already swapped
-            if c(&self[index[i]], &self[index[i - 1]]) != Less {
-                continue;
-            } // index[i] item is already in order
-            let thisref = index[i];
-            let target = &self[thisref];
-            let insert = match index[0..i - 1].binary_search_by(|&j| c(&self[j], target)) {
-                Ok(ins) => ins + 1,
-                Err(ins) => ins,
-            };
-            index.copy_within(insert..i, insert + 1);
-            index[insert] = thisref;
+        for i in rng.start+2..rng.end {
+            if c(
+                &self[i],
+                &self[*index
+                    .last()
+                    .expect("isort_indexed: None option (unexpected)")],
+            ) == Less
+            {
+                let insert_pos = match index.binary_search_by(|&j| c(&self[j], &self[i])) {
+                    Ok(ins) => ins + 1,
+                    Err(ins) => ins,
+                };
+                index.insert(insert_pos, i);
+            } else {
+                index.push(i);
+            }; // item isalready in order
         }
         index
     }
-    /// Insert logsort of refs (within range).
+    /// Insert logsort of refs (in range).
     /// Useful for large types T, as they are not copied.
     /// Pass in reversed comparator `c` for descending sort.
-    fn isort_refs<F>(self, rng: Range<usize>, c:F) -> Vec<&'a T>
-    where F: Fn(&T, &T) -> Ordering
+    fn isort_refs<F>(self, rng: Range<usize>, c: F) -> Vec<&'a T>
+    where
+        F: Fn(&T, &T) -> Ordering,
     {
         match rng.len() {
             0 => return vec![],
             1 => return vec![&self[rng.start]; 1],
             _ => (),
         };
-        // build a mutable vec of refs
-        let mut rv: Vec<&T> = self.iter().take(rng.end).skip(rng.start).collect();
-        if c(rv[rng.start + 1], rv[rng.start]) == Less {
-            rv.swap(rng.start, rng.start + 1);
+        let mut rv = Vec::with_capacity(rng.len());
+        if c(&self[rng.start + 1], &self[rng.start]) == Less {
+            rv.push(&self[rng.start + 1]);
+            rv.push(&self[rng.start]);
+        } else {
+            rv.push(&self[rng.start]);
+            rv.push(&self[rng.start + 1]);
         };
-        for i in rng.start + 2..rng.end {
-            // first two already swapped
-            if c(rv[i], rv[i - 1]) != Less {
-                continue;
-            } // rv[i] item is already in order
-            let thisref = rv[i];
-            let insert = match rv[rng.start..i - 1].binary_search_by(|&j| c(j, thisref)) {
-                Ok(ins) => ins + 1,
-                Err(ins) => ins,
-            };
-            rv.copy_within(insert..i, insert + 1);
-            rv[insert] = thisref;
+        for thisref in self.iter().take(rng.end).skip(rng.start + 2) {
+            if c(
+                thisref,
+                rv.last().expect("isort_refs: None option (unexpected)"),
+            ) == Less
+            {
+                let insert_pos = match rv.binary_search_by(|&j| c(j, thisref)) {
+                    Ok(ins) => ins + 1,
+                    Err(ins) => ins,
+                };
+                rv.insert(insert_pos, thisref);
+            } else {
+                rv.push(thisref);
+            }; // item isalready in order
         }
         rv
     }
 
     /// First k sorted items from rng (ascending or descending, depending on `c`)
-    fn best_k<F>(self, k: usize, rng: Range<usize>, c:F) -> Vec<&'a T>
-    where F: Fn(&T, &T) -> Ordering  
+    fn best_k<F>(self, k: usize, rng: Range<usize>, c: F) -> Vec<&'a T>
+    where
+        F: Fn(&T, &T) -> Ordering,
     {
         let n = rng.len();
-        assert!((k > 0) & (k <= n)); 
-        let mut k_sorted:Vec<&T> = self.iter().take(k).skip(rng.start).collect();
-        k_sorted.sort_unstable_by(|&a,&b| c(a,b));
+        assert!((k > 0) & (k <= n));
+        let mut k_sorted: Vec<&T> = self.iter().skip(rng.start).take(k).collect();
+        k_sorted.sort_unstable_by(|&a, &b| c(a, b));
         // let mut k_sorted = self.isort_refs(rng.start..k_end,c);
-        let mut k_max = k_sorted[k-1];
-        for s in self.iter().take(n-k).skip(rng.start+k) {
-            if c(s,k_max) == Less {
-                let insert_pos = match k_sorted.binary_search_by(|j| c(j,s)) {
+        let mut k_max = k_sorted[k - 1];
+        for s in self.iter().take(n - k).skip(rng.start + k) {
+            if c(s, k_max) == Less {
+                let insert_pos = match k_sorted.binary_search_by(|j| c(j, s)) {
                     Ok(ins) => ins + 1,
                     Err(ins) => ins,
                 };
-                k_sorted.insert(insert_pos,s);
+                k_sorted.insert(insert_pos, s);
                 k_sorted.pop();
-                k_max = k_sorted[k-1];                
+                k_max = k_sorted[k - 1];
             };
-        };
+        }
         k_sorted
-    }    
+    }
 }
