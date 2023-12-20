@@ -249,6 +249,8 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.8.8** Upgraded to `ran 2.0`.
+
 **Version 1.8.7** Improved `isort_refs()` and `isort_indexed`.
 
 **Version 1.8.6** Added `isort_refs()` suitable for bulky end-types. Added `best_k`, possibly the fastest way to extract and sort k greatest or smallest items (by custom comparator).

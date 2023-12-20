@@ -10,18 +10,9 @@ use times::*;
 #[test]
 fn indices() {
     let midval: &u8 = &128;
-    let rn = Rnum::newu8();
-    let v1 = rn
-        .ranv(20)
-        .expect("ranv failed")
-        .getvu8()
-        .expect("getvu8 failed");
+    let v1 = ranv_u8(20).expect("ranv v1 failed"); 
     println!("{GR}\nv1: {}", v1.bl());
-    let v2 = rn
-        .ranv(20)
-        .expect("ranv failed")
-        .getvu8()
-        .expect("getvu8 failed");
+    let v2 = ranv_u8(20).expect("ranv v2 failed");
     println!("{GR}v2: {}", v2.bl());
     println!("minmax v1: {}", v1.minmax());
     println!("minmaxt v1: {GR}{:?}{UN}", v1.minmaxt());
@@ -131,45 +122,36 @@ fn indices() {
 
 #[test]
 fn vecops() {
-    let midval: f64 = 128.0;
-    let rn = Rnum::newf64();
-    let v1 = rn
-        .ranv_in(20, 0., 255.)
-        // .expect("ranv failed")
-        .getvf64()
-        .expect("getvu8 failed");
+    let midval:u8 = 128;
+    let v1 = ranv_u8(20).expect("ranv_u8 failed");
     println!("{GR}\nv1: {}", v1.bl());
-    let v2 = rn
-        .ranv(20)
-        .expect("ranv failed")
-        .getvf64()
-        .expect("getvu8 failed");
+    let v2 = ranv_u8(20).expect("ranv_u8 failed"); 
     println!("{GR}v2: {}", v2.bl());
     let (vm, mut vi) = v1.merge_indexed(
         // merge two vecs using their sort indices
-        &v1.hashsort_indexed(|t| *t),
+        &v1.hashsort_indexed(|t| *t as f64),
         &v2,
-        &v2.hashsort_indexed(|t| *t),
+        &v2.hashsort_indexed(|t| *t as f64),
     );
     println!("\nv1 and v2 appended:\n{}", vm.gr());
     println!(
         "Number of occurrences of {BL}89{UN}: {GR}{}{UN}",
-        vm.occurs(89.)
+        vm.occurs(89)
     );
     println!(
         "Number of occurrences of {BL}128{UN}: {GR}{}{UN}",
-        vm.occurs(128.)
+        vm.occurs(128)
     );
     println!(
         "Number of occurrences of {BL}199{UN}: {GR}{}{UN}",
-        vm.revs().occurs(199.)
+        vm.revs().occurs(199)
     );
 
     let mut sorted = vi.unindex(&vm, true);
     println!("v1 and v2 sorted, merged and unindexed:\n{}", sorted.mg());
     println!(
         "Binary_search for {BL}199{UN}: {GR}{:?}{UN}",
-        (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].total_cmp(&199_f64))
+        (0..=sorted.len() - 1).binary_all(|probe| sorted[probe].cmp(&199))
     );
 
     println!(
@@ -185,13 +167,13 @@ fn vecops() {
     println!(
         "Forwards member index of {BL}199{UN}, is in 'sorted' at: {}",
         sorted
-            .member(199_f64, true)
+            .member(199, true)
             .map_or_else(|| "None".rd(), |x| x.gr())
     );
     println!(
         "Backwards member index for {BL}199{UN}, is in 'sorted' at: {}",
         sorted
-            .member(199_f64, false)
+            .member(199, false)
             .map_or_else(|| "None".rd(), |x| x.gr())
     );
 
@@ -204,10 +186,8 @@ fn vecops() {
     );
     println!(
         "Binsearch for {BL}199{UN} (two methods): {GR}{:?}{UN} = {GR}{:?}{UN}",
-        (0..=sorteddesc.len() - 1).binary_all(|probe| 199_f64
-            .partial_cmp(&sorteddesc[probe])
-            .expect("comparison failed")),
-        sorteddesc.binsearch(&199_f64)
+        (0..=sorteddesc.len() - 1).binary_all(|probe| 199.cmp(&sorteddesc[probe])),
+        sorteddesc.binsearch(&199)
     );
     println!(
         "Binsearchdesc_indexed for {BL}{midval}{UN}: {GR}{:?}{UN} = {GR}{:?}{UN}",
@@ -360,12 +340,8 @@ fn printing() {
     );
 
     set_seeds(123456789);
-    let rn = Rnum::newu8();
-    let v1 = rn
-        .ranv(20)
-        .expect("ranv failed")
-        .getvu8()
-        .expect("getvu8 failed");
+    let v1 = ranv_u8(20)
+        .expect("ranv failed");
     println!("\n{}", v1.rd());
     println!("\n{}", v1.gr());
     println!("\n{}", v1.yl());
@@ -426,9 +402,8 @@ fn sorts() {
             v.isort_refs(0..v.len(),|a,b| a.cmp(b));
         },
     ];
-    set_seeds(0_u64); // intialise the random numbers generator
-    let rn = Rnum::newu8(); // specifies the type of data items
-    mutbenchu8(rn, 10..5011, 1000, 10, &NAMES, &closures);
+    set_seeds(0_u64); // intialise the random numbers generator 
+    mutbenchu8(10..5011, 1000, 10, &NAMES, &closures);
 }
 
 #[test]
@@ -448,6 +423,5 @@ fn best_k_sorts() {
             v.best_k(v.len()/2,0..v.len(),|a,b| a.cmp(b));
         },
     ];
-    let rn = Rnum::newu8(); // specifies the type of data items
-    benchu8(rn, 10..10011, 1000, 10, &NAMES, &closures);
+    benchu8(10..10011, 1000, 10, &NAMES, &closures);
 }
