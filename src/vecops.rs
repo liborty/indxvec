@@ -5,6 +5,13 @@ use core::cmp::{Ordering, Ordering::*, Reverse};
 // use rayon::prelude::*;
 
 impl<'a, T> Vecops<'a, T> for &'a [T] {
+
+    /// Creates a vector of references to input items.  
+    /// Avoids moving large end types T around.
+    fn ref_vec(self, rng: Range<usize>) -> Vec<&'a T>  {
+       self.iter().take(rng.end).skip(rng.start).collect()
+    }
+
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
     /// Like the standard `.to_vec()` method but also recasts to f64 end type
     fn tof64(self) -> Vec<f64>
@@ -994,6 +1001,7 @@ impl<'a, T> Vecops<'a, T> for &'a [T] {
         }
         index
     }
+    
     /// Insert logsort of refs (in range).
     /// Useful for large types T, as they are not copied.
     /// Pass in reversed comparator `c` for descending sort.

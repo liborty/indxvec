@@ -13,7 +13,7 @@ pub mod search;
 pub mod vecops;
 
 use core::{
-    cmp::{Ordering, Reverse},
+    cmp::{Ordering, Ordering::*, Reverse},
     ops::Range,
 };
 use printing::*;
@@ -64,14 +64,6 @@ where
             self.min, self.minindex, self.max, self.maxindex
         )
     }
-}
-
-/// Builds Vec<T> from refs in Vec<&T> (inverse of ref_vec())
-pub fn deref_vec<T>(v: &[&T]) -> Vec<T>
-where
-    T: Clone,
-{
-    v.iter().map(|&x| x.clone()).collect()
 }
 
 /// function to sort f64s
@@ -170,6 +162,19 @@ pub trait Indices {
 
 /// Methods to manipulate generic Vecs and slices of type `&[T]`
 pub trait Vecops<'a, T> {
+    /// Builds Vec<T> from refs in Vec<&T> (inverse of ref_vec())
+    fn deref_vec(v: &[&T], rng: Range<usize>) -> Vec<T>
+    where
+        T: Clone,
+    {
+        v.iter()
+            .take(rng.end)
+            .skip(rng.start)
+            .map(|&x| x.clone())
+            .collect()
+    }
+    /// Constructs ref wrapped `Vec<&T>` from `&[T] in rng`
+    fn ref_vec(self, rng: Range<usize>) -> Vec<&'a T>;
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
     fn tof64(self) -> Vec<f64>
     where
@@ -340,6 +345,39 @@ pub trait Vecops<'a, T> {
 
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
+    /// Associated method `part` partitions `s: &mut [&T]` within range `rng`, using comparator `c`.  
+    /// Suitable pivot should be selected and placed in `s[rng.start]`.  
+    /// Returns the boundaries of the rearranged partitions, (eqstart,gtstart), where  
+    /// `rng.start..eqstart` (may be empty) contains references to items lesser than the pivot,  
+    /// `gtstart-eqstart` is the number (>= 1) of items equal to the pivot (contains undefined references)  
+    /// `gtstart..rng.end` (may be empty) contains references to items greater than the pivot.
+    fn part(
+        s: &mut [&T],
+        rng: &Range<usize>,
+        c: &mut impl FnMut(&T, &T) -> Ordering,
+    ) -> (usize, usize) {
+        // get pivot from the first location
+        let pivot = s[rng.start];
+        let mut eqstart = rng.start;
+        let mut gtstart = eqstart + 1;
+        for t in rng.start + 1..rng.end {
+            match c(s[t], pivot) {
+                Less => {
+                    s[eqstart] = s[t];
+                    eqstart += 1;
+                    s[t] = s[gtstart];
+                    gtstart += 1;
+                }
+                Equal => {
+                    s[t] = s[gtstart];
+                    gtstart += 1;
+                }
+                Greater => (),
+            }
+        }
+        (eqstart, gtstart)
+    }
+
     /// mutable reversal, general utility
     fn mutrevs(self);
     /// utility that mutably swaps two indexed items into ascending order
