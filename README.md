@@ -249,7 +249,8 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.8.9** Added associated function `part` to trait `Mutops`. Added method `ref_vec` and associated function `deref_vec` to trait `Vecops`.
+**Version 1.8.9** Added associated function `part` to trait `Mutops` (call it as: `<&mut [T]>::part(s, &rng, c)`).  
+Added method `ref_vec` and associated function `deref_vec` to trait `Vecops`.
 
 **Version 1.8.8** Upgraded to `ran 2.0`.
 
