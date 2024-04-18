@@ -132,11 +132,11 @@ where
 /// Using a closure `cmpr` to sample and compare data to captured target.
 pub trait Search<T> {
     /// Unchecked first Ok(hit) or Err(insert order for a missing item).
-    fn binary_by(self, cmpr: impl Fn(T) -> Ordering) -> Result<T, T>;
+    fn binary_by(self, cmpr: impl FnMut(T) -> Ordering) -> Result<T, T>;
     /// Unchecked first hit or insert order, and the final search range.
-    fn binary_any(&self, cmpr: impl Fn(T) -> Ordering) -> (T, Range<T>);
+    fn binary_any(&self, cmpr: impl FnMut(T) -> Ordering) -> (T, Range<T>);
     /// General Binary Search, returns the range of all matching items
-    fn binary_all(&self, cmpr: impl Fn(T) -> Ordering) -> Range<T>;
+    fn binary_all(&self, cmpr: impl FnMut(T) -> Ordering) -> Range<T>;
 }
 
 /// Methods to manipulate indices of `Vec<usize>` type.
