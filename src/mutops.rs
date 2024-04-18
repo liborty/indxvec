@@ -35,7 +35,6 @@ impl<T> Mutops<T> for &mut [T] {
         };
     }
 
-    /// Does the work for `muthashsort`
     /// Requires [min,max], the data range, that must enclose all its values.
     /// If the range is known in advance, use this in preference to `muthashsort`
     /// to save finding it
