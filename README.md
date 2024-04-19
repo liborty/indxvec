@@ -154,13 +154,50 @@ Its non destructive versions are `Vecops::isort_indexed`, which returns an expli
 ```rust
 /// Mutable Operators on `&mut[T]`
 pub trait Mutops<T> {
-    /// mutable reversal, general utility
+    /// Associated method `part` partitions `s: &mut [&T]` within range `rng`, using comparator `c`.  
+    /// Suitable pivot should be selected and placed in `s[rng.start]`.  
+    /// Returns the boundaries of the rearranged partitions, (eqstart,gtstart), where  
+    /// `rng.start..eqstart` (may be empty) contains references to items lesser than the pivot,  
+    /// `gtstart-eqstart` is the number (>= 1) of items equal to the pivot (contains undefined references)  
+    /// `gtstart..rng.end` (may be empty) contains references to items greater than the pivot.
+    fn part(
+        s: &mut [&T],
+        rng: &Range<usize>,
+        c: &mut impl FnMut(&T, &T) -> Ordering,
+    ) -> (usize, usize) {
+        // get pivot from the first location
+        let pivot = s[rng.start];
+        let mut eqstart = rng.start;
+        let mut gtstart = eqstart + 1;
+        for t in rng.start + 1..rng.end {
+            match c(s[t], pivot) {
+                Less => {
+                    s[eqstart] = s[t];
+                    eqstart += 1;
+                    s[t] = s[gtstart];
+                    gtstart += 1;
+                }
+                Equal => {
+                    s[t] = s[gtstart];
+                    gtstart += 1;
+                }
+                Greater => (),
+            }
+        }
+        (eqstart, gtstart)
+    }
+
+    /// partitions by bitmask
+    fn part_binary(self, rng: &Range<usize>, bitmask: u64) -> usize
+    where
+        T: Copy, u64: From<T>;
+    /// mutable reversal of &mut[T]
     fn mutrevs(self);
-    /// utility that mutably swaps two indexed items into ascending order
+    /// swaps two indexed items into ascending order
     fn mutsorttwo(self, i0: usize, i1: usize) -> bool
     where
         T: PartialOrd;
-    /// utility that mutably bubble sorts three indexed items into ascending order
+    /// mutably sorts three indexed items into ascending order
     fn mutsortthree(self, i0: usize, i1: usize, i2: usize)
     where
         T: PartialOrd;
