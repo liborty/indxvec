@@ -3,6 +3,30 @@ use core::cmp::{Ordering, Ordering::*};
 use core::ops::Range;
 
 impl<T> Mutops<T> for &mut [T] {
+    /// Partitions `s: &mut [u64]` within range `rng`, using bitmask.  
+    /// Returns the boundary of the rearranged partitions gtstart, where  
+    /// `rng.start..gtstart` (may be empty) contains items with zero bit(s) corresponding to bitmask,  
+    /// `gtstart..rng.end` (may be empty) contains items with one (or more) set bit(s).
+    fn part_binary(self, rng: &Range<usize>, bitmask: u64) -> usize
+    where
+        T: Copy, u64: From<T>
+    {
+        let mut gtstart = rng.start;
+        for &lt in self.iter().take(rng.end).skip(rng.start) {
+            if (<T as std::convert::Into<u64>>::into(lt) & bitmask) == 0 {
+                gtstart += 1;
+            } else {
+                break;
+            };
+        }
+        for i in gtstart + 1..rng.end {
+            if (<T as std::convert::Into<u64>>::into(self[i]) & bitmask) == 0 {
+                self.swap(gtstart, i);
+                gtstart += 1;
+            };
+        }
+        gtstart
+    }
     /// Destructive reversal by swapping
     fn mutrevs(self) {
         let n = self.len();
@@ -173,7 +197,7 @@ impl<T> Mutops<T> for &mut [T] {
         if c(&self[rng.start + 1], &self[rng.start]) == Less {
             self.swap(rng.start, rng.start + 1);
         };
-        for i in rng.start+2..rng.end { 
+        for i in rng.start + 2..rng.end {
             if c(&self[i], &self[i - 1]) == Less {
                 let target = self[i];
                 let insert = match self[rng.start..i - 1].binary_search_by(|j| c(j, &target)) {
@@ -181,8 +205,8 @@ impl<T> Mutops<T> for &mut [T] {
                     Err(ins) => ins, // *ins when using Search::binary_by()
                 };
                 self.copy_within(insert..i, insert + 1);
-                self[insert] = target;  
+                self[insert] = target;
             };
-        };
+        }
     }
 }

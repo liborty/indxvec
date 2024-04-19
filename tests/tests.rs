@@ -8,6 +8,15 @@ use std::{cmp::Ord, convert::From};
 use times::*;
 
 #[test]
+fn partbin() {
+    let mut data = [257_u32,9,8,7,6,5,4,3,2,1];
+    println!("Data: {}",data.gr());
+    let n = data.len();
+    let gtsub = data.part_binary(&(0..n), 0b11);
+    println!("Partitioned by mask {YL}0b11{UN}: {},{}", data[..gtsub].gr(),data[gtsub..].gr());  
+}
+
+#[test]
 fn indices() {
     let midval: &u8 = &128;
     let v1 = ranv_u8(20).expect("ranv v1 failed"); 

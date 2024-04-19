@@ -14,7 +14,7 @@ pub mod vecops;
 
 use core::{
     cmp::{Ordering, Ordering::*, Reverse},
-    ops::Range,
+    ops::Range
 };
 use printing::*;
 use std::{collections::BinaryHeap, fs::File, io, io::Write};
@@ -378,6 +378,10 @@ pub trait Mutops<T> {
         (eqstart, gtstart)
     }
 
+    /// partitions by bitmask
+    fn part_binary(self, rng: &Range<usize>, bitmask: u64) -> usize
+    where
+        T: Copy, u64: From<T>;
     /// mutable reversal, general utility
     fn mutrevs(self);
     /// utility that mutably swaps two indexed items into ascending order

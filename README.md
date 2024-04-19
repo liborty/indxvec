@@ -249,6 +249,8 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
+**Version 1.9.0** Fn closure argument in trait Search changed to FnMut on user request. Added method `partbinary` to trait Mutops
+
 **Version 1.8.9** Added associated function `part` to trait `Mutops` (call it as: `<&mut [T]>::part(s, &rng, c)`).  
 Added method `ref_vec` and associated function `deref_vec` to trait `Vecops`.
 
