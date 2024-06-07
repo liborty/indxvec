@@ -107,13 +107,13 @@ where
         format!("{CY}{}{UN}", self.to_str())
     }
 
-    /// Method to write vector(s) to file f (space separated, without brackets).
+    /// Method to write vector(s) to file f (space separated, no brackets).
     /// Passes up io errors
     fn wvec(self, f: &mut File) -> Result<(), io::Error> {
         Ok(write!(*f, "{} ", self.to_plainstr())?)
     }
 
-    /// Method to print vector(s) to stdout (space separated,without brackets).
+    /// Method to print vector(s) to stdout (space separated, no brackets).
     fn pvec(self) {
         print!("{} ", self.to_plainstr())
     }

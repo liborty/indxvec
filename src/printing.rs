@@ -16,7 +16,7 @@ pub const CY: &str = "\x1B[1;36m";
 /// Returns the terminal rendering to default
 pub const UN: &str = "\x1B[0m";
 
-impl<T> Printing<T> for T
+impl<T> Printing<T> for &T
 where
     T: std::fmt::Display,
 {

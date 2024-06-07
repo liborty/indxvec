@@ -37,7 +37,7 @@ fn indices() {
     let mut vm = v1.clone();
     vm.muthashsort(|&t| t as f64); // destructive (mutable) sort of vm
     println!("Sorted by muthashsort:\n{}", vm.gr()); // hashsorted
-    vm = v1.clone();
+    vm.clone_from(&v1);
     vm.mutisort(0..v1.len(),|a,b| a.cmp(b));
     println!("Reverse sorted by mutisort:\n{}", vm.gr()); // sorted data but index lost
     let v1ranks = v1.rank(true); // ascending ranks
@@ -340,12 +340,9 @@ fn nantest() {
 #[test]
 fn printing() {
     println!(
-        "\n{}",
-        &("this_was_a_triple".rd(), [0, 1].gr(), "tuple".bl()).to_plainstr()
-    );
-    println!(
-        "\n{}",
-        &("now prints", "upto", 4, "tuples").to_plainstr().yl()
+        "\n{} {}",
+        &("displays", "up", "to", "four-tuples").to_plainstr().yl(),
+        (0, 1, 2, 3).gr()
     );
 
     set_seeds(123456789);
