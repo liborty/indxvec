@@ -139,7 +139,7 @@ pub trait Search<T> {
     fn binary_all(&self, cmpr: impl FnMut(T) -> Ordering) -> Range<T>;
 }
 
-/// Methods to manipulate indices of `Vec<usize>` type.
+/// Methods to manipulate and apply indices of `Vec<usize>` type.
 pub trait Indices {
     /// Indices::newindex(n) creates a new index without rePartialOrdering
     fn newindex(n: usize) -> Vec<usize> {
@@ -150,9 +150,9 @@ pub trait Indices {
     /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
     /// Collect values from `v` in the order of indices in self.
-    fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T>
-    where
-        T: Clone;
+    fn unindex<T:Clone>(self, v: &[T], ascending: bool) -> Vec<T>;
+    /// Selects values from v of sufficient rank.
+    fn ranked<T:Clone>(self, v: &[T], rank:usize) -> Vec<T>;
     /// Correlation coefficient of two &[usize] slices.
     /// Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;

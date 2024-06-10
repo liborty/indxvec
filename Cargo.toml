@@ -1,6 +1,6 @@
 [package]
 name = "indxvec"
-version = "1.9.1"
+version = "1.9.2"
 authors = ["Libor Spacek"]
 edition = "2021"
 description = "Vecs sorting, merging, indexing, ranking, searching, reversing, intersecting, printing, etc."
@@ -27,5 +27,5 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 # rayon = "1.8"
 [dev-dependencies]
-ran = "2.0"
-times = "1.0"
+ran = "2"
+times = "1"

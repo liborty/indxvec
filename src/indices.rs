@@ -27,6 +27,12 @@ impl Indices for &[usize] {
         }
     }
 
+    /// Selects values from v of sufficient rank (keeping their order)
+    fn ranked<T:Clone>(self, v: &[T], rank:usize) -> Vec<T> 
+    {
+        (0..v.len()).filter_map(|i| if self[i] < rank {Some(v[i].clone())} else {None}).collect()
+    }
+
     /// Complement of an index  (is symmetric) -
     /// .complindex() toggles rank index between ascending/descending.
     /// To toggle sort index between ascending/descending, use the general reversal `revs`:

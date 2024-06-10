@@ -109,20 +109,25 @@ use indxvec::{Indices};
 The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>` or `Vec<f64>`, or other results, as appropriate. Please see the Glossary for descriptions of the indices and the operations on them.
 
 ```rust
-/// Methods to manipulate indices of `Vec<usize>` type.
+/// Methods to manipulate and apply indices of `Vec<usize>` type.
 pub trait Indices {
-    /// Reverse an index slice by simple reverse iteration.
-    fn revindex(self) -> Vec<usize>;
-    /// Invert an index - turns a sort index into rank index and vice-versa
+    /// Indices::newindex(n) creates a new index without rePartialOrdering
+    fn newindex(n: usize) -> Vec<usize> {
+        Vec::from_iter(0..n)
+    }
+    /// Invert an index - turns a sort order into rank order and vice-versa
     fn invindex(self) -> Vec<usize>;
-    /// Complement of an index - reverses the ranking order
+    /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
-    /// Collect values from `v` in the order of index in self. Or opposite order.
-    fn unindex<T: Clone>(self, v:&[T], ascending:bool) -> Vec<T>;
-    /// Pearson's correlation coefficient of two slices, typically ranks.  
+    /// Collect values from `v` in the order of indices in self.
+    fn unindex<T:Clone>(self, v: &[T], ascending: bool) -> Vec<T>;
+    /// Selects values from v of sufficient rank.
+    fn ranked<T:Clone>(self, v: &[T], rank:usize) -> Vec<T>;
+    /// Correlation coefficient of two &[usize] slices.
+    /// Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
     /// Potentially useful clone-recast of &[usize] to Vec<f64>
-    fn indx_to_f64 (self) -> Vec<f64>;
+    fn indx_to_f64(self) -> Vec<f64>;
 }
 ```
 
@@ -285,6 +290,8 @@ use indxvec::{MinMax,here};
 * `qsortf64()` applies `sort_unstable_by()` to a mutable slice of f64s safely, using `total_cmp()`.
 
 ## Release Notes (Latest First)
+
+**Version 1.9.2** Added `ranked` to trait Indices. Given rank index, it selects data values from `v` of sufficient rank, keeping their order.
 
 **Version 1.9.1** Stopped Trait Printing consuming single items by implementing it for `&T` rather than `T`.
 

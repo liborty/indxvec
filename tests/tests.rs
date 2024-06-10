@@ -47,6 +47,8 @@ fn indices() {
         v1ranks.invindex().unindex(&v1, true).gr()
     );
     println!("Ranks:        {}", v1ranks.gr()); // how to get ranks
+    println!("5 best ranked {}", v1ranks.ranked(&v1,5).gr());
+    println!("5 worst       {}", v1ranksd.ranked(&v1,5).gr());
     println!("Ranks:        {}", v1ranks.complindex().complindex().gr()); // symmetry
     println!(
         "Ranks:        {}",
