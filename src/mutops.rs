@@ -5,8 +5,8 @@ use core::ops::Range;
 impl<T> Mutops<T> for &mut [T] {
     /// Partitions `s: &mut [u64]` within range `rng`, using bitmask.  
     /// Returns the boundary of the rearranged partitions gtstart, where  
-    /// `rng.start..gtstart` (may be empty) contains items with zero bit(s) corresponding to bitmask,  
-    /// `gtstart..rng.end` (may be empty) contains items with one (or more) set bit(s).
+    /// `rng.start..gtstart` (may be empty) contains items with no bits matching the bitmask,  
+    /// `gtstart..rng.end` (may be empty) contains items with some matching bits.
     fn part_binary(self, rng: &Range<usize>, bitmask: u64) -> usize
     where
         T: Copy, u64: From<T>

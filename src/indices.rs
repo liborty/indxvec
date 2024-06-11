@@ -27,10 +27,17 @@ impl Indices for &[usize] {
         }
     }
 
-    /// Selects values from v of sufficient rank (keeping their order)
+    /// Selects `rank` best ranking values from `v` (in their existing order).  
+    /// `self` is the ranking applicable to `v`(should be of the same lengths).  
     fn ranked<T:Clone>(self, v: &[T], rank:usize) -> Vec<T> 
     {
-        (0..v.len()).filter_map(|i| if self[i] < rank {Some(v[i].clone())} else {None}).collect()
+        let mut res = Vec::with_capacity(rank);
+        let mut count = 0_usize; // count the produced items for early exit
+        for (&r,item) in self.iter().zip(v) {   
+            if r < rank { count += 1; res.push(item.clone());
+            if count > rank { break }; };
+        };
+        res 
     }
 
     /// Complement of an index  (is symmetric) -
