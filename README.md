@@ -291,9 +291,7 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.9.3** Made `ranked` faster.
-
-**Version 1.9.2** Added `ranked` to trait Indices. Given rank index, it selects data values from `v` of sufficient rank, keeping their order.
+**Version 1.9.4** Added `ranked` to trait Indices. Given rank index, it selects data values from `v` of sufficient rank, keeping their order.
 
 **Version 1.9.1** Stopped Trait Printing consuming single items by implementing it for `&T` rather than `T`.
 

@@ -34,8 +34,10 @@ impl Indices for &[usize] {
         let mut res = Vec::with_capacity(rank);
         let mut count = 0_usize; // count the produced items for early exit
         for (&r,item) in self.iter().zip(v) {   
-            if r < rank { count += 1; res.push(item.clone());
-            if count > rank { break }; };
+            if r < rank { 
+                res.push(item.clone());
+                count += 1;
+                if count == rank { break }; };
         };
         res 
     }
