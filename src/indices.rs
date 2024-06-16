@@ -13,9 +13,16 @@ impl Indices for &[usize] {
         index
     }
 
-    /// Collects values from v in the order given by self index.
-    /// When ascending is false, collects in descending order.  
-    /// It is used here by msort for ascending or descending sort.   
+    /// Sequentially collects items from `v`, based on sorted (partial) list of subscripts.
+    /// Maintains the order of v, simply leaving out items not represented in the list.
+    /// Is useful for efficient projections to subspaces.
+    fn select<T:Clone>(self, v: &[T]) -> Vec<T> {
+        self.iter().map(|&sub| v[sub].clone()).collect()
+    }
+
+    /// Given a complete (sort) index, extracts indicated values from `v`.
+    /// When ascending is false, collects in the reverse order.  
+    /// Used by msort for ascending or descending sort.   
     fn unindex<T>(self, v: &[T], ascending: bool) -> Vec<T>
     where
         T: Clone,
@@ -25,21 +32,6 @@ impl Indices for &[usize] {
         } else {
             self.iter().rev().map(|&i| v[i].clone()).collect()
         }
-    }
-
-    /// Selects `rank` best ranking values from `v` (in their existing order).  
-    /// `self` is the ranking applicable to `v`(should be of the same lengths).  
-    fn ranked<T:Clone>(self, v: &[T], rank:usize) -> Vec<T> 
-    {
-        let mut res = Vec::with_capacity(rank);
-        let mut count = 0_usize; // count the produced items for early exit
-        for (&r,item) in self.iter().zip(v) {   
-            if r < rank { 
-                res.push(item.clone());
-                count += 1;
-                if count == rank { break }; };
-        };
-        res 
     }
 
     /// Complement of an index  (is symmetric) -

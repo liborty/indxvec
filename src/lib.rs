@@ -149,10 +149,10 @@ pub trait Indices {
     fn invindex(self) -> Vec<usize>;
     /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
-    /// Collect values from `v` in the order of indices in self.
+    /// Using a subspace index, projects `v`, into it. 
+    fn select<T:Clone>(self, v: &[T]) -> Vec<T>;
+    /// Given a complete (sort) index, extracts indicated values from `v`
     fn unindex<T:Clone>(self, v: &[T], ascending: bool) -> Vec<T>;
-    /// Selects values from v of sufficient rank.
-    fn ranked<T:Clone>(self, v: &[T], rank:usize) -> Vec<T>;
     /// Correlation coefficient of two &[usize] slices.
     /// Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
@@ -325,8 +325,6 @@ pub trait Vecops<'a, T> {
     fn biggest_k(&self, k: usize) -> BinaryHeap<Reverse<&T>>
     where
         T: Ord;
-    /// Sort index by insert logsort. Preserves data.  
-
     /// Insert logsort, returns sort index. Reverse `c` for descending order
     fn isort_indexed<F>(self, rng: Range<usize>, c: F) -> Vec<usize>
     where
@@ -339,6 +337,14 @@ pub trait Vecops<'a, T> {
     /// First k sorted items from rng (ascending or descending, depending on `c`)
     /// Faster than `smallest/biggest_k, followed by `.to_sorted_vec()`.
     fn best_k<F>(self, k: usize, rng: Range<usize>, c: F) -> Vec<&'a T>
+    where
+        F: Fn(&T, &T) -> Ordering;
+    /// Sort index of the `best` k items in rng (ascending or descending, depending on `c`)
+    fn best_k_indexed<F>(self, k: usize, rng: Range<usize>, c: F) -> Vec<usize>
+    where
+        F: Fn(&T, &T) -> Ordering;
+    /// Subspace index: sorted subscripts of only the sufficiently ranking values.
+    fn subspace<F>(self, rank:usize, c:F) -> Vec<usize>
     where
         F: Fn(&T, &T) -> Ordering;
 }

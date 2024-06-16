@@ -40,9 +40,9 @@ Or just clicking the above `test` badge leads to the logs of the automated test 
 
 ## Glossary
 
-* **Sort Index** - is obtained by stable merge sort `sort_indexed`  or by `hashsort_indexed`. The original data is immutable (unchanged). The sort index produced is a list of subscripts to the data, such that the first subscript identifies the smallest item in the data, and so on (in ascending order). Suitable for bulky data that are not easily moved. It answers the question: 'what data item occupies a given sort position?'.
+* **Sort Index** - is a vec of subscripts to the data, such that the first subscript identifies the smallest item in the data, and so on (in ascending order). The data is unchanged. Suitable for bulky data that are not easily moved. It answers the question: 'what data item occupies a given sort position?'.
 
-* **K-Sort Index** - allows more efficient sort implementation when only the first k items of the Sort Index are needed.
+* **Subspace Index** - lists the subscripts (dimensions) to be retained when projecting to a subspace.
 
 * **Reversing an index** - sort index can be reversed by generic reversal operation `revs()`, or `mutrevs()`. This has the effect of changing between ascending/descending sort orders without re-sorting or even reversing the (possibly bulky) actual data.
 
@@ -51,6 +51,8 @@ Or just clicking the above `test` badge leads to the logs of the automated test 
 * **Inverting an index** - sort index and rank index are mutually inverse. Thus they can be easily switched by `invindex()`. This is usually the easiest way to obtain rank index. They will both be equal to `0..n` for data that is already in ascending order.
 
 * **Complement of an index** - beware that the standard reversal will not convert directly between ascending and descending ranks. This purpose is served by `complindex()`. Alternatively, descending ranks can be reconstructed by applying `invindex()` to a descending sort index.
+
+* **Selecting** - given a subspace index and some data vector, collects components of that vector corresponding to the dimensions present in the index and ignores the rest (i.e. it projects the data to the subspace defined by the index).
 
 * **Unindexing** - given an explicit sort index and some data, `unindex()` will pick the data in the new order defined by the sort index. It can be used to efficiently transform lots of data vectors into the same (fixed) order. For example: Suppose we have vectors: `keys` and `data_1,..data_n`, not explicitly joined together in some common data structure. The sort index obtained by e.g.: `let index = keys.hashsort_indexed();` can then be efficiently applied to sort the data vectors individually: `index.unindex(data_n,true)` (false to obtain a descending order at no extra cost).
 
@@ -109,7 +111,6 @@ use indxvec::{Indices};
 The methods of this trait are implemented for slices of subscripts, i.e. they take the type `&[usize]` as input (self) and produce new index `Vec<usize>`, new data vector `Vec<T>` or `Vec<f64>`, or other results, as appropriate. Please see the Glossary for descriptions of the indices and the operations on them.
 
 ```rust
-/// Methods to manipulate and apply indices of `Vec<usize>` type.
 pub trait Indices {
     /// Indices::newindex(n) creates a new index without rePartialOrdering
     fn newindex(n: usize) -> Vec<usize> {
@@ -119,10 +120,10 @@ pub trait Indices {
     fn invindex(self) -> Vec<usize>;
     /// complement of an index - reverses the ranking order
     fn complindex(self) -> Vec<usize>;
-    /// Collect values from `v` in the order of indices in self.
+    /// Using a subspace index, projects `v`, into it. 
+    fn select<T:Clone>(self, v: &[T]) -> Vec<T>;
+    /// Given a complete (sort) index, extracts indicated values from `v`
     fn unindex<T:Clone>(self, v: &[T], ascending: bool) -> Vec<T>;
-    /// Selects values from v of sufficient rank.
-    fn ranked<T:Clone>(self, v: &[T], rank:usize) -> Vec<T>;
     /// Correlation coefficient of two &[usize] slices.
     /// Pearsons on raw data, Spearman's when applied to ranks.
     fn ucorrelation(self, v: &[usize]) -> f64;
@@ -291,7 +292,7 @@ use indxvec::{MinMax,here};
 
 ## Release Notes (Latest First)
 
-**Version 1.9.4** Added `ranked` to trait Indices. Given rank index, it selects data values from `v` of sufficient rank, keeping their order.
+**Version 1.9.5** Added `best_k_indexed` and `subspace` to `Vecops`, to construct a `subspace index`. Added `select` to Indices to apply `subspace index` to a data vector, projecting it efficiently to that subspace.
 
 **Version 1.9.1** Stopped Trait Printing consuming single items by implementing it for `&T` rather than `T`.
 

@@ -1048,8 +1048,7 @@ impl<'a, T> Vecops<'a, T> for &'a [T] {
         let n = rng.len();
         assert!((k > 0) & (k <= n));
         let mut k_sorted: Vec<&T> = self.iter().skip(rng.start).take(k).collect();
-        k_sorted.sort_unstable_by(|&a, &b| c(a, b));
-        // let mut k_sorted = self.isort_refs(rng.start..k_end,c);
+        k_sorted.sort_unstable_by(|&a, &b| c(a, b));  
         let mut k_max = k_sorted[k - 1];
         for s in self.iter().take(n - k).skip(rng.start + k) {
             if c(s, k_max) == Less {
@@ -1063,5 +1062,42 @@ impl<'a, T> Vecops<'a, T> for &'a [T] {
             };
         }
         k_sorted
+    }
+
+    /// Sort index of the `best` k items in rng (ascending or descending, depending on `c`)
+    fn best_k_indexed<F>(self, k: usize, rng: Range<usize>, c: F) -> Vec<usize>
+    where
+        F: Fn(&T, &T) -> Ordering,
+        {
+            let n = rng.len();
+            assert!((k > 0) & (k <= n)); 
+            let mut index = self.isort_indexed(rng.start..rng.start+k,&c); 
+            for pos in rng.start+k..rng.end {
+                let k_max = &self[index[k - 1]];
+                let s = &self[pos];
+                if c(s, k_max) == Less {
+                    let insert_pos = match index.binary_search_by(|&iv| c(&self[iv], s)) {
+                        Ok(ins) => ins + 1,
+                        Err(ins) => ins,
+                    };
+                    index.insert(insert_pos, pos);
+                    index.pop();  
+                };
+            }
+            index
+        }
+
+    /// Constructs subspace index from a vector of some scalar measure,
+    /// such as `significance` of individual dimensions. Sorts it to the
+    /// same order as the input measure. 
+    /// Normally low values of measure are allocated low (best) ranks.
+    /// Reverse the comparator closure c to prefer instead the high values.
+    fn subspace<F>(self, rank:usize, c:F) -> Vec<usize> 
+    where
+        F: Fn(&T, &T) -> Ordering,
+    {
+        let mut idx = self.best_k_indexed(rank,0..self.len(),c);   
+        idx.sort_unstable();
+        idx 
     }
 }
