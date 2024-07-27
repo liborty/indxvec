@@ -5,11 +5,10 @@ use core::cmp::{Ordering, Ordering::*, Reverse};
 // use rayon::prelude::*;
 
 impl<'a, T> Vecops<'a, T> for &'a [T] {
-
     /// Creates a vector of references to input items.  
     /// Avoids moving large end types T around.
-    fn ref_vec(self, rng: Range<usize>) -> Vec<&'a T>  {
-       self.iter().take(rng.end).skip(rng.start).collect()
+    fn ref_vec(self, rng: Range<usize>) -> Vec<&'a T> {
+        self.iter().take(rng.end).skip(rng.start).collect()
     }
 
     /// Helper function to copy and cast entire &[T] to `Vec<f64>`.
@@ -873,7 +872,8 @@ impl<'a, T> Vecops<'a, T> for &'a [T] {
     }
 
     /// Heap of k smallest items in no particular PartialOrder,
-    /// except the first one is maximum
+    /// except the first one is maximum. Note that `best_k`
+    /// is faster and sorts as well.
     fn smallest_k(&self, k: usize) -> BinaryHeap<&T>
     where
         T: Ord,
@@ -919,7 +919,8 @@ impl<'a, T> Vecops<'a, T> for &'a [T] {
     }
 
     /// Heap of k biggest items in no particular PartialOrder,
-    /// except the first one is minimum
+    /// except the first one is minimum. Note that `best_k` sorts
+    /// and is faster as well.
     fn biggest_k(&self, k: usize) -> BinaryHeap<Reverse<&T>>
     where
         T: Ord,
@@ -982,7 +983,7 @@ impl<'a, T> Vecops<'a, T> for &'a [T] {
             index.push(rng.start);
             index.push(rng.start + 1);
         };
-        for i in rng.start+2..rng.end {
+        for i in rng.start + 2..rng.end {
             if c(
                 &self[i],
                 &self[*index
@@ -1001,7 +1002,7 @@ impl<'a, T> Vecops<'a, T> for &'a [T] {
         }
         index
     }
-    
+
     /// Insert logsort of refs (in range).
     /// Useful for large types T, as they are not copied.
     /// Pass in reversed comparator `c` for descending sort.
@@ -1048,7 +1049,7 @@ impl<'a, T> Vecops<'a, T> for &'a [T] {
         let n = rng.len();
         assert!((k > 0) & (k <= n));
         let mut k_sorted: Vec<&T> = self.iter().skip(rng.start).take(k).collect();
-        k_sorted.sort_unstable_by(|&a, &b| c(a, b));  
+        k_sorted.sort_unstable_by(|&a, &b| c(a, b));
         let mut k_max = k_sorted[k - 1];
         for s in self.iter().take(n - k).skip(rng.start + k) {
             if c(s, k_max) == Less {
@@ -1068,36 +1069,59 @@ impl<'a, T> Vecops<'a, T> for &'a [T] {
     fn best_k_indexed<F>(self, k: usize, rng: Range<usize>, c: F) -> Vec<usize>
     where
         F: Fn(&T, &T) -> Ordering,
-        {
-            let n = rng.len();
-            assert!((k > 0) & (k <= n)); 
-            let mut index = self.isort_indexed(rng.start..rng.start+k,&c); 
-            for pos in rng.start+k..rng.end {
-                let k_max = &self[index[k - 1]];
-                let s = &self[pos];
-                if c(s, k_max) == Less {
-                    let insert_pos = match index.binary_search_by(|&iv| c(&self[iv], s)) {
-                        Ok(ins) => ins + 1,
-                        Err(ins) => ins,
-                    };
-                    index.insert(insert_pos, pos);
-                    index.pop();  
+    {
+        let n = rng.len();
+        assert!((k > 0) & (k <= n));
+        let mut index = self.isort_indexed(rng.start..rng.start + k, &c);
+        for pos in rng.start + k..rng.end {
+            let k_max = &self[index[k - 1]];
+            let s = &self[pos];
+            if c(s, k_max) == Less {
+                let insert_pos = match index.binary_search_by(|&iv| c(&self[iv], s)) {
+                    Ok(ins) => ins + 1,
+                    Err(ins) => ins,
                 };
-            }
-            index
+                index.insert(insert_pos, pos);
+                index.pop();
+            };
         }
+        index
+    }
 
-    /// Constructs subspace index from a vector of some scalar measure,
-    /// such as `significance` of individual dimensions. Sorts it to the
-    /// same order as the input measure. 
-    /// Normally low values of measure are allocated low (best) ranks.
-    /// Reverse the comparator closure c to prefer instead the high values.
-    fn subspace<F>(self, rank:usize, c:F) -> Vec<usize> 
+    /// Unsorted index of the `best` k items in rng (ascending or descending, depending on `c`)
+    fn best_k_unsorted<F>(self, k: usize, rng: Range<usize>, c: F) -> Vec<usize>
     where
         F: Fn(&T, &T) -> Ordering,
     {
-        let mut idx = self.best_k_indexed(rank,0..self.len(),c);   
+        let n = rng.len();
+        assert!((k > 0) & (k <= n));
+        let mut index = self.isort_indexed(rng.start..rng.start + k, &c);
+        for pos in rng.start + k..rng.end {
+            let k_max = &self[index[k - 1]];
+            let s = &self[pos];
+            if c(s, k_max) == Less {
+                let insert_pos = match index.binary_search_by(|&iv| c(&self[iv], s)) {
+                    Ok(ins) => ins + 1,
+                    Err(ins) => ins,
+                };
+                index.insert(insert_pos, pos);
+                index.pop();
+            };
+        }
+        index
+    }
+
+    /// Constructs subspace index from a vector of some scalar measure,
+    /// such as `significance` of individual dimensions. Sorts it to the
+    /// same order as the input measure.
+    /// Normally low values of measure are allocated low (best) ranks.
+    /// Reverse the comparator closure c to prefer instead the high values.
+    fn subspace<F>(self, rank: usize, c: F) -> Vec<usize>
+    where
+        F: Fn(&T, &T) -> Ordering,
+    {
+        let mut idx = self.best_k_indexed(rank, 0..self.len(), c);
         idx.sort_unstable();
-        idx 
+        idx
     }
 }

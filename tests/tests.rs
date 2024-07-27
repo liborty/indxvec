@@ -425,7 +425,7 @@ fn best_k_sorts() {
     // The Rust compiler would throw a fit otherwise.
     let closures = [
         |v: &[u8]| { 
-            let _ = v.smallest_k(v.len()/2).into_sorted_vec();
+            let _ = v.smallest_k(v.len()/2); // .into_sorted_vec();
         },
         |v: &[u8]| {
             v.best_k(v.len()/2,0..v.len(),|a,b| a.cmp(b));

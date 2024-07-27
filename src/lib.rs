@@ -343,6 +343,10 @@ pub trait Vecops<'a, T> {
     fn best_k_indexed<F>(self, k: usize, rng: Range<usize>, c: F) -> Vec<usize>
     where
         F: Fn(&T, &T) -> Ordering;
+    /// Unsorted index of the `best` k items in rng (ascending or descending, depending on `c`)
+    fn best_k_unsorted<F>(self, k: usize, rng: Range<usize>, c: F) -> Vec<usize>
+    where
+        F: Fn(&T, &T) -> Ordering;
     /// Subspace index: sorted subscripts of only the sufficiently ranking values.
     fn subspace<F>(self, rank:usize, c:F) -> Vec<usize>
     where
