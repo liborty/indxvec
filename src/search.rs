@@ -111,7 +111,7 @@ where
                     return lo..hi;
                 };
                 let (lor, _) = self.binary_any(cmp_then(&mut cmpr, Less));
-                return lo..lor + 1.into();
+                return lo..lor;
             }
             _ => (),
         };
