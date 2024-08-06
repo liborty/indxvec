@@ -433,3 +433,35 @@ fn best_k_sorts() {
     ];
     benchu8(10..10011, 1000, 10, &NAMES, &closures);
 }
+
+#[test]
+fn small_exhaustive_binary_all() {
+    fn test_array(x: &[i32]) {
+        assert_eq!(x[0], 1);
+        let max = *x.last().unwrap();
+        let full_range = 0..=x.len() - 1;
+        for needle in 0..=max + 1 {
+            let range = full_range.binary_all(|j| x[j].cmp(&needle));
+            if range.is_empty() {
+                assert!(needle == 0 || needle == max + 1);
+            } else {
+                assert_eq!(x[range.start], needle);
+                assert_eq!(x[range.end - 1], needle);
+                assert!(range.start == 0 || x[range.start - 1] < needle);
+                assert!(range.end == x.len() || x[range.end] > needle);
+            }
+        }
+    }
+
+    let mut array = [0; 10];
+    let variable_positions = array.len() as u32 - 1;
+    // each element in the array after the first is either equal to the previous or greater by one
+    // we iterate all possible cases
+    for case in 0..(1 << variable_positions) {
+        array[0] = 1;
+        for i in 0..variable_positions as usize {
+            array[i + 1] = array[i] + ((case >> i) & 1);
+        }
+        test_array(&array);
+    }
+}
